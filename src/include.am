@@ -1,0 +1,27 @@
+# vim:ft=automake
+# included from Top Level Makefile.am
+# All paths should be given relative to the root
+
+noinst_HEADERS+= src/common.h
+noinst_HEADERS+= src/debug.h
+noinst_HEADERS+= src/error.h
+noinst_HEADERS+= src/structs.h
+noinst_HEADERS+= src/request.h
+noinst_HEADERS+= src/response.h
+
+lib_LTLIBRARIES+= src/libmarias3.la
+src_libmarias3_la_SOURCES=
+src_libmarias3_la_LIBADD=
+src_libmarias3_la_LDFLAGS=
+src_libmarias3_la_CFLAGS= -DBUILDING_MS3
+src_libmarias3_la_CFLAGS+= @LIBXML2_CFLAGS@
+
+src_libmarias3_la_SOURCES+= src/marias3.c
+src_libmarias3_la_SOURCES+= src/request.c
+src_libmarias3_la_SOURCES+= src/response.c
+src_libmarias3_la_SOURCES+= src/error.c
+src_libmarias3_la_SOURCES+= src/debug.c
+
+src_libmarias3_la_LDFLAGS+= -version-info ${LIBMARIAS3_LIBRARY_VERSION}
+
+src_libmarias3_la_LIBADD+= @LIBCURL_LIBS@ @LIBMHASH_LIB@ @LIBXML2_LIBS@

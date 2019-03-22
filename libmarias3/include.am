@@ -1,0 +1,6 @@
+# vim:ft=automake
+# included from Top Level Makefile.am
+# All paths should be given relative to the root
+
+nobase_include_HEADERS+= libmarias3/marias3.h
+nobase_include_HEADERS+= libmarias3/visibility.h

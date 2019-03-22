@@ -1,52 +1,36 @@
-# Prerequisites
-*.d
-
-# Object files
+aclocal.m4
+autom4te.cache/
+build-aux/
+config.in
+configure
+m4/libtool.m4
+m4/ltoptions.m4
+m4/ltsugar.m4
+m4/ltversion.m4
+m4/lt~obsolete.m4
+Makefile
+Makefile.in
+aminclude.am
+config.h
+config.in~
+config.log
+config.status
+libmarias3-config
+libmarias3.pc
+libtool
+src/.deps/
+src/.dirstamp
+src/.libs/
+stamp-h1
+t/
+test-suite.log
+tests/.deps/
+tests/.dirstamp
+version.h
 *.o
-*.ko
-*.obj
-*.elf
-
-# Linker output
-*.ilk
-*.map
-*.exp
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Libraries
-*.lib
-*.a
-*.la
 *.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
-
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
-
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+*.la
+tags
+docs/latex/
+html/
+*.tar.gz
