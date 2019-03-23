@@ -31,14 +31,16 @@ struct ms3_st
 
 typedef struct ms3_st ms3_st;
 
-struct memory_buffer_st {
+struct memory_buffer_st
+{
   uint8_t *data;
   size_t length;
 };
 
 typedef struct memory_buffer_st memory_buffer_st;
 
-struct put_buffer_st {
+struct put_buffer_st
+{
   const uint8_t *data;
   size_t length;
   size_t offset;

@@ -25,7 +25,7 @@ static bool debugging_enabled = false;
 
 void ms3debug_set(bool enabled)
 {
-  debugging_enabled= enabled;
+  debugging_enabled = enabled;
 }
 
 bool ms3debug_get(void)

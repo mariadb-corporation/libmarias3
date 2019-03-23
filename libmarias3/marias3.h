@@ -47,7 +47,8 @@ struct ms3_status_st
 typedef struct ms3_status_st ms3_status_st;
 
 MS3_API
-ms3_st *ms3_init(const char *s3key, const char *s3secret, const char *region, const char *base_domain);
+ms3_st *ms3_init(const char *s3key, const char *s3secret, const char *region,
+                 const char *base_domain);
 
 MS3_API
 void ms3_deinit(ms3_st *ms3);
@@ -59,19 +60,23 @@ MS3_API
 void ms3_debug(bool state);
 
 MS3_API
-uint8_t ms3_list(ms3_st *ms3, const char *bucket, const char *prefix, ms3_list_st **list);
+uint8_t ms3_list(ms3_st *ms3, const char *bucket, const char *prefix,
+                 ms3_list_st **list);
 
 MS3_API
 void ms3_list_free(ms3_list_st *list);
 
 MS3_API
-uint8_t ms3_put(ms3_st *ms3, const char *bucket, const char *key, const uint8_t *data, size_t length);
+uint8_t ms3_put(ms3_st *ms3, const char *bucket, const char *key,
+                const uint8_t *data, size_t length);
 
 MS3_API
-uint8_t ms3_get(ms3_st *ms3, const char *bucket, const char *key, uint8_t **data, size_t *length);
+uint8_t ms3_get(ms3_st *ms3, const char *bucket, const char *key,
+                uint8_t **data, size_t *length);
 
 MS3_API
 uint8_t ms3_delete(ms3_st *ms3, const char *bucket, const char *key);
 
 MS3_API
-uint8_t ms3_status(ms3_st *ms3, const char *bucket, const char *key, ms3_status_st *status);
+uint8_t ms3_status(ms3_st *ms3, const char *bucket, const char *key,
+                   ms3_status_st *status);

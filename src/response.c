@@ -28,78 +28,90 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list)
   xmlDocPtr doc;
   xmlNodePtr node;
   xmlNodePtr child;
-  xmlChar *filename= NULL;
-  xmlChar *filesize= NULL;
-  xmlChar *filedate= NULL;
-  size_t size= 0;
+  xmlChar *filename = NULL;
+  xmlChar *filesize = NULL;
+  xmlChar *filedate = NULL;
+  size_t size = 0;
   struct tm ttmp;
-  time_t tout= 0;
-  ms3_list_st *nextptr= NULL, *lastptr= NULL;
+  time_t tout = 0;
+  ms3_list_st *nextptr = NULL, *lastptr = NULL;
 
-  doc= xmlReadMemory(data, (int)length, "noname.xml", NULL, 0);
+  doc = xmlReadMemory(data, (int)length, "noname.xml", NULL, 0);
+
   if (not doc)
   {
     return MS3_ERR_RESPONSE_PARSE;
   }
+
   node = xmlDocGetRootElement(doc);
   // First node is ListBucketResponse
-  node= node->xmlChildrenNode;
+  node = node->xmlChildrenNode;
+
   while (node)
   {
-    if (not xmlStrcmp(node->name, (const unsigned char*)"Contents"))
+    if (not xmlStrcmp(node->name, (const unsigned char *)"Contents"))
     {
-      bool skip= false;
+      bool skip = false;
       // Found contents
       child = node->xmlChildrenNode;
+
       do
       {
-        if (not xmlStrcmp(child->name, (const unsigned char*)"Key"))
+        if (not xmlStrcmp(child->name, (const unsigned char *)"Key"))
         {
-          filename= xmlNodeGetContent(child);
+          filename = xmlNodeGetContent(child);
           ms3debug("Filename: %s", filename);
-          if (filename[strlen((const char*)filename)-1] == '/')
+
+          if (filename[strlen((const char *)filename) - 1] == '/')
           {
-            skip= true;
+            skip = true;
             break;
           }
         }
-        if (not xmlStrcmp(child->name, (const unsigned char*)"Size"))
+
+        if (not xmlStrcmp(child->name, (const unsigned char *)"Size"))
         {
-          filesize= xmlNodeGetContent(child);
+          filesize = xmlNodeGetContent(child);
           ms3debug("Size: %s", filesize);
-          size= strtoull((const char*)filesize, NULL, 10);
+          size = strtoull((const char *)filesize, NULL, 10);
         }
-        if (not xmlStrcmp(child->name, (const unsigned char*)"LastModified"))
+
+        if (not xmlStrcmp(child->name, (const unsigned char *)"LastModified"))
         {
-          filedate= xmlNodeGetContent(child);
+          filedate = xmlNodeGetContent(child);
           ms3debug("Date: %s", filedate);
-          strptime((const char*)filedate, "%Y-%m-%dT%H:%M:%SZ", &ttmp);
-          tout= mktime(&ttmp);
+          strptime((const char *)filedate, "%Y-%m-%dT%H:%M:%SZ", &ttmp);
+          tout = mktime(&ttmp);
         }
       }
       while ((child = child->next));
+
       if (not skip)
       {
-        nextptr= malloc(sizeof(ms3_list_st));
-        nextptr->next= NULL;
+        nextptr = malloc(sizeof(ms3_list_st));
+        nextptr->next = NULL;
+
         if (not lastptr)
         {
-          *list= nextptr;
-          lastptr= nextptr;
+          *list = nextptr;
+          lastptr = nextptr;
         }
         else
         {
-          lastptr->next= nextptr;
-          lastptr= nextptr;
+          lastptr->next = nextptr;
+          lastptr = nextptr;
         }
-        nextptr->key= strdup((const char*)filename);
-        nextptr->length= size;
-        nextptr->created= tout;
+
+        nextptr->key = strdup((const char *)filename);
+        nextptr->length = size;
+        nextptr->created = tout;
       }
 
     }
-    node= node->next;
+
+    node = node->next;
   }
+
   xmlFreeDoc(doc);
   return 0;
 }

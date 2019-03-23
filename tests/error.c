@@ -29,7 +29,8 @@ int main(int argc, char *argv[])
   uint8_t *data;
   size_t length;
 
-  ms3_st *ms3 = ms3_init("12345678901234567890", "1234567890123456789012345678901234567890", "us-east-1", NULL);
+  ms3_st *ms3 = ms3_init("12345678901234567890",
+                         "1234567890123456789012345678901234567890", "us-east-1", NULL);
 
   // Enable here so cppcheck shows coverage
   ms3_debug(true);
@@ -38,7 +39,7 @@ int main(int argc, char *argv[])
   ASSERT_STREQ(errmsg, "No such error code");
   errmsg = ms3_error(0);
   ASSERT_STREQ(errmsg, "No error");
-  uint8_t res= ms3_get(ms3, "bad", "bad/file.txt", &data, &length);
+  uint8_t res = ms3_get(ms3, "bad", "bad/file.txt", &data, &length);
   printf("%d\n", res);
   ASSERT_EQ(res, 8); // Bad auth
   ms3_deinit(ms3);

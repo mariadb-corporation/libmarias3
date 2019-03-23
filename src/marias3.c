@@ -20,7 +20,8 @@
 #include "config.h"
 #include "common.h"
 
-ms3_st *ms3_init(const char *s3key, const char *s3secret, const char *region, const char *base_domain)
+ms3_st *ms3_init(const char *s3key, const char *s3secret, const char *region,
+                 const char *base_domain)
 {
   if ((s3key == NULL) or (s3secret == NULL))
   {
@@ -40,6 +41,7 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret, const char *region, co
   memcpy(ms3->s3key, s3key, 20);
   memcpy(ms3->s3secret, s3secret, 40);
   ms3->region = strdup(region);
+
   if (base_domain)
   {
     ms3->base_domain = strdup(base_domain);
@@ -62,6 +64,7 @@ void ms3_deinit(ms3_st *ms3)
 void ms3_debug(bool state)
 {
   ms3debug_set(state);
+
   if (state)
   {
     ms3debug("enabling debug");
@@ -74,25 +77,31 @@ const char *ms3_error(uint8_t errcode)
   {
     return baderror;
   }
+
   return errmsgs[errcode];
 }
 
-uint8_t ms3_list(ms3_st *ms3, const char *bucket, const char *prefix, ms3_list_st **list)
+uint8_t ms3_list(ms3_st *ms3, const char *bucket, const char *prefix,
+                 ms3_list_st **list)
 {
   // TODO: make pagination work (IsTruncated)
   (void) prefix;
-  uint8_t res= 0;
+  uint8_t res = 0;
+
   if (not ms3 or not bucket or not list)
   {
     return MS3_ERR_PARAMETER;
   }
-  res= execute_request(ms3, MS3_CMD_LIST, bucket, NULL, prefix, NULL, 0, list);
+
+  res = execute_request(ms3, MS3_CMD_LIST, bucket, NULL, prefix, NULL, 0, list);
   return res;
 }
 
-uint8_t ms3_put(ms3_st *ms3, const char *bucket, const char *key, const uint8_t *data, size_t length)
+uint8_t ms3_put(ms3_st *ms3, const char *bucket, const char *key,
+                const uint8_t *data, size_t length)
 {
   uint8_t res;
+
   if (not ms3 or not bucket or not key or not data)
   {
     return MS3_ERR_PARAMETER;
@@ -109,44 +118,52 @@ uint8_t ms3_put(ms3_st *ms3, const char *bucket, const char *key, const uint8_t 
     return MS3_ERR_TOO_BIG;
   }
 
-  res= execute_request(ms3, MS3_CMD_PUT, bucket, key, NULL, data, length, NULL);
+  res = execute_request(ms3, MS3_CMD_PUT, bucket, key, NULL, data, length, NULL);
 
   return res;
 }
 
-uint8_t ms3_get(ms3_st *ms3, const char *bucket, const char *key, uint8_t **data, size_t *length)
+uint8_t ms3_get(ms3_st *ms3, const char *bucket, const char *key,
+                uint8_t **data, size_t *length)
 {
-  uint8_t res= 0;
+  uint8_t res = 0;
   memory_buffer_st buf;
+
   if (not ms3 or not bucket or not key or not data or not length)
   {
     return MS3_ERR_PARAMETER;
   }
-  res= execute_request(ms3, MS3_CMD_GET, bucket, key, NULL, NULL, 0, &buf);
-  *data= buf.data;
-  *length= buf.length;
+
+  res = execute_request(ms3, MS3_CMD_GET, bucket, key, NULL, NULL, 0, &buf);
+  *data = buf.data;
+  *length = buf.length;
   return res;
 }
 
 uint8_t ms3_delete(ms3_st *ms3, const char *bucket, const char *key)
 {
   uint8_t res;
+
   if (not ms3 or not bucket or not key)
   {
     return MS3_ERR_PARAMETER;
   }
-  res= execute_request(ms3, MS3_CMD_DELETE, bucket, key, NULL, NULL, 0, NULL);
+
+  res = execute_request(ms3, MS3_CMD_DELETE, bucket, key, NULL, NULL, 0, NULL);
   return res;
 }
 
-uint8_t ms3_status(ms3_st *ms3, const char *bucket, const char *key, ms3_status_st *status)
+uint8_t ms3_status(ms3_st *ms3, const char *bucket, const char *key,
+                   ms3_status_st *status)
 {
   uint8_t res;
+
   if (not ms3 or not bucket or not key or not status)
   {
     return MS3_ERR_PARAMETER;
   }
-  res= execute_request(ms3, MS3_CMD_HEAD, bucket, key, NULL, NULL, 0, status);
+
+  res = execute_request(ms3, MS3_CMD_HEAD, bucket, key, NULL, NULL, 0, status);
   return res;
 }
 
@@ -155,8 +172,8 @@ void ms3_list_free(ms3_list_st *list)
   while (list)
   {
     free(list->key);
-    ms3_list_st *tmp= list;
-    list= list->next;
+    ms3_list_st *tmp = list;
+    list = list->next;
     free(tmp);
   }
 }
