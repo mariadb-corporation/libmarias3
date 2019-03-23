@@ -274,8 +274,8 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist *headers,
   char headerbuf[1024];
   char date[9];
   MHASH td;
-  char sha256hash[64];
-  char post_hash[64];
+  char sha256hash[65];
+  char post_hash[65];
   uint8_t tmp_hash[32];
   uint8_t hmac_hash[32];
   uint8_t hash_pos = 0;
