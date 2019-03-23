@@ -32,5 +32,6 @@ const char *errmsgs[] =
   "Impossible condition detected",
   "Authentication error",
   "File not found",
-  "S3 server error"
+  "S3 server error",
+  "Data too big. Maximum data size is 4GB"
 };

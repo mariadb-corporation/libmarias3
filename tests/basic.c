@@ -64,8 +64,15 @@ int main(int argc, char *argv[])
     list_it= list_it->next;
   }
   ASSERT_EQ_(found, 1, "Created file not found");
-  ASSERT_EQ_(list_it->length, 26, "Created file is unexpected length");
-  ASSERT_NEQ_(list_it->created, 0, "Created file timestamp is bad");
+  if (list_it)
+  {
+    ASSERT_EQ_(list_it->length, 26, "Created file is unexpected length");
+    ASSERT_NEQ_(list_it->created, 0, "Created file timestamp is bad");
+  }
+  else
+  {
+    ASSERT_TRUE_(false, "No resuts from list");
+  }
   ms3_list_free(list);
   res= ms3_get(ms3, s3bucket, "test/ms3.txt", &data, &length);
   ASSERT_EQ(res, 0);

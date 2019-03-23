@@ -35,6 +35,7 @@ enum MS3_ERROR_CODES
   MS3_ERR_AUTH,
   MS3_ERR_NOT_FOUND,
   MS3_ERR_SERVER,
+  MS3_ERR_TOO_BIG,
   MS3_ERR_MAX // Always the last error
 };
 

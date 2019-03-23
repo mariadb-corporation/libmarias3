@@ -103,6 +103,12 @@ uint8_t ms3_put(ms3_st *ms3, const char *bucket, const char *key, const uint8_t 
     return MS3_ERR_NO_DATA;
   }
 
+  // mhash can't hash more than 4GB it seems
+  if (length > UINT32_MAX)
+  {
+    return MS3_ERR_TOO_BIG;
+  }
+
   res= execute_request(ms3, MS3_CMD_PUT, bucket, key, NULL, data, length, NULL);
 
   return res;
@@ -146,12 +152,10 @@ uint8_t ms3_status(ms3_st *ms3, const char *bucket, const char *key, ms3_status_
 
 void ms3_list_free(ms3_list_st *list)
 {
-  ms3_list_st *tmp;
-
   while (list)
   {
     free(list->key);
-    tmp= list;
+    ms3_list_st *tmp= list;
     list= list->next;
     free(tmp);
   }

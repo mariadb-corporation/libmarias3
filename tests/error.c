@@ -31,7 +31,8 @@ int main(int argc, char *argv[])
 
   ms3_st *ms3 = ms3_init("12345678901234567890", "1234567890123456789012345678901234567890", "us-east-1", NULL);
 
-//  ms3_debug(true);
+  // Enable here so cppcheck shows coverage
+  ms3_debug(true);
   ASSERT_NOT_NULL(ms3);
   const char *errmsg = ms3_error(255);
   ASSERT_STREQ(errmsg, "No such error code");

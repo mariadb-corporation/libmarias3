@@ -72,6 +72,9 @@ static char *generate_path(CURL *curl, const char *object)
   char *save_ptr= NULL;
   char *out_ptr= ret_buf;
 
+  // Keep scanbuild happy
+  ret_buf[0]= '\0';
+
   if (not object)
   {
     sprintf(ret_buf, "/");
@@ -83,7 +86,7 @@ static char *generate_path(CURL *curl, const char *object)
   tok_ptr= strtok_r((char*)path, "/", &save_ptr);
   while (tok_ptr != NULL)
   {
-    char *encoded= curl_easy_escape(curl, tok_ptr, strlen(tok_ptr));
+    char *encoded= curl_easy_escape(curl, tok_ptr, (int)strlen(tok_ptr));
     snprintf(out_ptr, 1024 - (ret_buf - out_ptr), "/%s", encoded);
     out_ptr+= strlen(encoded) + 1;
     curl_free(encoded);
@@ -108,7 +111,7 @@ static char *generate_query(CURL *curl, const char *param, const char *value)
   char *ret_buf= malloc(sizeof(char) * 1024);
   char *encoded;
 
-  encoded= curl_easy_escape(curl, value, strlen(value));
+  encoded= curl_easy_escape(curl, value, (int)strlen(value));
   snprintf(ret_buf, 1024, "%s=%s", param, encoded);
   return ret_buf;
 }
@@ -197,11 +200,11 @@ static uint8_t generate_request_hash(uri_method_t method, const char *path, cons
 
   // Hash of post data (can be hash of empty)
   snprintf(signing_data + pos, sizeof(signing_data) - pos, "%.*s", 64, post_hash);
-  pos+= 64;
+  //pos+= 64;
 
   // Hash all of the above
   td= mhash_init(MHASH_SHA256);
-  mhash(td, signing_data, strlen(signing_data));
+  mhash(td, signing_data, (uint32_t)strlen(signing_data));
   mhash_deinit(td, sha256hash);
   for (uint8_t i = 0; i < mhash_get_block_size(MHASH_SHA256); i++)
   {
@@ -271,7 +274,7 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist *headers,
 
   // Hash post data
   td= mhash_init(MHASH_SHA256);
-  mhash(td, post_data->data, post_data->length);
+  mhash(td, post_data->data, (uint32_t)post_data->length);
   mhash_deinit(td, tmp_hash);
   for (uint8_t i = 0; i < mhash_get_block_size(MHASH_SHA256); i++)
   {
@@ -298,26 +301,26 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist *headers,
   // User signing key hash
   // Date hashed using AWS4:secret_key
   snprintf(headerbuf, sizeof(headerbuf), "AWS4%.*s", 40, secret);
-  td= mhash_hmac_init(MHASH_SHA256, headerbuf, strlen(headerbuf), mhash_get_hash_pblock(MHASH_SHA1));
+  td= mhash_hmac_init(MHASH_SHA256, headerbuf, (uint32_t)strlen(headerbuf), mhash_get_hash_pblock(MHASH_SHA1));
   strftime(headerbuf, sizeof(headerbuf), "%Y%m%d", gmtime(&now));
-  mhash(td, headerbuf, strlen(headerbuf));
+  mhash(td, headerbuf, (uint32_t)strlen(headerbuf));
   mhash_hmac_deinit(td, hmac_hash);
 
   // Region signed by above key
   td= mhash_hmac_init(MHASH_SHA256, hmac_hash, 32, mhash_get_hash_pblock(MHASH_SHA1));
-  mhash(td, region, strlen(region));
+  mhash(td, region, (uint32_t)strlen(region));
   mhash_hmac_deinit(td, hmac_hash);
 
   // Service signed by above key (s3 always)
   td= mhash_hmac_init(MHASH_SHA256, hmac_hash, 32, mhash_get_hash_pblock(MHASH_SHA1));
   sprintf(headerbuf, "s3");
-  mhash(td, headerbuf, strlen(headerbuf));
+  mhash(td, headerbuf, (uint32_t)strlen(headerbuf));
   mhash_hmac_deinit(td, hmac_hash);
 
   // Request version signed by above key (always "aws4_request")
   td= mhash_hmac_init(MHASH_SHA256, hmac_hash, 32, mhash_get_hash_pblock(MHASH_SHA1));
   sprintf(headerbuf, "aws4_request");
-  mhash(td, headerbuf, strlen(headerbuf));
+  mhash(td, headerbuf, (uint32_t)strlen(headerbuf));
   mhash_hmac_deinit(td, hmac_hash);
 
   // Sign everything with the key
@@ -329,7 +332,7 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist *headers,
   snprintf(headerbuf + offset, sizeof(headerbuf) - offset, "%.*s/%s/s3/aws4_request\n%.*s", 8, date, region, 64, sha256hash);
   ms3debug("Data to sign: %s", headerbuf);
   td= mhash_hmac_init(MHASH_SHA256, hmac_hash, 32, mhash_get_hash_pblock(MHASH_SHA1));
-  mhash(td, headerbuf, strlen(headerbuf));
+  mhash(td, headerbuf, (uint32_t)strlen(headerbuf));
   mhash_hmac_deinit(td, hmac_hash);
 
   hash_pos= 0;
@@ -351,7 +354,7 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist *headers,
 
   if (method == MS3_PUT)
   {
-    snprintf(headerbuf, sizeof(headerbuf), "Content-Length:%ld", post_data->length);
+    snprintf(headerbuf, sizeof(headerbuf), "Content-Length:%zu", post_data->length);
     headers = curl_slist_append(headers, headerbuf);
   }
 
@@ -470,6 +473,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket, const ch
 
   if (res)
   {
+    free(mem.data);
     free(path);
     free(query);
     curl_easy_cleanup(curl);
@@ -494,6 +498,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket, const ch
       break;
     default:
       ms3debug("Bad cmd detected");
+      free(mem.data);
       free(path);
       free(query);
       curl_easy_cleanup(curl);
@@ -504,6 +509,11 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket, const ch
 
   if (res)
   {
+    free(mem.data);
+    free(path);
+    free(query);
+    curl_slist_free_all(headers);
+    curl_easy_cleanup(curl);
     return res;
   }
   curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_callback);
@@ -514,6 +524,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket, const ch
   if (curl_res != CURLE_OK)
   {
     ms3debug("Curl error: %d", curl_res);
+    free(mem.data);
     free(path);
     free(query);
     curl_slist_free_all(headers);
