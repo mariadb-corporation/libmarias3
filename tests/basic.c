@@ -27,12 +27,12 @@ int main(int argc, char *argv[])
   (void) argc;
   (void) argv;
   int res;
-  ms3_list_st *list= NULL, *list_it= NULL;
+  ms3_list_st *list = NULL, *list_it = NULL;
   uint8_t *data;
   size_t length;
-  const char *test_string= "Another one bites the dust";
+  const char *test_string = "Another one bites the dust";
   ms3_status_st status;
-  char *s3key= getenv("S3KEY");
+  char *s3key = getenv("S3KEY");
   char *s3secret = getenv("S3SECRET");
   char *s3region = getenv("S3REGION");
   char *s3bucket = getenv("S3BUCKET");
@@ -48,22 +48,27 @@ int main(int argc, char *argv[])
 //  ms3_debug(true);
   ASSERT_NOT_NULL(ms3);
 
-  res = ms3_put(ms3, s3bucket, "test/ms3.txt", (const uint8_t*)test_string, strlen(test_string));
+  res = ms3_put(ms3, s3bucket, "test/ms3.txt", (const uint8_t *)test_string,
+                strlen(test_string));
   ASSERT_EQ(res, 0);
-  res= ms3_list(ms3, s3bucket, NULL, &list);
+  res = ms3_list(ms3, s3bucket, NULL, &list);
   ASSERT_EQ(res, 0);
-  bool found= false;
-  list_it= list;
-  while(list_it)
+  bool found = false;
+  list_it = list;
+
+  while (list_it)
   {
     if (!strncmp(list_it->key, "test/ms3.txt", 12))
     {
-      found= true;
+      found = true;
       break;
     }
-    list_it= list_it->next;
+
+    list_it = list_it->next;
   }
+
   ASSERT_EQ_(found, 1, "Created file not found");
+
   if (list_it)
   {
     ASSERT_EQ_(list_it->length, 26, "Created file is unexpected length");
@@ -73,12 +78,13 @@ int main(int argc, char *argv[])
   {
     ASSERT_TRUE_(false, "No resuts from list");
   }
+
   ms3_list_free(list);
-  res= ms3_get(ms3, s3bucket, "test/ms3.txt", &data, &length);
+  res = ms3_get(ms3, s3bucket, "test/ms3.txt", &data, &length);
   ASSERT_EQ(res, 0);
   ASSERT_EQ(length, 26);
-  ASSERT_STREQ((char*)data, test_string);
-  res= ms3_status(ms3, s3bucket, "test/ms3.txt", &status);
+  ASSERT_STREQ((char *)data, test_string);
+  res = ms3_status(ms3, s3bucket, "test/ms3.txt", &status);
   ASSERT_EQ(res, 0);
   ASSERT_EQ(status.length, 26);
   ASSERT_NEQ(status.created, 0);

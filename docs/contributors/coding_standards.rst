@@ -4,7 +4,7 @@ Coding Standard
 General
 -------
 
-We are aiming for a minimum of C99 support.
+We are aiming for a minimum of C99 support. A script in ``extra`` can be found called ``astyle.sh``. This uses the Linux tool `Artistic Style <http://astyle.sourceforge.net/>`_ to enforce coding standards.
 
 Coding Style
 ------------
@@ -72,8 +72,6 @@ The keyword :c:type:`NULL` should always be used when referring to the pointer N
 
 Allocation
 ----------
-
-Use new/delete where possible, variable sized buffers may be an exception to this rule since the performance of vectors can be limiting.  We will be compiling with the C++ compiler.
 
 For performance reasons we should try to limit the number of times we allocate and deallocate memory.  Do not do thousands of allocates and deallocates to save 32k of RAM.
 

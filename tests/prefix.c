@@ -27,9 +27,9 @@ int main(int argc, char *argv[])
   (void) argc;
   (void) argv;
   int res;
-  ms3_list_st *list= NULL, *list_it= NULL;
-  const char *test_string= "Another one bites the dust";
-  char *s3key= getenv("S3KEY");
+  ms3_list_st *list = NULL, *list_it = NULL;
+  const char *test_string = "Another one bites the dust";
+  char *s3key = getenv("S3KEY");
   char *s3secret = getenv("S3SECRET");
   char *s3region = getenv("S3REGION");
   char *s3bucket = getenv("S3BUCKET");
@@ -45,27 +45,33 @@ int main(int argc, char *argv[])
 //  ms3_debug(true);
   ASSERT_NOT_NULL(ms3);
 
-  res = ms3_put(ms3, s3bucket, "test/ms3.txt", (const uint8_t*)test_string, strlen(test_string));
+  res = ms3_put(ms3, s3bucket, "test/ms3.txt", (const uint8_t *)test_string,
+                strlen(test_string));
   ASSERT_EQ(res, 0);
-  res = ms3_put(ms3, s3bucket, "other/ms3.txt", (const uint8_t*)test_string, strlen(test_string));
+  res = ms3_put(ms3, s3bucket, "other/ms3.txt", (const uint8_t *)test_string,
+                strlen(test_string));
   ASSERT_EQ(res, 0);
-  res= ms3_list(ms3, s3bucket, "test", &list);
+  res = ms3_list(ms3, s3bucket, "test", &list);
   ASSERT_EQ(res, 0);
-  bool found_good= false;
-  bool found_bad= false;
-  list_it= list;
-  while(list_it)
+  bool found_good = false;
+  bool found_bad = false;
+  list_it = list;
+
+  while (list_it)
   {
     if (!strncmp(list_it->key, "test/ms3.txt", 12))
     {
-      found_good= true;
+      found_good = true;
     }
+
     if (!strncmp(list_it->key, "other/ms3.txt", 12))
     {
-      found_bad= true;
+      found_bad = true;
     }
-    list_it= list_it->next;
+
+    list_it = list_it->next;
   }
+
   ASSERT_EQ_(found_good, 1, "Created file not found");
   ASSERT_EQ_(found_bad, 0, "Filter found file it shouldn't");
   ms3_list_free(list);

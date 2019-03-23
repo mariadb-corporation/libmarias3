@@ -79,7 +79,8 @@
 
 static inline bool valgrind_is_caller(void)
 {
-  if (getenv("TESTS_ENVIRONMENT")  && strstr(getenv("TESTS_ENVIRONMENT"), "valgrind"))
+  if (getenv("TESTS_ENVIRONMENT")
+      && strstr(getenv("TESTS_ENVIRONMENT"), "valgrind"))
   {
     return true;
   }
@@ -97,10 +98,11 @@ static inline size_t yatl_strlen(const char *s)
   return 0UL;
 }
 
-static inline int yatl_strcmp(const char *s1, const char *s2, size_t *s1_length, size_t *s2_length)
+static inline int yatl_strcmp(const char *s1, const char *s2, size_t *s1_length,
+                              size_t *s2_length)
 {
-  *s1_length= yatl_strlen(s1);
-  *s2_length= yatl_strlen(s2);
+  *s1_length = yatl_strlen(s1);
+  *s2_length = yatl_strlen(s2);
 
   if (*s1_length == 0 &&  *s1_length == *s2_length)
   {
