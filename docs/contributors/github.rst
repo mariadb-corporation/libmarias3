@@ -27,7 +27,7 @@ Before creating a branch to work on you should first make sure your local copy i
 .. code-block:: bash
 
    git checkout master
-   git pull --ff-only remote master
+   git pull --ff-only upstream master
    git push
 
 You can then create a branch from master to work on:

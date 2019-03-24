@@ -102,7 +102,14 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list)
           lastptr = nextptr;
         }
 
-        nextptr->key = strdup((const char *)filename);
+        if (filename)
+        {
+          nextptr->key = strdup((const char *)filename);
+        }
+        else
+        {
+          nextptr->key = NULL;
+        }
         nextptr->length = size;
         nextptr->created = tout;
       }
