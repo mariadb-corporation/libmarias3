@@ -1,0 +1,5 @@
+# supress CURL leaks
+leak:libcurl
+
+# supress libxml2 leaks
+leak:libxml2
