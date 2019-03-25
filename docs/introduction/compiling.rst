@@ -62,3 +62,16 @@ The build system for libMariaS3 has the capability to build RPMs.  To build RPMs
 
 .. note::
    The package ``redhat-rpm-config`` is required for building the RPM because this generates the debuginfo RPM.
+
+Building DEBs
+-------------
+
+Debian packages for libMariaS3 can be built using the standard ``dpkg-buildpackage`` tool as follows:
+
+.. code-block:: bash
+
+   autoreconf -fi
+   dpkg-buildpackage
+
+.. note::
+   You may need to add ``--no-sign`` to dpkg-buildpackage to build unsigned packages.
