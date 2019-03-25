@@ -106,6 +106,7 @@ AS_IF([test -n "${LSB_RELEASE}"],[
 AX_AM_JOBSERVER([yes])
 
 AC_CONFIG_FILES([Makefile
+                 rpm/libmarias3.spec
                  version.h
                  libmarias3.pc
                  ])

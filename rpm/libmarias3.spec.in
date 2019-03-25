@@ -1,0 +1,67 @@
+Summary: libMariaS3
+Name: @PACKAGE@
+Version: @VERSION@
+Release: 1
+License: LGPL v2.1
+Group: System Environment/Libraries
+BuildRequires: libcurl libxml2 mhash
+URL: https://github.com/mariadb-corporation/libmarias3
+
+Packager: Andrew Hutchings <linuxjedi@mariadb.com>
+
+Source: https://github.com/mariadb-corporation/libmarias3/releases/tag/%{name}-%{version}.tar.gz
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
+
+%description
+libMariaS3 is a lightweight C library to read/write to AWS S3 buckets using objects in memory.
+
+This package provides the library.
+
+%package devel
+Summary: Header files and development libraries for %{name}
+Group: Development/Libraries
+Requires: %{name} = %{version}-%{release}
+
+%description devel
+This package contains the header files
+for %{name}. If you like to develop programs using %{name}, 
+you will need to install %{name}-devel.
+
+%prep
+%setup -q
+
+%configure
+
+
+%build
+%{__make} %{?_smp_mflags}
+
+%install
+%{__rm} -rf %{buildroot}
+%{__make} install  DESTDIR="%{buildroot}" AM_INSTALL_PROGRAM_FLAGS=""
+mkdir -p $RPM_BUILD_ROOT/
+
+%check
+%{__make} check
+
+%clean
+%{__rm} -rf %{buildroot}
+
+%files
+%defattr(-,root,root,-)
+%doc LICENSE README.rst
+%{_libdir}/libmarias3.a
+%{_libdir}/libmarias3.la
+%{_libdir}/libmarias3.so
+%{_libdir}/libmarias3.so.*
+%{_bindir}/libmarias3-config
+
+%files devel
+%defattr(-,root,root,-)
+%doc LICENSE README.rst
+%{_includedir}/libmarias3/*.h
+%{_libdir}/pkgconfig/libmarias3.pc
+
+%changelog
+* Mon Mar 25 2019 Andrew Hutchings <linuxjedi@mariadb.com>
+- Initial package

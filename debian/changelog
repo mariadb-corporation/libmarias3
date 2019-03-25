@@ -1,0 +1,6 @@
+marias3 (1:1.0.1) unstable; urgency=low
+
+   * Add packaging support
+   * Fix memory leaks
+
+ -- Andrew Hutchings <linuxjedi@mariadb.com>  Mon, 25 Mar 2019 12:24:20 +0000

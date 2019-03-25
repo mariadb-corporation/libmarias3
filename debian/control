@@ -1,0 +1,14 @@
+Source: marias3
+Maintainer: Andrew Hutchings <linuxjedi@mariadb.com>
+
+Package: libmarias3
+Architecture: any
+Section: libs
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: a lightweight C library to read/write to AWS S3 buckets using objects in memory.
+
+Package: libmarias3-dev
+Architecture: any
+Section: libdevel
+Depends: libmarias3 (= ${binary:Version}), ${misc:Depends}
+Description: a lightweight C library to read/write to AWS S3 buckets using objects in memory.

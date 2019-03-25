@@ -32,6 +32,7 @@ DISTCLEANFILES+= aminclude.am
 
 EXTRA_DIST+= README.rst
 EXTRA_DIST+= LICENSE
+EXTRA_DIST+= VERSION
 
 aclocaldir= $(datadir)/aclocal
 dist_aclocal_DATA=
@@ -43,7 +44,7 @@ include src/include.am
 include libmarias3/include.am
 include tests/include.am
 #include examples/include.am
-#include rpm/include.mk
+include rpm/include.mk
 include docs/include.am
 include yatl/include.am
 

@@ -34,3 +34,5 @@ tags
 docs/latex/
 html/
 *.tar.gz
+*.rpm
+rpm/libmarias3.spec
