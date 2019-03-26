@@ -8,6 +8,7 @@ Version 1.0.2
 ^^^^^^^^^^^^^
 
 * Fix memory leak in libxml2 function usage
+* Fix memory leaks in libcurl usage
 
 Version 1.0.1 RC (2019-03-26)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

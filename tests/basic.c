@@ -84,19 +84,24 @@ int main(int argc, char *argv[])
   ASSERT_EQ_(res, 0, "Result: %u", res);
   ASSERT_EQ(length, 26);
   ASSERT_STREQ((char *)data, test_string);
+
   for (int i = 0; i <= 3; i++)
   {
     res = ms3_status(ms3, s3bucket, "test/ms3.txt", &status);
+
     if (res == MS3_ERR_NOT_FOUND)
     {
       continue;
     }
+
     ASSERT_EQ_(res, 0, "Result: %u", res);
+
     if (res == 0)
     {
       break;
     }
   }
+
   ASSERT_EQ(status.length, 26);
   ASSERT_NEQ(status.created, 0);
   res = ms3_delete(ms3, s3bucket, "test/ms3.txt");
