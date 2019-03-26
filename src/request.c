@@ -282,7 +282,7 @@ static size_t put_callback(void *ptr, size_t size, size_t nmemb, void *stream)
 
 }
 
-static uint8_t build_request_headers(CURL *curl, struct curl_slist *headers,
+static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
                                      const char *base_domain, const char *region, const char *key,
                                      const char *secret, const char *object, const char *query,
                                      uri_method_t method, const char *bucket, put_buffer_st *post_data)
@@ -298,6 +298,7 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist *headers,
   uint8_t hmac_hash[32];
   uint8_t hash_pos = 0;
   const char *domain;
+  struct curl_slist *headers = NULL;
 
   // Host header
   if (base_domain)
@@ -311,6 +312,7 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist *headers,
 
   snprintf(headerbuf, sizeof(headerbuf), "host:%s.%s", bucket, domain);
   headers = curl_slist_append(headers, headerbuf);
+  *head = headers;
 
   // Hash post data
   td = mhash_init(MHASH_SHA256);
@@ -470,7 +472,7 @@ static size_t header_callback(char *buffer, size_t size,
     {
       ms3_status_st *status = (ms3_status_st *) userdata;
       // Date/time, format: Fri, 15 Mar 2019 16:58:54 GMT
-      struct tm ttmp;
+      struct tm ttmp = {0};
       strptime(buffer + 15, "%a, %d %b %Y %H:%M:%S %Z", &ttmp);
       status->created = mktime(&ttmp);
     }
@@ -575,7 +577,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
       return MS3_ERR_IMPOSSIBLE;
   }
 
-  res = build_request_headers(curl, headers, ms3->base_domain, ms3->region,
+  res = build_request_headers(curl, &headers, ms3->base_domain, ms3->region,
                               ms3->s3key, ms3->s3secret, path, query, method, bucket, &post_data);
 
   if (res)

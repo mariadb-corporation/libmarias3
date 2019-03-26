@@ -33,7 +33,7 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
   xmlChar *filesize = NULL;
   xmlChar *filedate = NULL;
   size_t size = 0;
-  struct tm ttmp;
+  struct tm ttmp = {0};
   time_t tout = 0;
   ms3_list_st *nextptr = NULL, *lastptr = NULL;
 

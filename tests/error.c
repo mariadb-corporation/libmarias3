@@ -42,5 +42,6 @@ int main(int argc, char *argv[])
   uint8_t res = ms3_get(ms3, "bad", "bad/file.txt", &data, &length);
   printf("%d\n", res);
   ASSERT_EQ(res, MS3_ERR_AUTH); // Bad auth
+  free(data);
   ms3_deinit(ms3);
 }
