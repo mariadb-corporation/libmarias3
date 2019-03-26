@@ -117,13 +117,31 @@ static char *generate_path(CURL *curl, const char *object)
  * pagination
  */
 
-static char *generate_query(CURL *curl, const char *param, const char *value)
+static char *generate_query(CURL *curl, const char *value,
+                            const char *continuation)
 {
   char *ret_buf = malloc(sizeof(char) * 1024);
   char *encoded;
 
-  encoded = curl_easy_escape(curl, value, (int)strlen(value));
-  snprintf(ret_buf, 1024, "%s=%s", param, encoded);
+  if (continuation)
+  {
+    encoded = curl_easy_escape(curl, continuation, (int)strlen(continuation));
+    snprintf(ret_buf, 1024, "continuation-token=%s&list-type=2", encoded);
+    free(encoded);
+  }
+  else
+  {
+    sprintf(ret_buf, "list-type=2");
+  }
+
+  if (value)
+  {
+    encoded = curl_easy_escape(curl, value, (int)strlen(value));
+    snprintf(ret_buf + strlen(ret_buf), 1024 - strlen(ret_buf), "&prefix=%s",
+             encoded);
+    free(encoded);
+  }
+
   return ret_buf;
 }
 
@@ -493,6 +511,7 @@ static size_t body_callback(void *buffer, size_t size,
 
 uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
                         const char *object, const char *filter, const uint8_t *data, size_t data_size,
+                        char *continuation,
                         void *ret_ptr)
 {
   CURL *curl = curl_easy_init();
@@ -511,9 +530,9 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
   path = generate_path(curl, object);
 
-  if (filter)
+  if (cmd == MS3_CMD_LIST)
   {
-    query = generate_query(curl, "prefix", filter);
+    query = generate_query(curl, filter, continuation);
   }
 
   res = build_request_uri(curl, ms3->base_domain, bucket, path, query);
@@ -608,7 +627,31 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     case MS3_CMD_LIST:
     {
       ms3_list_st **list = (ms3_list_st **) ret_ptr;
-      parse_list_response((const char *)mem.data, mem.length, list);
+      char *cont = NULL;
+      parse_list_response((const char *)mem.data, mem.length, list, &cont);
+
+      if (cont)
+      {
+        ms3_list_st *append_list = NULL;
+        res = execute_request(ms3, cmd, bucket, object, filter, data, data_size, cont,
+                              &append_list);
+        ms3_list_st *list_it = *list;
+
+        while (list_it->next != NULL)
+        {
+          list_it = list_it->next;
+        }
+
+        list_it->next = append_list;
+
+        if (res)
+        {
+          return res;
+        }
+
+        free(cont);
+      }
+
       free(mem.data);
       break;
     }

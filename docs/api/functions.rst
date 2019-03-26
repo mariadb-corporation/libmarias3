@@ -8,9 +8,6 @@ ms3_init()
 
    Initializes a :c:type:`ms3_st` object.
 
-   Note::
-       This function is not thread safe
-
    :param s3key: The AWS access key
    :param s3secret: The AWS secret key
    :param region: The AWS region to use (such as ``us-east-1``)

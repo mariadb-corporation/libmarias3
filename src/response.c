@@ -23,7 +23,8 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
-uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list)
+uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
+                            char **continuation)
 {
   xmlDocPtr doc;
   xmlNodePtr node;
@@ -49,6 +50,11 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list)
 
   while (node)
   {
+    if (not xmlStrcmp(node->name, (const unsigned char *)"NextContinuationToken"))
+    {
+      *continuation = (char *)xmlNodeGetContent(node);
+    }
+
     if (not xmlStrcmp(node->name, (const unsigned char *)"Contents"))
     {
       bool skip = false;
