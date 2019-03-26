@@ -1,5 +1,3 @@
-# supress CURL leaks
+# supress CURL leaks, appear to be due to conflict in ASAN
 leak:libcurl
 
-# supress libxml2 leaks
-leak:libxml2

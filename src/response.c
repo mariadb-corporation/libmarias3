@@ -71,6 +71,7 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
           if (filename[strlen((const char *)filename) - 1] == '/')
           {
             skip = true;
+            xmlFree(filename);
             break;
           }
         }
@@ -80,6 +81,7 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
           filesize = xmlNodeGetContent(child);
           ms3debug("Size: %s", filesize);
           size = strtoull((const char *)filesize, NULL, 10);
+          xmlFree(filesize);
         }
 
         if (not xmlStrcmp(child->name, (const unsigned char *)"LastModified"))
@@ -88,6 +90,7 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
           ms3debug("Date: %s", filedate);
           strptime((const char *)filedate, "%Y-%m-%dT%H:%M:%SZ", &ttmp);
           tout = mktime(&ttmp);
+          xmlFree(filedate);
         }
       }
       while ((child = child->next));
@@ -111,6 +114,7 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
         if (filename)
         {
           nextptr->key = strdup((const char *)filename);
+          xmlFree(filename);
         }
         else
         {
