@@ -41,6 +41,6 @@ int main(int argc, char *argv[])
   ASSERT_STREQ(errmsg, "No error");
   uint8_t res = ms3_get(ms3, "bad", "bad/file.txt", &data, &length);
   printf("%d\n", res);
-  ASSERT_EQ(res, 8); // Bad auth
+  ASSERT_EQ(res, MS3_ERR_AUTH); // Bad auth
   ms3_deinit(ms3);
 }

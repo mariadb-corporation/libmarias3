@@ -21,24 +21,6 @@
 
 #include "config.h"
 
-// NOTE: for every new error, add an entry to errmsgs in error.c
-enum MS3_ERROR_CODES
-{
-  MS3_ERR_NONE,
-  MS3_ERR_PARAMETER,
-  MS3_ERR_NO_DATA,
-  MS3_ERR_URI_TOO_LONG,
-  MS3_ERR_RESPONSE_PARSE,
-  MS3_ERR_REQUEST_ERROR,
-  MS3_ERR_OOM,
-  MS3_ERR_IMPOSSIBLE,
-  MS3_ERR_AUTH,
-  MS3_ERR_NOT_FOUND,
-  MS3_ERR_SERVER,
-  MS3_ERR_TOO_BIG,
-  MS3_ERR_MAX // Always the last error
-};
-
 #define baderror "No such error code"
 
 // extern and define in C file so we don't get redefinition at link time

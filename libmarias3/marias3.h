@@ -46,6 +46,23 @@ struct ms3_status_st
 
 typedef struct ms3_status_st ms3_status_st;
 
+enum MS3_ERROR_CODES
+{
+  MS3_ERR_NONE,
+  MS3_ERR_PARAMETER,
+  MS3_ERR_NO_DATA,
+  MS3_ERR_URI_TOO_LONG,
+  MS3_ERR_RESPONSE_PARSE,
+  MS3_ERR_REQUEST_ERROR,
+  MS3_ERR_OOM,
+  MS3_ERR_IMPOSSIBLE,
+  MS3_ERR_AUTH,
+  MS3_ERR_NOT_FOUND,
+  MS3_ERR_SERVER,
+  MS3_ERR_TOO_BIG,
+  MS3_ERR_MAX // Always the last error
+};
+
 MS3_API
 ms3_st *ms3_init(const char *s3key, const char *s3secret, const char *region,
                  const char *base_domain);

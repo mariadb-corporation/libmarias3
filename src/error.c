@@ -20,6 +20,8 @@
 #include "config.h"
 #include "common.h"
 
+// NOTE: for every new error, add an entry to errmsgs here
+
 const char *errmsgs[] =
 {
   "No error",
