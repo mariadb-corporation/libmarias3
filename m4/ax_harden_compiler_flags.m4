@@ -91,6 +91,7 @@ AC_DEFUN([_HARDEN_CC_COMPILER_FLAGS],
            _APPEND_COMPILE_FLAGS_ERROR([-g3])
            _APPEND_COMPILE_FLAGS_ERROR([-fno-eliminate-unused-debug-types])
            _APPEND_COMPILE_FLAGS_ERROR([-fno-omit-frame-pointer])
+           _APPEND_COMPILE_FLAGS_ERROR([-O0])
            ],[
            _APPEND_COMPILE_FLAGS_ERROR([-g])
            _APPEND_COMPILE_FLAGS_ERROR([-O2])
@@ -192,6 +193,7 @@ AC_DEFUN([_HARDEN_CXX_COMPILER_FLAGS],
            _APPEND_COMPILE_FLAGS_ERROR([-fno-inline])
            _APPEND_COMPILE_FLAGS_ERROR([-fno-eliminate-unused-debug-types])
            _APPEND_COMPILE_FLAGS_ERROR([-fno-omit-frame-pointer])
+           _APPEND_COMPILE_FLAGS_ERRPR([-O0])
            ],[
            _APPEND_COMPILE_FLAGS_ERROR([-g])
            _APPEND_COMPILE_FLAGS_ERROR([-O2])

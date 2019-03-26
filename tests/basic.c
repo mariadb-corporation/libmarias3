@@ -50,9 +50,9 @@ int main(int argc, char *argv[])
 
   res = ms3_put(ms3, s3bucket, "test/ms3.txt", (const uint8_t *)test_string,
                 strlen(test_string));
-  ASSERT_EQ(res, 0);
+  ASSERT_EQ_(res, 0, "Result: %u", res);
   res = ms3_list(ms3, s3bucket, NULL, &list);
-  ASSERT_EQ(res, 0);
+  ASSERT_EQ_(res, 0, "Result: %u", res);
   bool found = false;
   list_it = list;
 
@@ -81,14 +81,26 @@ int main(int argc, char *argv[])
 
   ms3_list_free(list);
   res = ms3_get(ms3, s3bucket, "test/ms3.txt", &data, &length);
-  ASSERT_EQ(res, 0);
+  ASSERT_EQ_(res, 0, "Result: %u", res);
   ASSERT_EQ(length, 26);
   ASSERT_STREQ((char *)data, test_string);
-  res = ms3_status(ms3, s3bucket, "test/ms3.txt", &status);
-  ASSERT_EQ(res, 0);
+  for (int i = 0; i <= 3; i++)
+  {
+    res = ms3_status(ms3, s3bucket, "test/ms3.txt", &status);
+    if (res == MS3_ERR_NOT_FOUND)
+    {
+      continue;
+    }
+    ASSERT_EQ_(res, 0, "Result: %u", res);
+    if (res == 0)
+    {
+      break;
+    }
+  }
   ASSERT_EQ(status.length, 26);
   ASSERT_NEQ(status.created, 0);
   res = ms3_delete(ms3, s3bucket, "test/ms3.txt");
-  ASSERT_EQ(res, 0);
+  ASSERT_EQ_(res, 0, "Result: %u", res);
+  free(data);
   ms3_deinit(ms3);
 }

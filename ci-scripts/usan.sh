@@ -1,7 +1,6 @@
 #!/bin/sh
 export CC=clang
-export CFLAGS="-fsanitize=address"
-export LSAN_OPTIONS=suppressions=ci-scripts/lsan.supp
+export CFLAGS="-fsanitize=undefined -fsanitize=nullability"
 autoreconf -fi
 ./configure --enable-debug=yes
 make
