@@ -25,3 +25,9 @@ t_prefix_SOURCES= tests/prefix.c
 t_prefix_LDADD= src/libmarias3.la @LIBMHASH_LIB@
 check_PROGRAMS+= t/prefix
 noinst_PROGRAMS+= t/prefix
+
+t_longlist_SOURCES= tests/longlist.c
+t_longlist_LDADD= src/libmarias3.la @LIBMHASH_LIB@
+t_longlist_LDADD+= -lpthread
+check_PROGRAMS+= t/longlist
+noinst_PROGRAMS+= t/longlist

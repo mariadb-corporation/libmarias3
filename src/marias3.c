@@ -20,6 +20,8 @@
 #include "config.h"
 #include "common.h"
 
+#include <pthread.h>
+
 ms3_st *ms3_init(const char *s3key, const char *s3secret, const char *region,
                  const char *base_domain)
 {
@@ -33,8 +35,11 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret, const char *region,
     return NULL;
   }
 
-  // Note: this means ms3_init is not thread safe
+  // Because curl_global_init() is not thread safe
+  pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+  pthread_mutex_lock(&mutex);
   curl_global_init(CURL_GLOBAL_DEFAULT);
+  pthread_mutex_unlock(&mutex);
 
   ms3_st *ms3 = malloc(sizeof(ms3_st));
 
@@ -93,7 +98,8 @@ uint8_t ms3_list(ms3_st *ms3, const char *bucket, const char *prefix,
     return MS3_ERR_PARAMETER;
   }
 
-  res = execute_request(ms3, MS3_CMD_LIST, bucket, NULL, prefix, NULL, 0, list);
+  res = execute_request(ms3, MS3_CMD_LIST, bucket, NULL, prefix, NULL, 0, NULL,
+                        list);
   return res;
 }
 
@@ -118,7 +124,8 @@ uint8_t ms3_put(ms3_st *ms3, const char *bucket, const char *key,
     return MS3_ERR_TOO_BIG;
   }
 
-  res = execute_request(ms3, MS3_CMD_PUT, bucket, key, NULL, data, length, NULL);
+  res = execute_request(ms3, MS3_CMD_PUT, bucket, key, NULL, data, length, NULL,
+                        NULL);
 
   return res;
 }
@@ -134,7 +141,7 @@ uint8_t ms3_get(ms3_st *ms3, const char *bucket, const char *key,
     return MS3_ERR_PARAMETER;
   }
 
-  res = execute_request(ms3, MS3_CMD_GET, bucket, key, NULL, NULL, 0, &buf);
+  res = execute_request(ms3, MS3_CMD_GET, bucket, key, NULL, NULL, 0, NULL, &buf);
   *data = buf.data;
   *length = buf.length;
   return res;
@@ -149,7 +156,8 @@ uint8_t ms3_delete(ms3_st *ms3, const char *bucket, const char *key)
     return MS3_ERR_PARAMETER;
   }
 
-  res = execute_request(ms3, MS3_CMD_DELETE, bucket, key, NULL, NULL, 0, NULL);
+  res = execute_request(ms3, MS3_CMD_DELETE, bucket, key, NULL, NULL, 0, NULL,
+                        NULL);
   return res;
 }
 
@@ -163,7 +171,8 @@ uint8_t ms3_status(ms3_st *ms3, const char *bucket, const char *key,
     return MS3_ERR_PARAMETER;
   }
 
-  res = execute_request(ms3, MS3_CMD_HEAD, bucket, key, NULL, NULL, 0, status);
+  res = execute_request(ms3, MS3_CMD_HEAD, bucket, key, NULL, NULL, 0, NULL,
+                        status);
   return res;
 }
 
