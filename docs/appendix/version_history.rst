@@ -4,6 +4,11 @@ Version History
 Version 1.1
 -----------
 
+Version 1.1.1
+^^^^^^^^^^^^^
+
+* Fix double-free when using :c:func:`ms3_thread_init` and an error occurs
+
 Version 1.1.0 GA (2019-03-27)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

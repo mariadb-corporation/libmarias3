@@ -554,7 +554,10 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     free(mem.data);
     free(path);
     free(query);
-    curl_easy_cleanup(curl);
+    if (not ms3->curl)
+    {
+      curl_easy_cleanup(curl);
+    }
     return res;
   }
 
@@ -583,7 +586,10 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
       free(mem.data);
       free(path);
       free(query);
-      curl_easy_cleanup(curl);
+      if (not ms3->curl)
+      {
+        curl_easy_cleanup(curl);
+      }
       return MS3_ERR_IMPOSSIBLE;
   }
 
@@ -596,7 +602,10 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     free(path);
     free(query);
     curl_slist_free_all(headers);
-    curl_easy_cleanup(curl);
+    if (not ms3->curl)
+    {
+      curl_easy_cleanup(curl);
+    }
     return res;
   }
 
@@ -613,7 +622,10 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     free(path);
     free(query);
     curl_slist_free_all(headers);
-    curl_easy_cleanup(curl);
+    if (not ms3->curl)
+    {
+      curl_easy_cleanup(curl);
+    }
     return MS3_ERR_REQUEST_ERROR;
   }
 
