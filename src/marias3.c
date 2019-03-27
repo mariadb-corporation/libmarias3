@@ -22,6 +22,45 @@
 
 #include <pthread.h>
 
+void ms3_library_init(void)
+{
+  curl_global_init(CURL_GLOBAL_DEFAULT);
+}
+
+ms3_st *ms3_thread_init(const char *s3key, const char *s3secret,
+                        const char *region,
+                        const char *base_domain)
+{
+  if ((s3key == NULL) or (s3secret == NULL))
+  {
+    return NULL;
+  }
+
+  if ((strlen(s3key) < 20) or (strlen(s3secret) < 40))
+  {
+    return NULL;
+  }
+
+  ms3_st *ms3 = malloc(sizeof(ms3_st));
+
+  memcpy(ms3->s3key, s3key, 20);
+  memcpy(ms3->s3secret, s3secret, 40);
+  ms3->region = strdup(region);
+
+  if (base_domain)
+  {
+    ms3->base_domain = strdup(base_domain);
+  }
+  else
+  {
+    ms3->base_domain = NULL;
+  }
+
+  ms3->curl = curl_easy_init();
+
+  return ms3;
+}
+
 ms3_st *ms3_init(const char *s3key, const char *s3secret, const char *region,
                  const char *base_domain)
 {
@@ -56,6 +95,8 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret, const char *region,
     ms3->base_domain = NULL;
   }
 
+  ms3->curl = NULL;
+
   return ms3;
 }
 
@@ -63,6 +104,7 @@ void ms3_deinit(ms3_st *ms3)
 {
   ms3debug("deinit: 0x%" PRIXPTR, (uintptr_t)ms3);
   free(ms3->region);
+  curl_easy_cleanup(ms3->curl);
   free(ms3);
 }
 

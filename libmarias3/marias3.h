@@ -64,6 +64,14 @@ enum MS3_ERROR_CODES
 };
 
 MS3_API
+void ms3_library_init(void);
+
+MS3_API
+ms3_st *ms3_thread_init(const char *s3key, const char *s3secret,
+                        const char *region,
+                        const char *base_domain);
+
+MS3_API
 ms3_st *ms3_init(const char *s3key, const char *s3secret, const char *region,
                  const char *base_domain);
 

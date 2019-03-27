@@ -20,6 +20,7 @@
 #include <yatl/lite.h>
 #include <libmarias3/marias3.h>
 
+#include <unistd.h>
 /* Test adds two files and checks that list prefix filters one out */
 
 int main(int argc, char *argv[])
@@ -45,39 +46,60 @@ int main(int argc, char *argv[])
 //  ms3_debug(true);
   ASSERT_NOT_NULL(ms3);
 
-  res = ms3_put(ms3, s3bucket, "test/ms3.txt", (const uint8_t *)test_string,
+  res = ms3_put(ms3, s3bucket, "test/prefix.txt", (const uint8_t *)test_string,
                 strlen(test_string));
   ASSERT_EQ(res, 0);
-  res = ms3_put(ms3, s3bucket, "other/ms3.txt", (const uint8_t *)test_string,
+  res = ms3_put(ms3, s3bucket, "other/prefix.txt", (const uint8_t *)test_string,
                 strlen(test_string));
   ASSERT_EQ(res, 0);
-  res = ms3_list(ms3, s3bucket, "test", &list);
-  ASSERT_EQ(res, 0);
+
   bool found_good = false;
   bool found_bad = false;
-  list_it = list;
 
-  while (list_it)
+  for (int i = 0; i <= 3; i++)
   {
-    if (!strncmp(list_it->key, "test/ms3.txt", 12))
+    res = ms3_list(ms3, s3bucket, "test", &list);
+    ASSERT_EQ(res, 0);
+    list_it = list;
+    uint8_t file_count = 0;
+
+    while (list_it)
     {
-      found_good = true;
+      if (!strncmp(list_it->key, "test/prefix.txt", 12))
+      {
+        found_good = true;
+      }
+
+      if (!strncmp(list_it->key, "other/prefix.txt", 12))
+      {
+        found_bad = true;
+      }
+
+      list_it = list_it->next;
+      file_count++;
     }
 
-    if (!strncmp(list_it->key, "other/ms3.txt", 12))
+    if ((file_count == 0) || !found_good)
     {
-      found_bad = true;
+      sleep(1);
+      printf("Bad file count, retrying");
+      found_good = false;
+      found_bad = false;
+      ms3_list_free(list);
+      continue;
     }
-
-    list_it = list_it->next;
+    else
+    {
+      break;
+    }
   }
 
   ASSERT_EQ_(found_good, 1, "Created file not found");
   ASSERT_EQ_(found_bad, 0, "Filter found file it shouldn't");
   ms3_list_free(list);
-  res = ms3_delete(ms3, s3bucket, "test/ms3.txt");
+  res = ms3_delete(ms3, s3bucket, "test/prefix.txt");
   ASSERT_EQ(res, 0);
-  res = ms3_delete(ms3, s3bucket, "other/ms3.txt");
+  res = ms3_delete(ms3, s3bucket, "other/prefix.txt");
   ASSERT_EQ(res, 0);
   ms3_deinit(ms3);
 }

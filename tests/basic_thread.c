@@ -20,8 +20,7 @@
 #include <yatl/lite.h>
 #include <libmarias3/marias3.h>
 
-#include <unistd.h>
-/* Tests basic put, list, get, status, delete */
+/* Tests basic put, list, get, status, delete using the thread calls */
 
 int main(int argc, char *argv[])
 {
@@ -44,44 +43,30 @@ int main(int argc, char *argv[])
   SKIP_IF_(!s3region, "Environemnt variable S3REGION missing");
   SKIP_IF_(!s3bucket, "Environemnt variable S3BUCKET missing");
 
-  ms3_st *ms3 = ms3_init(s3key, s3secret, s3region, s3host);
+  ms3_library_init();
+  ms3_st *ms3 = ms3_thread_init(s3key, s3secret, s3region, s3host);
 
 //  ms3_debug(true);
   ASSERT_NOT_NULL(ms3);
 
-  res = ms3_put(ms3, s3bucket, "test/basic.txt", (const uint8_t *)test_string,
+  res = ms3_put(ms3, s3bucket, "test/basic_thread.txt",
+                (const uint8_t *)test_string,
                 strlen(test_string));
   ASSERT_EQ_(res, 0, "Result: %u", res);
+  res = ms3_list(ms3, s3bucket, NULL, &list);
+  ASSERT_EQ_(res, 0, "Result: %u", res);
   bool found = false;
+  list_it = list;
 
-  for (int i = 0; i <= 1; i++)
+  while (list_it)
   {
-    res = ms3_list(ms3, s3bucket, NULL, &list);
-    ASSERT_EQ_(res, 0, "Result: %u", res);
-    list_it = list;
-
-    while (list_it)
+    if (!strncmp(list_it->key, "test/basic_thread.txt", 12))
     {
-      if (!strncmp(list_it->key, "test/basic.txt", 12))
-      {
-        found = true;
-        break;
-      }
-
-      list_it = list_it->next;
-    }
-
-    if (!found)
-    {
-      sleep(1);
-      printf("List can't see file, retrying\n");
-      ms3_list_free(list);
-      list = NULL;
-    }
-    else
-    {
+      found = true;
       break;
     }
+
+    list_it = list_it->next;
   }
 
   ASSERT_EQ_(found, 1, "Created file not found");
@@ -97,37 +82,17 @@ int main(int argc, char *argv[])
   }
 
   ms3_list_free(list);
-
-  for (int i = 0; i <= 3; i++)
-  {
-    res = ms3_get(ms3, s3bucket, "test/basic.txt", &data, &length);
-
-    if (res == MS3_ERR_NOT_FOUND)
-    {
-      sleep(1);
-      printf("Not found in get, looping\n");
-      continue;
-    }
-
-    ASSERT_EQ_(res, 0, "Result: %u", res);
-
-    if (res == 0)
-    {
-      break;
-    }
-  }
-
+  res = ms3_get(ms3, s3bucket, "test/basic_thread.txt", &data, &length);
+  ASSERT_EQ_(res, 0, "Result: %u", res);
   ASSERT_EQ(length, 26);
   ASSERT_STREQ((char *)data, test_string);
 
   for (int i = 0; i <= 3; i++)
   {
-    res = ms3_status(ms3, s3bucket, "test/basic.txt", &status);
+    res = ms3_status(ms3, s3bucket, "test/basic_thread.txt", &status);
 
     if (res == MS3_ERR_NOT_FOUND)
     {
-      sleep(1);
-      printf("Not found in status, looping\n");
       continue;
     }
 
@@ -141,7 +106,7 @@ int main(int argc, char *argv[])
 
   ASSERT_EQ(status.length, 26);
   ASSERT_NEQ(status.created, 0);
-  res = ms3_delete(ms3, s3bucket, "test/basic.txt");
+  res = ms3_delete(ms3, s3bucket, "test/basic_thread.txt");
   ASSERT_EQ_(res, 0, "Result: %u", res);
   free(data);
   ms3_deinit(ms3);
