@@ -32,8 +32,11 @@ struct thread_info
   pthread_t thread_id;
   int thread_num;
   int start_count;
-  ms3_st *ms3;
   char *s3bucket;
+  char *s3key;
+  char *s3secret;
+  char *s3region;
+  char *s3host;
 };
 
 const char *test_string = "Another one bites the dust";
@@ -42,15 +45,19 @@ static void *put_thread(void *arg)
 {
   uint8_t res;
   struct thread_info *tinfo = arg;
+  ms3_st *ms3 = ms3_thread_init(tinfo->s3key, tinfo->s3secret, tinfo->s3region,
+                                tinfo->s3host);
 
   for (int i = tinfo->start_count; i < tinfo->start_count + 150; i++)
   {
     char fname[64];
     snprintf(fname, 64, "test/list-%d.dat", i);
-    res = ms3_put(tinfo->ms3, tinfo->s3bucket, fname, (const uint8_t *)test_string,
+    res = ms3_put(ms3, tinfo->s3bucket, fname, (const uint8_t *)test_string,
                   strlen(test_string));
     ASSERT_EQ(res, 0);
   }
+
+  ms3_deinit(ms3);
 
   return NULL;
 }
@@ -59,15 +66,18 @@ static void *delete_thread(void *arg)
 {
   uint8_t res;
   struct thread_info *tinfo = arg;
+  ms3_st *ms3 = ms3_thread_init(tinfo->s3key, tinfo->s3secret, tinfo->s3region,
+                                tinfo->s3host);
 
   for (int i = tinfo->start_count; i < tinfo->start_count + 150; i++)
   {
     char fname[64];
     snprintf(fname, 64, "test/list-%d.dat", i);
-    res = ms3_delete(tinfo->ms3, tinfo->s3bucket, fname);
+    res = ms3_delete(ms3, tinfo->s3bucket, fname);
     ASSERT_EQ(res, 0);
   }
 
+  ms3_deinit(ms3);
   return NULL;
 }
 
@@ -90,10 +100,9 @@ int main(int argc, char *argv[])
   SKIP_IF_(!s3region, "Environemnt variable S3REGION missing");
   SKIP_IF_(!s3bucket, "Environemnt variable S3BUCKET missing");
 
-  ms3_st *ms3 = ms3_init(s3key, s3secret, s3region, s3host);
+  ms3_library_init();
 
 //  ms3_debug(true);
-  ASSERT_NOT_NULL(ms3);
 
   tinfo = calloc(10, sizeof(struct thread_info));
 
@@ -109,7 +118,10 @@ int main(int argc, char *argv[])
     tinfo[tnum].thread_num = tnum + 1;
     tinfo[tnum].start_count = start_count;
     start_count += 150;
-    tinfo[tnum].ms3 = ms3;
+    tinfo[tnum].s3key = s3key;
+    tinfo[tnum].s3secret = s3secret;
+    tinfo[tnum].s3region = s3region;
+    tinfo[tnum].s3host = s3host;
     tinfo[tnum].s3bucket = s3bucket;
     pthread_create(&tinfo[tnum].thread_id, &attr,
                    &put_thread, &tinfo[tnum]);
@@ -123,6 +135,7 @@ int main(int argc, char *argv[])
   free(tinfo);
 
   uint8_t res;
+  ms3_st *ms3 = ms3_thread_init(s3key, s3secret, s3region, s3host);
   ms3_list_st *list = NULL, *list_it = NULL;
   res = ms3_list(ms3, s3bucket, "test/", &list);
   ASSERT_EQ(res, 0);
@@ -138,19 +151,23 @@ int main(int argc, char *argv[])
   printf("Found %d items\n", res_count);
   ASSERT_EQ(res_count, 1500);
   ms3_list_free(list);
+  ms3_deinit(ms3);
 
   tinfo = calloc(10, sizeof(struct thread_info));
   start_count = 1000;
 
   // Destroy 1500 files using 10 threads
-  printf("Deleteing 1500 items");
+  printf("Deleting 1500 items");
 
   for (int tnum = 0; tnum < 10; tnum++)
   {
     tinfo[tnum].thread_num = tnum + 1;
     tinfo[tnum].start_count = start_count;
     start_count += 150;
-    tinfo[tnum].ms3 = ms3;
+    tinfo[tnum].s3key = s3key;
+    tinfo[tnum].s3secret = s3secret;
+    tinfo[tnum].s3region = s3region;
+    tinfo[tnum].s3host = s3host;
     tinfo[tnum].s3bucket = s3bucket;
     pthread_create(&tinfo[tnum].thread_id, &attr,
                    &delete_thread, &tinfo[tnum]);
@@ -162,5 +179,4 @@ int main(int argc, char *argv[])
   }
 
   free(tinfo);
-  ms3_deinit(ms3);
 }

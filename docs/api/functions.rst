@@ -1,12 +1,54 @@
 Functions
 =========
 
+ms3_library_init()
+------------------
+
+.. c:function:: void ms3_library_init(void)
+
+   Initializes the library for use. To be used in applications that are
+   intending to use :c:func:`ms3_thread_init`. Should be called before
+   any threads are spawned.
+
+ms3_thread_init()
+-----------------
+
+.. c:function:: ms3_st *ms3_thread_init(const char *s3key, const char *s3secret, const char *region, const char *base_domain)
+
+   Initializes a :c:type:`ms3_st` object. This object should only be used in
+   the thread that created it because it reuses connections. But it is safe to
+   have :c:type:`ms3_st` objects running at the same time in other threads.
+
+   This is much higher performance than :c:func:`ms3_init` and should be used
+   instead where possible.
+
+   .. note::
+       Do not use with :c:func:`ms3_init` in an application. One or the other
+       should be used. You *MUST* call :c:func:`ms3_library_init` before
+       spawning threads when using this access method.
+
+   :param s3key: The AWS access key
+   :param s3secret: The AWS secret key
+   :param region: The AWS region to use (such as ``us-east-1``)
+   :param base_domain: A domain name to use if AWS S3 is not the desired server (set to ``NULL`` for S3)
+   :returns: A newly allocated marias3 object
+
 ms3_init()
 ----------
 
 .. c:function:: ms3_st *ms3_init(const char *s3key, const char *s3secret, const char *region, const char *base_domain)
 
-   Initializes a :c:type:`ms3_st` object.
+   Initializes a :c:type:`ms3_st` object. This object can be used in many
+   threads simultaneously but will make a new connection on every API call so
+   does not perform well.
+
+   .. note::
+       Do not use with :c:func:`ms3_thread_init`. One or the other should be used.
+       You do not need to call :c:func:`ms3_library_init` when using this
+       access method, but doing so is harmless.
+
+   .. deprecated:: 1.1.0
+       Use :c:func:`ms3_thread_init` instead.
 
    :param s3key: The AWS access key
    :param s3secret: The AWS secret key

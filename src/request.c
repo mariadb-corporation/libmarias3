@@ -516,7 +516,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
                         char *continuation,
                         void *ret_ptr)
 {
-  CURL *curl = curl_easy_init();
+  CURL *curl = NULL;
   struct curl_slist *headers = NULL;
   uint8_t res = 0;
   struct memory_buffer_st mem;
@@ -529,6 +529,16 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   post_data.data = (uint8_t *) data;
   post_data.length = data_size;
   post_data.offset = 0;
+
+  if (ms3->curl)
+  {
+    curl = ms3->curl;
+    curl_easy_reset(curl);
+  }
+  else
+  {
+    curl = curl_easy_init();
+  }
 
   path = generate_path(curl, object);
 
@@ -695,6 +705,11 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   free(path);
   free(query);
   curl_slist_free_all(headers);
-  curl_easy_cleanup(curl);
+
+  if (not ms3->curl)
+  {
+    curl_easy_cleanup(curl);
+  }
+
   return res;
 }

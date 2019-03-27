@@ -21,6 +21,11 @@ t_basic_LDADD= src/libmarias3.la @LIBMHASH_LIB@
 check_PROGRAMS+= t/basic
 noinst_PROGRAMS+= t/basic
 
+t_basic_thread_SOURCES= tests/basic_thread.c
+t_basic_thread_LDADD= src/libmarias3.la @LIBMHASH_LIB@
+check_PROGRAMS+= t/basic_thread
+noinst_PROGRAMS+= t/basic_thread
+
 t_prefix_SOURCES= tests/prefix.c
 t_prefix_LDADD= src/libmarias3.la @LIBMHASH_LIB@
 check_PROGRAMS+= t/prefix

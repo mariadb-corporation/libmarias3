@@ -27,6 +27,7 @@ struct ms3_st
   char s3secret[40];
   char *region;
   char *base_domain;
+  CURL *curl;
 };
 
 typedef struct ms3_st ms3_st;
