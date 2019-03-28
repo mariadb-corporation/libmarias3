@@ -21,11 +21,6 @@ t_basic_LDADD= src/libmarias3.la
 check_PROGRAMS+= t/basic
 noinst_PROGRAMS+= t/basic
 
-t_basic_thread_SOURCES= tests/basic_thread.c
-t_basic_thread_LDADD= src/libmarias3.la
-check_PROGRAMS+= t/basic_thread
-noinst_PROGRAMS+= t/basic_thread
-
 t_large_file_SOURCES= tests/large_file.c
 t_large_file_LDADD= src/libmarias3.la
 check_PROGRAMS+= t/large_file

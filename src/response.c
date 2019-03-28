@@ -23,6 +23,36 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
+char *parse_error_message(const char *data, size_t length)
+{
+  xmlDocPtr doc;
+  xmlNodePtr node;
+  xmlChar *message = NULL;
+
+  doc = xmlReadMemory(data, (int)length, "noname.xml", NULL, 0);
+  if (not doc)
+  {
+    return NULL;
+  }
+
+  node = xmlDocGetRootElement(doc);
+  // First node is Error
+  node = node->xmlChildrenNode;
+
+  while (node)
+  {
+    if (not xmlStrcmp(node->name, (const unsigned char *)"Message"))
+    {
+      message = xmlNodeGetContent(node);
+      xmlFreeDoc(doc);
+      return (char*)message;
+    }
+    node = node->next;
+  }
+  xmlFreeDoc(doc);
+  return NULL;
+}
+
 uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
                             char **continuation)
 {

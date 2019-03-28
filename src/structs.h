@@ -29,6 +29,7 @@ struct ms3_st
   char *base_domain;
   size_t buffer_chunk_size;
   CURL *curl;
+  char *last_error;
 };
 
 typedef struct ms3_st ms3_st;

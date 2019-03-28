@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
   SKIP_IF_(!s3region, "Environemnt variable S3REGION missing");
   SKIP_IF_(!s3bucket, "Environemnt variable S3BUCKET missing");
 
-  ms3_st *ms3 = ms3_init(s3key, s3secret, s3region, s3host);
+  ms3_st *ms3 = ms3_thread_init(s3key, s3secret, s3region, s3host);
 
 //  ms3_debug(true);
   ASSERT_NOT_NULL(ms3);

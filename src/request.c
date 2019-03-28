@@ -22,6 +22,25 @@
 
 const char *default_domain = "s3.amazonaws.com";
 
+static void set_error(ms3_st *ms3, const char *error)
+{
+  free(ms3->last_error);
+  if (not error)
+  {
+    return;
+  }
+  ms3->last_error = strdup(error);
+}
+
+static void set_error_nocopy(ms3_st *ms3, char *error)
+{
+  free(ms3->last_error);
+  if (not error)
+  {
+    return;
+  }
+  ms3->last_error = error;
+}
 
 static uint8_t build_request_uri(CURL *curl, const char *base_domain,
                                  const char *bucket, const char *object, const char *query)
@@ -538,15 +557,8 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   post_data.length = data_size;
   post_data.offset = 0;
 
-  if (ms3->curl)
-  {
-    curl = ms3->curl;
-    curl_easy_reset(curl);
-  }
-  else
-  {
-    curl = curl_easy_init();
-  }
+  curl = ms3->curl;
+  curl_easy_reset(curl);
 
   path = generate_path(curl, object);
 
@@ -562,11 +574,6 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     free(mem.data);
     free(path);
     free(query);
-
-    if (not ms3->curl)
-    {
-      curl_easy_cleanup(curl);
-    }
 
     return res;
   }
@@ -597,11 +604,6 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
       free(path);
       free(query);
 
-      if (not ms3->curl)
-      {
-        curl_easy_cleanup(curl);
-      }
-
       return MS3_ERR_IMPOSSIBLE;
   }
 
@@ -615,11 +617,6 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     free(query);
     curl_slist_free_all(headers);
 
-    if (not ms3->curl)
-    {
-      curl_easy_cleanup(curl);
-    }
-
     return res;
   }
 
@@ -632,15 +629,11 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   if (curl_res != CURLE_OK)
   {
     ms3debug("Curl error: %d", curl_res);
+    set_error(ms3, curl_easy_strerror(curl_res));
     free(mem.data);
     free(path);
     free(query);
     curl_slist_free_all(headers);
-
-    if (not ms3->curl)
-    {
-      curl_easy_cleanup(curl);
-    }
 
     return MS3_ERR_REQUEST_ERROR;
   }
@@ -651,14 +644,20 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
   if (response_code == 404)
   {
+    char *message = parse_error_message((char*)mem.data, mem.length);
+    set_error_nocopy(ms3, message);
     res = MS3_ERR_NOT_FOUND;
   }
   else if (response_code == 403)
   {
+    char *message = parse_error_message((char*)mem.data, mem.length);
+    set_error_nocopy(ms3, message);
     res = MS3_ERR_AUTH;
   }
   else if (response_code >= 400)
   {
+    char *message = parse_error_message((char*)mem.data, mem.length);
+    set_error_nocopy(ms3, message);
     res = MS3_ERR_SERVER;
   }
 
@@ -733,11 +732,6 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   free(path);
   free(query);
   curl_slist_free_all(headers);
-
-  if (not ms3->curl)
-  {
-    curl_easy_cleanup(curl);
-  }
 
   return res;
 }
