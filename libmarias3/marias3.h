@@ -100,6 +100,9 @@ uint8_t ms3_get(ms3_st *ms3, const char *bucket, const char *key,
                 uint8_t **data, size_t *length);
 
 MS3_API
+void ms3_free(uint8_t *data);
+
+MS3_API
 uint8_t ms3_delete(ms3_st *ms3, const char *bucket, const char *key);
 
 MS3_API

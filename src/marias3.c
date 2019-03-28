@@ -227,3 +227,8 @@ void ms3_list_free(ms3_list_st *list)
     free(tmp);
   }
 }
+
+void ms3_free(uint8_t *data)
+{
+  free(data);
+}

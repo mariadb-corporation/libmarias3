@@ -108,6 +108,6 @@ int main(int argc, char *argv[])
   ASSERT_NEQ(status.created, 0);
   res = ms3_delete(ms3, s3bucket, "test/basic_thread.txt");
   ASSERT_EQ_(res, 0, "Result: %u", res);
-  free(data);
+  ms3_free(data);
   ms3_deinit(ms3);
 }

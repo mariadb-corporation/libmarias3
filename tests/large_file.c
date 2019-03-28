@@ -58,6 +58,6 @@ int main(int argc, char *argv[])
   res = ms3_delete(ms3, s3bucket, "test/large_file.dat");
   ASSERT_EQ_(res, 0, "Result: %u", res);
   free(test_string);
-  free(data);
+  ms3_free(data);
   ms3_deinit(ms3);
 }

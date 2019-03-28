@@ -217,8 +217,17 @@ Example
    }
    printf("File contents: %s\n", data);
    printf("File length: %ld\n", length);
-   free(data);
+   ms3_free(data);
    ms3_deinit(ms3);
+
+ms3_free()
+----------
+
+.. c:function:: void ms3_free(uint8_t *data)
+
+   Used to free the data allocated by :c:func:`ms3_get`.
+
+   :param data: The data to free
 
 ms3_delete()
 ------------
