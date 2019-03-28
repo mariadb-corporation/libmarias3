@@ -52,12 +52,14 @@ int main(int argc, char *argv[])
                 (const uint8_t *)test_string,
                 64 * 1024 * 1024);
   ASSERT_EQ_(res, 0, "Result: %u", res);
+  res = ms3_buffer_chunk_size(ms3, 4 * 1024 * 1024);
+  ASSERT_EQ_(res, 0, "Result: %u", res);
   res = ms3_get(ms3, s3bucket, "test/large_file.dat", &data, &length);
   ASSERT_EQ_(res, 0, "Result: %u", res);
   ASSERT_EQ(length, 64 * 1024 * 1024);
   res = ms3_delete(ms3, s3bucket, "test/large_file.dat");
   ASSERT_EQ_(res, 0, "Result: %u", res);
   free(test_string);
-  free(data);
+  ms3_free(data);
   ms3_deinit(ms3);
 }

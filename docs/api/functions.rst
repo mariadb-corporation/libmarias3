@@ -217,8 +217,31 @@ Example
    }
    printf("File contents: %s\n", data);
    printf("File length: %ld\n", length);
-   free(data);
+   ms3_free(data);
    ms3_deinit(ms3);
+
+ms3_free()
+----------
+
+.. c:function:: void ms3_free(uint8_t *data)
+
+   Used to free the data allocated by :c:func:`ms3_get`.
+
+   :param data: The data to free
+
+ms3_buffer_chunk_size()
+-----------------------
+
+.. c:function:: uint8_t ms3_buffer_chunk_size(size_t new_size)
+
+   Set the chunk size for the receive buffer. Default is 1MB.
+   If you are receiving a large file a realloc will have to happen every time the buffer is full. For performance reasons you may want to increase the size of this buffer to reduce the reallocs and associated memory copies.
+
+   .. note::
+       Attempts to set this lower than 1MB will be ignored and will result in an error
+
+   :param new_size: The new buffer chunk size to set
+   :returns: ``0`` on success, a positive integer on failure
 
 ms3_delete()
 ------------

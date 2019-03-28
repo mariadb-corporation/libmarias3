@@ -76,6 +76,9 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret, const char *region,
                  const char *base_domain);
 
 MS3_API
+uint8_t ms3_buffer_chunk_size(ms3_st *ms3, size_t new_size);
+
+MS3_API
 void ms3_deinit(ms3_st *ms3);
 
 MS3_API
@@ -98,6 +101,9 @@ uint8_t ms3_put(ms3_st *ms3, const char *bucket, const char *key,
 MS3_API
 uint8_t ms3_get(ms3_st *ms3, const char *bucket, const char *key,
                 uint8_t **data, size_t *length);
+
+MS3_API
+void ms3_free(uint8_t *data);
 
 MS3_API
 uint8_t ms3_delete(ms3_st *ms3, const char *bucket, const char *key);

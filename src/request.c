@@ -498,14 +498,14 @@ static size_t body_callback(void *buffer, size_t size,
 
   if (realsize + mem->length > mem->alloced)
   {
-    uint8_t *ptr = realloc(mem->data, mem->alloced + READ_BUFFER_GROW_SIZE);
+    uint8_t *ptr = realloc(mem->data, mem->alloced + mem->buffer_chunk_size);
 
     if (not ptr)
     {
       ms3debug("Curl response OOM");
       return 0;
     }
-    mem->alloced += READ_BUFFER_GROW_SIZE;
+    mem->alloced += mem->buffer_chunk_size;
     mem->data = ptr;
   }
 
@@ -529,6 +529,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   mem.data = malloc(1);
   mem.length = 0;
   mem.alloced = 1;
+  mem.buffer_chunk_size = ms3->buffer_chunk_size;
   uri_method_t method;
   char *path = NULL;
   char *query = NULL;

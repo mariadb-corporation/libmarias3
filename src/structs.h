@@ -27,6 +27,7 @@ struct ms3_st
   char s3secret[40];
   char *region;
   char *base_domain;
+  size_t buffer_chunk_size;
   CURL *curl;
 };
 
@@ -37,6 +38,7 @@ struct memory_buffer_st
   uint8_t *data;
   size_t length;
   size_t alloced;
+  size_t buffer_chunk_size;
 };
 
 typedef struct memory_buffer_st memory_buffer_st;
