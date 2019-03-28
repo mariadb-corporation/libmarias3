@@ -131,7 +131,6 @@ const char *ms3_error(uint8_t errcode)
 uint8_t ms3_list(ms3_st *ms3, const char *bucket, const char *prefix,
                  ms3_list_st **list)
 {
-  // TODO: make pagination work (IsTruncated)
   (void) prefix;
   uint8_t res = 0;
 

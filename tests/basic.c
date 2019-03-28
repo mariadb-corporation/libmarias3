@@ -52,6 +52,12 @@ int main(int argc, char *argv[])
   res = ms3_put(ms3, s3bucket, "test/basic.txt", (const uint8_t *)test_string,
                 strlen(test_string));
   ASSERT_EQ_(res, 0, "Result: %u", res);
+
+  // A prefix that will give no results;
+  res = ms3_list(ms3, s3bucket, "asdfghjkl", &list);
+  ASSERT_EQ_(res, 0, "Result: %u", res);
+  ASSERT_NULL_(list, "List not empty");
+
   bool found = false;
 
   for (int i = 0; i <= 1; i++)
