@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
   ms3_library_init();
   ms3_st *ms3 = ms3_thread_init(s3key, s3secret, s3region, s3host);
 
-  ms3_debug(true);
+//  ms3_debug(true);
   ASSERT_NOT_NULL(ms3);
 
   res = ms3_put(ms3, s3bucket, "test/large_file.dat",
