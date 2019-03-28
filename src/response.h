@@ -22,5 +22,7 @@
 #include "config.h"
 #include <stdint.h>
 
+char *parse_error_message(const char *data, size_t length);
+
 uint8_t parse_list_response(const char *data, size_t length,
                             ms3_list_st **list, char **continuation);

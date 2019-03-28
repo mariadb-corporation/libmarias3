@@ -59,46 +59,7 @@ ms3_st *ms3_thread_init(const char *s3key, const char *s3secret,
   ms3->buffer_chunk_size = READ_BUFFER_GROW_SIZE;
 
   ms3->curl = curl_easy_init();
-
-  return ms3;
-}
-
-ms3_st *ms3_init(const char *s3key, const char *s3secret, const char *region,
-                 const char *base_domain)
-{
-  if ((s3key == NULL) or (s3secret == NULL))
-  {
-    return NULL;
-  }
-
-  if ((strlen(s3key) < 20) or (strlen(s3secret) < 40))
-  {
-    return NULL;
-  }
-
-  // Because curl_global_init() is not thread safe
-  pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-  pthread_mutex_lock(&mutex);
-  curl_global_init(CURL_GLOBAL_DEFAULT);
-  pthread_mutex_unlock(&mutex);
-
-  ms3_st *ms3 = malloc(sizeof(ms3_st));
-
-  memcpy(ms3->s3key, s3key, 20);
-  memcpy(ms3->s3secret, s3secret, 40);
-  ms3->region = strdup(region);
-
-  if (base_domain and strlen(base_domain))
-  {
-    ms3->base_domain = strdup(base_domain);
-  }
-  else
-  {
-    ms3->base_domain = NULL;
-  }
-
-  ms3->buffer_chunk_size = READ_BUFFER_GROW_SIZE;
-  ms3->curl = NULL;
+  ms3->last_error = NULL;
 
   return ms3;
 }
@@ -112,7 +73,17 @@ void ms3_deinit(ms3_st *ms3)
   ms3debug("deinit: 0x%" PRIXPTR, (uintptr_t)ms3);
   free(ms3->region);
   curl_easy_cleanup(ms3->curl);
+  free(ms3->last_error);
   free(ms3);
+}
+
+const char *ms3_server_error(ms3_st *ms3)
+{
+  if (not ms3)
+  {
+    return NULL;
+  }
+  return ms3->last_error;
 }
 
 void ms3_debug(bool state)

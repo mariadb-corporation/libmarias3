@@ -6,9 +6,8 @@ ms3_library_init()
 
 .. c:function:: void ms3_library_init(void)
 
-   Initializes the library for use. To be used in applications that are
-   intending to use :c:func:`ms3_thread_init`. Should be called before
-   any threads are spawned.
+   Initializes the library for use.
+   Should be called before any threads are spawned.
 
 ms3_thread_init()
 -----------------
@@ -19,36 +18,9 @@ ms3_thread_init()
    the thread that created it because it reuses connections. But it is safe to
    have :c:type:`ms3_st` objects running at the same time in other threads.
 
-   This is much higher performance than :c:func:`ms3_init` and should be used
-   instead where possible.
-
    .. note::
-       Do not use with :c:func:`ms3_init` in an application. One or the other
-       should be used. You *MUST* call :c:func:`ms3_library_init` before
+       You *MUST* call :c:func:`ms3_library_init` before
        spawning threads when using this access method.
-
-   :param s3key: The AWS access key
-   :param s3secret: The AWS secret key
-   :param region: The AWS region to use (such as ``us-east-1``)
-   :param base_domain: A domain name to use if AWS S3 is not the desired server (set to ``NULL`` for S3)
-   :returns: A newly allocated marias3 object
-
-ms3_init()
-----------
-
-.. c:function:: ms3_st *ms3_init(const char *s3key, const char *s3secret, const char *region, const char *base_domain)
-
-   Initializes a :c:type:`ms3_st` object. This object can be used in many
-   threads simultaneously but will make a new connection on every API call so
-   does not perform well.
-
-   .. note::
-       Do not use with :c:func:`ms3_thread_init`. One or the other should be used.
-       You do not need to call :c:func:`ms3_library_init` when using this
-       access method, but doing so is harmless.
-
-   .. deprecated:: 1.1.0
-       Use :c:func:`ms3_thread_init` instead.
 
    :param s3key: The AWS access key
    :param s3secret: The AWS secret key
@@ -64,6 +36,16 @@ ms3_deinit()
    Cleans up and frees a :c:type:`ms3_st` object.
 
    :param ms3: The marias3 object
+
+ms3_server_error()
+------------------
+
+.. c:function:: const char *ms3_server_error(ms3_st *ms3)
+
+   Returns the last error message from the S3 server or underlying Curl library.
+
+   :param ms3: The marias3 object
+   :returns: The error message string or ``NULL`` if there is no message.
 
 ms3_error()
 -----------
@@ -114,7 +96,8 @@ Example
    ms3_list_st *list= NULL, *list_it= NULL;
    uint8_t res;
 
-   ms3_st *ms3= ms3_init(s3key, s3secret, s3region, NULL);
+   ms3_library_init();
+   ms3_st *ms3= ms3_thread_init(s3key, s3secret, s3region, NULL);
 
    res= ms3_list(ms3, s3bucket, NULL, &list);
    if (res)
@@ -166,7 +149,8 @@ Example
    uint8_t res;
    const char *test_string= "Another one bites the dust";
 
-   ms3_st *ms3= ms3_init(s3key, s3secret, s3region, NULL);
+   ms3_library_init();
+   ms3_st *ms3= ms3_thread_init(s3key, s3secret, s3region, NULL);
 
    res= ms3_put(ms3, s3bucket, "test/ms3.txt", (const uint8_t*)test_string, strlen(test_string));
    if (res)
@@ -207,7 +191,8 @@ Example
    uint8_t *data= NULL;
    size_t length;
 
-   ms3_st *ms3= ms3_init(s3key, s3secret, s3region, NULL);
+   ms3_library_init();
+   ms3_st *ms3= ms3_thread_init(s3key, s3secret, s3region, NULL);
 
    res= ms3_get(ms3, s3bucket, "test/ms3.txt", &data, &length);
    if (res)
@@ -266,7 +251,8 @@ Example
    char *s3bucket= getenv("S3BUCKET");
    uint8_t res;
 
-   ms3_st *ms3= ms3_init(s3key, s3secret, s3region, NULL);
+   ms3_library_init();
+   ms3_st *ms3= ms3_thread_init(s3key, s3secret, s3region, NULL);
 
    res = ms3_delete(ms3, s3bucket, "test/ms3.txt");
    if (res)
@@ -301,7 +287,8 @@ Example
    uint8_t res;
    ms3_status_st status;
 
-   ms3_st *ms3= ms3_init(s3key, s3secret, s3region, NULL);
+   ms3_library_init();
+   ms3_st *ms3= ms3_thread_init(s3key, s3secret, s3region, NULL);
 
    res= ms3_status(ms3, s3bucket, "test/ms3.txt", &status);
    if (res)
