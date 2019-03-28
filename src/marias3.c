@@ -105,6 +105,10 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret, const char *region,
 
 void ms3_deinit(ms3_st *ms3)
 {
+  if (not ms3)
+  {
+    return;
+  }
   ms3debug("deinit: 0x%" PRIXPTR, (uintptr_t)ms3);
   free(ms3->region);
   curl_easy_cleanup(ms3->curl);

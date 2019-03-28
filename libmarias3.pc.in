@@ -7,5 +7,5 @@ Name: @PACKAGE_NAME@
 Version: @PACKAGE_VERSION@
 Description: a C connector for Amazon's S3.
 
-Libs: -L${libdir} -lcurl @LIBS@
+Libs: -L${libdir} @LIBS@
 Cflags: -I${includedir}
