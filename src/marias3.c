@@ -56,6 +56,8 @@ ms3_st *ms3_thread_init(const char *s3key, const char *s3secret,
     ms3->base_domain = NULL;
   }
 
+  ms3->buffer_chunk_size = READ_BUFFER_GROW_SIZE;
+
   ms3->curl = curl_easy_init();
 
   return ms3;
@@ -95,6 +97,7 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret, const char *region,
     ms3->base_domain = NULL;
   }
 
+  ms3->buffer_chunk_size = READ_BUFFER_GROW_SIZE;
   ms3->curl = NULL;
 
   return ms3;
@@ -231,4 +234,19 @@ void ms3_list_free(ms3_list_st *list)
 void ms3_free(uint8_t *data)
 {
   free(data);
+}
+
+uint8_t ms3_buffer_chunk_size(ms3_st *ms3, size_t new_size)
+{
+  if (not ms3)
+  {
+    return MS3_ERR_PARAMETER;
+  }
+
+  if (new_size < READ_BUFFER_GROW_SIZE)
+  {
+    return MS3_ERR_PARAMETER;
+  }
+  ms3->buffer_chunk_size = new_size;
+  return 0;
 }
