@@ -47,7 +47,7 @@ ms3_st *ms3_thread_init(const char *s3key, const char *s3secret,
   memcpy(ms3->s3secret, s3secret, 40);
   ms3->region = strdup(region);
 
-  if (base_domain)
+  if (base_domain and strlen(base_domain))
   {
     ms3->base_domain = strdup(base_domain);
   }
@@ -86,7 +86,7 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret, const char *region,
   memcpy(ms3->s3secret, s3secret, 40);
   ms3->region = strdup(region);
 
-  if (base_domain)
+  if (base_domain and strlen(base_domain))
   {
     ms3->base_domain = strdup(base_domain);
   }

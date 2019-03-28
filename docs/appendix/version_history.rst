@@ -10,6 +10,7 @@ Version 1.1.1
 * Fix double-free when using :c:func:`ms3_thread_init` and an error occurs
 * Fix error when a PUT >= 65535 is attempted
 * Improve performance of GET for large files
+* Make :c:func:`ms3_init` and :c:func:`ms3_thread_init` treat empty string base_domain as ``NULL``
 
 Version 1.1.0 GA (2019-03-27)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
