@@ -27,6 +27,8 @@
 // URI length this
 #define MAX_URI_LENGTH 1024
 
+#define READ_BUFFER_GROW_SIZE 1024*1024
+
 enum uri_method_t
 {
   MS3_GET,

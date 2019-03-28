@@ -36,6 +36,7 @@ struct memory_buffer_st
 {
   uint8_t *data;
   size_t length;
+  size_t alloced;
 };
 
 typedef struct memory_buffer_st memory_buffer_st;

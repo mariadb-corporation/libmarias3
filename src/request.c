@@ -496,15 +496,19 @@ static size_t body_callback(void *buffer, size_t size,
 
   struct memory_buffer_st *mem = (struct memory_buffer_st *)userdata;
 
-  uint8_t *ptr = realloc(mem->data, mem->length + realsize + 1);
-
-  if (not ptr)
+  if (realsize + mem->length > mem->alloced)
   {
-    ms3debug("Curl response OOM");
-    return 0;
+    uint8_t *ptr = realloc(mem->data, mem->alloced + READ_BUFFER_GROW_SIZE);
+
+    if (not ptr)
+    {
+      ms3debug("Curl response OOM");
+      return 0;
+    }
+    mem->alloced += READ_BUFFER_GROW_SIZE;
+    mem->data = ptr;
   }
 
-  mem->data = ptr;
   memcpy(&(mem->data[mem->length]), buffer, realsize);
   mem->length += realsize;
   mem->data[mem->length] = 0;
@@ -524,6 +528,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   struct memory_buffer_st mem;
   mem.data = malloc(1);
   mem.length = 0;
+  mem.alloced = 1;
   uri_method_t method;
   char *path = NULL;
   char *query = NULL;
