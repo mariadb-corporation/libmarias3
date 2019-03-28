@@ -12,32 +12,32 @@ LIBTOOL_COMMAND= ${abs_top_builddir}/libtool --mode=execute
 GDB_COMMAND= $(LIBTOOL_COMMAND) gdb -f -x support/run.gdb
 
 t_error_SOURCES= tests/error.c
-t_error_LDADD= src/libmarias3.la @LIBMHASH_LIB@
+t_error_LDADD= src/libmarias3.la
 check_PROGRAMS+= t/error
 noinst_PROGRAMS+= t/error
 
 t_basic_SOURCES= tests/basic.c
-t_basic_LDADD= src/libmarias3.la @LIBMHASH_LIB@
+t_basic_LDADD= src/libmarias3.la
 check_PROGRAMS+= t/basic
 noinst_PROGRAMS+= t/basic
 
 t_basic_thread_SOURCES= tests/basic_thread.c
-t_basic_thread_LDADD= src/libmarias3.la @LIBMHASH_LIB@
+t_basic_thread_LDADD= src/libmarias3.la
 check_PROGRAMS+= t/basic_thread
 noinst_PROGRAMS+= t/basic_thread
 
 t_large_file_SOURCES= tests/large_file.c
-t_large_file_LDADD= src/libmarias3.la @LIBMHASH_LIB@
+t_large_file_LDADD= src/libmarias3.la
 check_PROGRAMS+= t/large_file
 noinst_PROGRAMS+= t/large_file
 
 t_prefix_SOURCES= tests/prefix.c
-t_prefix_LDADD= src/libmarias3.la @LIBMHASH_LIB@
+t_prefix_LDADD= src/libmarias3.la
 check_PROGRAMS+= t/prefix
 noinst_PROGRAMS+= t/prefix
 
 t_longlist_SOURCES= tests/longlist.c
-t_longlist_LDADD= src/libmarias3.la @LIBMHASH_LIB@
+t_longlist_LDADD= src/libmarias3.la
 t_longlist_LDADD+= -lpthread
 check_PROGRAMS+= t/longlist
 noinst_PROGRAMS+= t/longlist
