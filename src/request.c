@@ -259,14 +259,16 @@ static uint8_t generate_request_hash(uri_method_t method, const char *path,
 static size_t put_callback(void *ptr, size_t size, size_t nmemb, void *stream)
 {
   put_buffer_st *buf = (put_buffer_st *)stream;
+  size_t buffer_size = size * nmemb;
 
+  ms3debug("PUT callback %lu bytes remaining, %lu buffer", buf->length - buf->offset, buffer_size);
   // All data copied
   if (buf->length == buf->offset)
   {
     return 0;
   }
 
-  if (size + nmemb >= buf->length - buf->offset)
+  if (buffer_size >= buf->length - buf->offset)
   {
     size_t transfer = buf->length - buf->offset;
     memcpy(ptr, buf->data + buf->offset, transfer);
@@ -275,9 +277,9 @@ static size_t put_callback(void *ptr, size_t size, size_t nmemb, void *stream)
   }
   else
   {
-    memcpy(ptr, buf->data + buf->offset, size + nmemb);
-    buf->offset += size + nmemb;
-    return size + nmemb;
+    memcpy(ptr, buf->data + buf->offset, buffer_size);
+    buf->offset += buffer_size;
+    return buffer_size;
   }
 
 }
@@ -507,7 +509,7 @@ static size_t body_callback(void *buffer, size_t size,
   mem->length += realsize;
   mem->data[mem->length] = 0;
 
-  ms3debug("%.*s\n", (int)(nitems * size), (char *)buffer);
+  ms3debug("Read %lu bytes, buffer %lu bytes", realsize, mem->length);
   return nitems * size;
 }
 
@@ -554,10 +556,12 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     free(mem.data);
     free(path);
     free(query);
+
     if (not ms3->curl)
     {
       curl_easy_cleanup(curl);
     }
+
     return res;
   }
 
@@ -586,10 +590,12 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
       free(mem.data);
       free(path);
       free(query);
+
       if (not ms3->curl)
       {
         curl_easy_cleanup(curl);
       }
+
       return MS3_ERR_IMPOSSIBLE;
   }
 
@@ -602,10 +608,12 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     free(path);
     free(query);
     curl_slist_free_all(headers);
+
     if (not ms3->curl)
     {
       curl_easy_cleanup(curl);
     }
+
     return res;
   }
 
@@ -622,10 +630,12 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     free(path);
     free(query);
     curl_slist_free_all(headers);
+
     if (not ms3->curl)
     {
       curl_easy_cleanup(curl);
     }
+
     return MS3_ERR_REQUEST_ERROR;
   }
 
