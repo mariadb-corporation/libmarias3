@@ -628,7 +628,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
   if (curl_res != CURLE_OK)
   {
-    ms3debug("Curl error: %d", curl_res);
+    ms3debug("Curl error: %s", curl_easy_strerror(curl_res));
     set_error(ms3, curl_easy_strerror(curl_res));
     free(mem.data);
     free(path);
@@ -645,18 +645,30 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   if (response_code == 404)
   {
     char *message = parse_error_message((char*)mem.data, mem.length);
+    if (message)
+    {
+      ms3debug("Response message: %s", message);
+    }
     set_error_nocopy(ms3, message);
     res = MS3_ERR_NOT_FOUND;
   }
   else if (response_code == 403)
   {
     char *message = parse_error_message((char*)mem.data, mem.length);
+    if (message)
+    {
+      ms3debug("Response message: %s", message);
+    }
     set_error_nocopy(ms3, message);
     res = MS3_ERR_AUTH;
   }
   else if (response_code >= 400)
   {
     char *message = parse_error_message((char*)mem.data, mem.length);
+    if (message)
+    {
+      ms3debug("Response message: %s", message);
+    }
     set_error_nocopy(ms3, message);
     res = MS3_ERR_SERVER;
   }
