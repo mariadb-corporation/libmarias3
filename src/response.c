@@ -30,6 +30,7 @@ char *parse_error_message(const char *data, size_t length)
   xmlChar *message = NULL;
 
   doc = xmlReadMemory(data, (int)length, "noname.xml", NULL, 0);
+
   if (not doc)
   {
     return NULL;
@@ -45,15 +46,18 @@ char *parse_error_message(const char *data, size_t length)
     {
       message = xmlNodeGetContent(node);
       xmlFreeDoc(doc);
-      return (char*)message;
+      return (char *)message;
     }
+
     node = node->next;
   }
+
   xmlFreeDoc(doc);
   return NULL;
 }
 
 uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
+                            uint8_t list_version,
                             char **continuation)
 {
   xmlDocPtr doc;
@@ -65,6 +69,8 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
   size_t size = 0;
   struct tm ttmp = {0};
   time_t tout = 0;
+  bool truncated = false;
+  const char *last_key = NULL;
   ms3_list_st *nextptr = NULL, *lastptr = NULL;
 
   doc = xmlReadMemory(data, (int)length, "noname.xml", NULL, 0);
@@ -73,6 +79,15 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
   {
     return MS3_ERR_RESPONSE_PARSE;
   }
+
+  /* For version 1:
+   * If IsTruncated is set, get the last key in the list, this will be used as
+   * "marker" in the next request.
+   * For version 2:
+   * If NextContinuationToken is set, use this for the next request
+   *
+   * We use the "continuation" return value for both
+   */
 
   node = xmlDocGetRootElement(doc);
   // First node is ListBucketResponse
@@ -83,6 +98,21 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
     if (not xmlStrcmp(node->name, (const unsigned char *)"NextContinuationToken"))
     {
       *continuation = (char *)xmlNodeGetContent(node);
+    }
+
+    if (list_version == 1)
+    {
+      if (not xmlStrcmp(node->name, (const unsigned char *)"IsTruncated"))
+      {
+        xmlChar *trunc_value = xmlNodeGetContent(node);
+
+        if (not xmlStrcmp(trunc_value, (const unsigned char *)"true"))
+        {
+          truncated = true;
+        }
+
+        xmlFree(trunc_value);
+      }
     }
 
     if (not xmlStrcmp(node->name, (const unsigned char *)"Contents"))
@@ -144,6 +174,12 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
         if (filename)
         {
           nextptr->key = strdup((const char *)filename);
+
+          if (list_version == 1)
+          {
+            last_key = nextptr->key;
+          }
+
           xmlFree(filename);
         }
         else
@@ -158,6 +194,11 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
     }
 
     node = node->next;
+  }
+
+  if (list_version == 1 and truncated and last_key)
+  {
+    *continuation = strdup(last_key);
   }
 
   xmlFreeDoc(doc);

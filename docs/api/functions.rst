@@ -223,9 +223,24 @@ ms3_buffer_chunk_size()
    If you are receiving a large file a realloc will have to happen every time the buffer is full. For performance reasons you may want to increase the size of this buffer to reduce the reallocs and associated memory copies.
 
    .. note::
-       Attempts to set this lower than 1MB will be ignored and will result in an error
+      Attempts to set this lower than 1MB will be ignored and will result in an error
+
+   .. deprecated:: 2.1.0
+      Use :c:func:`ms3_set_option` with MS3_OPT_BUFFER_CHUNK_SIZE instead. Will be removed in 3.0.0.
 
    :param new_size: The new buffer chunk size to set
+   :returns: ``0`` on success, a positive integer on failure
+
+ms3_set_option()
+----------------
+
+.. c:function:: uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value)
+
+   Sets a given connection option. See :c:type:`ms3_set_option_t` for a list of options.
+
+   :param ms3: The marias3 object
+   :param option: The option to set
+   :param value: A pointer to the value for the option (if required, ``NULL`` if not)
    :returns: ``0`` on success, a positive integer on failure
 
 ms3_delete()

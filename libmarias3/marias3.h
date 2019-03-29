@@ -46,7 +46,7 @@ struct ms3_status_st
 
 typedef struct ms3_status_st ms3_status_st;
 
-enum MS3_ERROR_CODES
+enum ms3_error_code_t
 {
   MS3_ERR_NONE,
   MS3_ERR_PARAMETER,
@@ -63,6 +63,18 @@ enum MS3_ERROR_CODES
   MS3_ERR_MAX // Always the last error
 };
 
+typedef enum ms3_error_code_t ms3_error_code_t;
+
+enum ms3_set_option_t
+{
+  MS3_OPT_USE_HTTP,
+  MS3_OPT_DISABLE_SSL_VERIFY,
+  MS3_OPT_BUFFER_CHUNK_SIZE,
+  MS3_OPT_FORCE_LIST_VERSION
+};
+
+typedef enum ms3_set_option_t ms3_set_option_t;
+
 MS3_API
 void ms3_library_init(void);
 
@@ -73,6 +85,9 @@ ms3_st *ms3_thread_init(const char *s3key, const char *s3secret,
 
 MS3_API
 uint8_t ms3_buffer_chunk_size(ms3_st *ms3, size_t new_size);
+
+MS3_API
+uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value);
 
 MS3_API
 void ms3_deinit(ms3_st *ms3);

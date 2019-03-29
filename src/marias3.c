@@ -50,16 +50,21 @@ ms3_st *ms3_thread_init(const char *s3key, const char *s3secret,
   if (base_domain and strlen(base_domain))
   {
     ms3->base_domain = strdup(base_domain);
+    // Assume that S3-compatible APIs can't support v2 list
+    ms3->list_version = 1;
   }
   else
   {
     ms3->base_domain = NULL;
+    ms3->list_version = 2;
   }
 
   ms3->buffer_chunk_size = READ_BUFFER_GROW_SIZE;
 
   ms3->curl = curl_easy_init();
   ms3->last_error = NULL;
+  ms3->use_http = false;
+  ms3->disable_verification = false;
 
   return ms3;
 }
@@ -70,6 +75,7 @@ void ms3_deinit(ms3_st *ms3)
   {
     return;
   }
+
   ms3debug("deinit: 0x%" PRIXPTR, (uintptr_t)ms3);
   free(ms3->region);
   curl_easy_cleanup(ms3->curl);
@@ -83,6 +89,7 @@ const char *ms3_server_error(ms3_st *ms3)
   {
     return NULL;
   }
+
   return ms3->last_error;
 }
 
@@ -222,6 +229,97 @@ uint8_t ms3_buffer_chunk_size(ms3_st *ms3, size_t new_size)
   {
     return MS3_ERR_PARAMETER;
   }
+
   ms3->buffer_chunk_size = new_size;
+  return 0;
+}
+
+uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value)
+{
+  if (not ms3)
+  {
+    return MS3_ERR_PARAMETER;
+  }
+
+  switch (option)
+  {
+    case MS3_OPT_USE_HTTP:
+    {
+      bool param;
+
+      if (value)
+      {
+        param = *(bool *)value;
+      }
+      else
+      {
+        param = true;
+      }
+
+      ms3->use_http = param;
+      break;
+    }
+
+    case MS3_OPT_DISABLE_SSL_VERIFY:
+    {
+      bool param;
+
+      if (value)
+      {
+        param = *(bool *)value;
+      }
+      else
+      {
+        param = true;
+      }
+
+      ms3->disable_verification = param;
+      break;
+    }
+
+    case MS3_OPT_BUFFER_CHUNK_SIZE:
+    {
+      size_t new_size;
+
+      if (not value)
+      {
+        return MS3_ERR_PARAMETER;
+      }
+
+      new_size = *(size_t *)value;
+
+      if (new_size < READ_BUFFER_GROW_SIZE)
+      {
+        return MS3_ERR_PARAMETER;
+      }
+
+      ms3->buffer_chunk_size = new_size;
+      break;
+    }
+
+    case MS3_OPT_FORCE_LIST_VERSION:
+    {
+      uint8_t list_version;
+
+      if (not value)
+      {
+        return MS3_ERR_PARAMETER;
+      }
+
+      list_version = *(uint8_t *)value;
+
+      if (list_version < 1 or list_version > 2)
+      {
+        return MS3_ERR_PARAMETER;
+      }
+
+      ms3->list_version = list_version;
+      break;
+    }
+
+    default:
+      return MS3_ERR_PARAMETER;
+  }
+
   return 0;
 }

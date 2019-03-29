@@ -25,29 +25,36 @@ const char *default_domain = "s3.amazonaws.com";
 static void set_error(ms3_st *ms3, const char *error)
 {
   free(ms3->last_error);
+
   if (not error)
   {
     return;
   }
+
   ms3->last_error = strdup(error);
 }
 
 static void set_error_nocopy(ms3_st *ms3, char *error)
 {
   free(ms3->last_error);
+
   if (not error)
   {
     return;
   }
+
   ms3->last_error = error;
 }
 
 static uint8_t build_request_uri(CURL *curl, const char *base_domain,
-                                 const char *bucket, const char *object, const char *query)
+                                 const char *bucket, const char *object, const char *query, bool use_http)
 {
   char uri_buffer[MAX_URI_LENGTH];
   const char *domain;
   const uint8_t path_parts = 10; // "https://" + "." + "/"
+  const char *http_protocol = "http";
+  const char *https_protocol = "https";
+  const char *protocol;
 
   if (base_domain)
   {
@@ -58,6 +65,15 @@ static uint8_t build_request_uri(CURL *curl, const char *base_domain,
     domain = default_domain;
   }
 
+  if (use_http)
+  {
+    protocol = http_protocol;
+  }
+  else
+  {
+    protocol = https_protocol;
+  }
+
   if (query)
   {
     if (path_parts + strlen(domain) + strlen(bucket) + strlen(object) + strlen(
@@ -66,7 +82,8 @@ static uint8_t build_request_uri(CURL *curl, const char *base_domain,
       return MS3_ERR_URI_TOO_LONG;
     }
 
-    snprintf(uri_buffer, MAX_URI_LENGTH - 1, "https://%s.%s%s?%s", bucket, domain,
+    snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s.%s%s?%s", protocol, bucket,
+             domain,
              object, query);
   }
   else
@@ -77,7 +94,8 @@ static uint8_t build_request_uri(CURL *curl, const char *base_domain,
       return MS3_ERR_URI_TOO_LONG;
     }
 
-    snprintf(uri_buffer, MAX_URI_LENGTH - 1, "https://%s.%s%s", bucket, domain,
+    snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s.%s%s", protocol, bucket,
+             domain,
              object);
   }
 
@@ -137,27 +155,48 @@ static char *generate_path(CURL *curl, const char *object)
  */
 
 static char *generate_query(CURL *curl, const char *value,
-                            const char *continuation)
+                            const char *continuation, uint8_t list_version)
 {
   char *ret_buf = malloc(sizeof(char) * 1024);
+  ret_buf[0] = '\0';
   char *encoded;
 
-  if (continuation)
+  if (list_version == 2)
   {
-    encoded = curl_easy_escape(curl, continuation, (int)strlen(continuation));
-    snprintf(ret_buf, 1024, "continuation-token=%s&list-type=2", encoded);
-    free(encoded);
+    if (continuation)
+    {
+      encoded = curl_easy_escape(curl, continuation, (int)strlen(continuation));
+      snprintf(ret_buf, 1024, "continuation-token=%s&list-type=2", encoded);
+      free(encoded);
+    }
+    else
+    {
+      sprintf(ret_buf, "list-type=2");
+    }
   }
-  else
+  else if (continuation)
   {
-    sprintf(ret_buf, "list-type=2");
+    // Continuation is really marker here
+    encoded = curl_easy_escape(curl, continuation, (int)strlen(continuation));
+    snprintf(ret_buf, 1024, "marker=%s", encoded);
+    free(encoded);
   }
 
   if (value)
   {
     encoded = curl_easy_escape(curl, value, (int)strlen(value));
-    snprintf(ret_buf + strlen(ret_buf), 1024 - strlen(ret_buf), "&prefix=%s",
-             encoded);
+
+    if (strlen(ret_buf))
+    {
+      snprintf(ret_buf + strlen(ret_buf), 1024 - strlen(ret_buf), "&prefix=%s",
+               encoded);
+    }
+    else
+    {
+      snprintf(ret_buf, 1024 - strlen(ret_buf), "prefix=%s",
+               encoded);
+    }
+
     free(encoded);
   }
 
@@ -280,7 +319,9 @@ static size_t put_callback(void *ptr, size_t size, size_t nmemb, void *stream)
   put_buffer_st *buf = (put_buffer_st *)stream;
   size_t buffer_size = size * nmemb;
 
-  ms3debug("PUT callback %lu bytes remaining, %lu buffer", buf->length - buf->offset, buffer_size);
+  ms3debug("PUT callback %lu bytes remaining, %lu buffer",
+           buf->length - buf->offset, buffer_size);
+
   // All data copied
   if (buf->length == buf->offset)
   {
@@ -524,6 +565,7 @@ static size_t body_callback(void *buffer, size_t size,
       ms3debug("Curl response OOM");
       return 0;
     }
+
     mem->alloced += mem->buffer_chunk_size;
     mem->data = ptr;
   }
@@ -564,10 +606,11 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
   if (cmd == MS3_CMD_LIST)
   {
-    query = generate_query(curl, filter, continuation);
+    query = generate_query(curl, filter, continuation, ms3->list_version);
   }
 
-  res = build_request_uri(curl, ms3->base_domain, bucket, path, query);
+  res = build_request_uri(curl, ms3->base_domain, bucket, path, query,
+                          ms3->use_http);
 
   if (res)
   {
@@ -620,6 +663,12 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     return res;
   }
 
+  if (ms3->disable_verification)
+  {
+    ms3debug("Disabling SSL verification");
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+  }
+
   curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_callback);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, body_callback);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&mem);
@@ -628,7 +677,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
   if (curl_res != CURLE_OK)
   {
-    ms3debug("Curl error: %d", curl_res);
+    ms3debug("Curl error: %s", curl_easy_strerror(curl_res));
     set_error(ms3, curl_easy_strerror(curl_res));
     free(mem.data);
     free(path);
@@ -644,19 +693,37 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
   if (response_code == 404)
   {
-    char *message = parse_error_message((char*)mem.data, mem.length);
+    char *message = parse_error_message((char *)mem.data, mem.length);
+
+    if (message)
+    {
+      ms3debug("Response message: %s", message);
+    }
+
     set_error_nocopy(ms3, message);
     res = MS3_ERR_NOT_FOUND;
   }
   else if (response_code == 403)
   {
-    char *message = parse_error_message((char*)mem.data, mem.length);
+    char *message = parse_error_message((char *)mem.data, mem.length);
+
+    if (message)
+    {
+      ms3debug("Response message: %s", message);
+    }
+
     set_error_nocopy(ms3, message);
     res = MS3_ERR_AUTH;
   }
   else if (response_code >= 400)
   {
-    char *message = parse_error_message((char*)mem.data, mem.length);
+    char *message = parse_error_message((char *)mem.data, mem.length);
+
+    if (message)
+    {
+      ms3debug("Response message: %s", message);
+    }
+
     set_error_nocopy(ms3, message);
     res = MS3_ERR_SERVER;
   }
@@ -667,7 +734,8 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     {
       ms3_list_st **list = (ms3_list_st **) ret_ptr;
       char *cont = NULL;
-      parse_list_response((const char *)mem.data, mem.length, list, &cont);
+      parse_list_response((const char *)mem.data, mem.length, list, ms3->list_version,
+                          &cont);
 
       if (cont)
       {
