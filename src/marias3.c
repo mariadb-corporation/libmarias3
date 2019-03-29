@@ -60,6 +60,8 @@ ms3_st *ms3_thread_init(const char *s3key, const char *s3secret,
 
   ms3->curl = curl_easy_init();
   ms3->last_error = NULL;
+  ms3->use_http = false;
+  ms3->disable_verification = false;
 
   return ms3;
 }
@@ -223,5 +225,63 @@ uint8_t ms3_buffer_chunk_size(ms3_st *ms3, size_t new_size)
     return MS3_ERR_PARAMETER;
   }
   ms3->buffer_chunk_size = new_size;
+  return 0;
+}
+
+uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value)
+{
+  if (not ms3)
+  {
+    return MS3_ERR_PARAMETER;
+  }
+
+  switch (option)
+  {
+    case MS3_OPT_USE_HTTP:
+      {
+        bool param;
+        if (value)
+        {
+          param = *(bool*)value;
+        }
+        else
+        {
+          param = true;
+        }
+        ms3->use_http = param;
+        break;
+      }
+    case MS3_OPT_DISABLE_SSL_VERIFY:
+      {
+        bool param;
+        if (value)
+        {
+          param = *(bool*)value;
+        }
+        else
+        {
+          param = true;
+        }
+        ms3->disable_verification = param;
+        break;
+      }
+    case MS3_OPT_BUFFER_CHUNK_SIZE:
+      {
+        size_t new_size;
+        if (not value)
+        {
+          return MS3_ERR_PARAMETER;
+        }
+        new_size = *(size_t*)value;
+        if (new_size < READ_BUFFER_GROW_SIZE)
+        {
+          return MS3_ERR_PARAMETER;
+        }
+        ms3->buffer_chunk_size = new_size;
+        break;
+      }
+    default:
+      return MS3_ERR_PARAMETER;
+  }
   return 0;
 }

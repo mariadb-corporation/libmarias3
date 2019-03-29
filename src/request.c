@@ -43,11 +43,14 @@ static void set_error_nocopy(ms3_st *ms3, char *error)
 }
 
 static uint8_t build_request_uri(CURL *curl, const char *base_domain,
-                                 const char *bucket, const char *object, const char *query)
+                                 const char *bucket, const char *object, const char *query, bool use_http)
 {
   char uri_buffer[MAX_URI_LENGTH];
   const char *domain;
   const uint8_t path_parts = 10; // "https://" + "." + "/"
+  const char *http_protocol = "http";
+  const char *https_protocol = "https";
+  const char *protocol;
 
   if (base_domain)
   {
@@ -58,6 +61,14 @@ static uint8_t build_request_uri(CURL *curl, const char *base_domain,
     domain = default_domain;
   }
 
+  if (use_http)
+  {
+    protocol = http_protocol;
+  }
+  else
+  {
+    protocol = https_protocol;
+  }
   if (query)
   {
     if (path_parts + strlen(domain) + strlen(bucket) + strlen(object) + strlen(
@@ -66,7 +77,7 @@ static uint8_t build_request_uri(CURL *curl, const char *base_domain,
       return MS3_ERR_URI_TOO_LONG;
     }
 
-    snprintf(uri_buffer, MAX_URI_LENGTH - 1, "https://%s.%s%s?%s", bucket, domain,
+    snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s.%s%s?%s", protocol, bucket, domain,
              object, query);
   }
   else
@@ -77,7 +88,7 @@ static uint8_t build_request_uri(CURL *curl, const char *base_domain,
       return MS3_ERR_URI_TOO_LONG;
     }
 
-    snprintf(uri_buffer, MAX_URI_LENGTH - 1, "https://%s.%s%s", bucket, domain,
+    snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s.%s%s", protocol, bucket, domain,
              object);
   }
 
@@ -567,7 +578,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     query = generate_query(curl, filter, continuation);
   }
 
-  res = build_request_uri(curl, ms3->base_domain, bucket, path, query);
+  res = build_request_uri(curl, ms3->base_domain, bucket, path, query, ms3->use_http);
 
   if (res)
   {
@@ -618,6 +629,12 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     curl_slist_free_all(headers);
 
     return res;
+  }
+
+  if (ms3->disable_verification)
+  {
+    ms3debug("Disabling SSL verification");
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
   }
 
   curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_callback);

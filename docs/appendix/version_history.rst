@@ -1,6 +1,16 @@
 Version History
 ===============
 
+Version 2.1
+-----------
+
+Version 2.1.0 GA
+^^^^^^^^^^^^^^^^
+
+* Add :c:func:`ms3_set_option` to set various connection options
+* Deprecated :c:func:`ms3_buffer_chunk_size`, use :c:func:`ms3_set_option` instead
+* Added debugging output for server/curl error messages
+
 Version 2.0
 -----------
 

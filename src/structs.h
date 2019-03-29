@@ -30,6 +30,8 @@ struct ms3_st
   size_t buffer_chunk_size;
   CURL *curl;
   char *last_error;
+  bool use_http;
+  bool disable_verification;
 };
 
 typedef struct ms3_st ms3_st;
