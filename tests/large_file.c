@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
                 (const uint8_t *)test_string,
                 64 * 1024 * 1024);
   ASSERT_EQ_(res, 0, "Result: %u", res);
-  size_t new_buffer_size = 4*1024*1024;
+  size_t new_buffer_size = 4 * 1024 * 1024;
   res = ms3_set_option(ms3, MS3_OPT_BUFFER_CHUNK_SIZE, &new_buffer_size);
 //  res = ms3_buffer_chunk_size(ms3, 4 * 1024 * 1024);
   ASSERT_EQ_(res, 0, "Result: %u", res);

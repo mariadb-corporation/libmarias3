@@ -32,6 +32,7 @@ struct ms3_st
   char *last_error;
   bool use_http;
   bool disable_verification;
+  uint8_t list_version;
 };
 
 typedef struct ms3_st ms3_st;

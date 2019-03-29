@@ -9,7 +9,9 @@ Version 2.1.0 GA
 
 * Add :c:func:`ms3_set_option` to set various connection options
 * Deprecated :c:func:`ms3_buffer_chunk_size`, use :c:func:`ms3_set_option` instead
+* Added options to use ``http`` instead of ``https`` and to disable SSL verification
 * Added debugging output for server/curl error messages
+* Added compatibility for V1 bucket list API. Will turn on automatically for non-Amazon S3 compatible servers. Additionally an option has been created to force V1 or V2
 
 Version 2.0
 -----------

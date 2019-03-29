@@ -151,6 +151,26 @@ int main(int argc, char *argv[])
   printf("Found %d items\n", res_count);
   ASSERT_EQ(res_count, 1500);
   ms3_list_free(list);
+
+  // Reattempt with list version 1
+  uint8_t list_version = 1;
+  list = NULL;
+  ms3_set_option(ms3, MS3_OPT_FORCE_LIST_VERSION, &list_version);
+  res = ms3_list(ms3, s3bucket, "listtest/", &list);
+  ASSERT_EQ(res, 0);
+  list_it = list;
+  res_count = 0;
+
+  while (list_it)
+  {
+    res_count++;
+    list_it = list_it->next;
+  }
+
+  printf("V1 Found %d items\n", res_count);
+  ASSERT_EQ(res_count, 1500);
+  ms3_list_free(list);
+
   ms3_deinit(ms3);
 
   tinfo = calloc(10, sizeof(struct thread_info));
