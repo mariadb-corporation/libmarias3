@@ -31,12 +31,12 @@ ms3_st *ms3_thread_init(const char *s3key, const char *s3secret,
                         const char *region,
                         const char *base_domain)
 {
-  if ((s3key == NULL) or (s3secret == NULL))
+  if ((s3key == NULL) || (s3secret == NULL))
   {
     return NULL;
   }
 
-  if ((strlen(s3key) < 20) or (strlen(s3secret) < 40))
+  if ((strlen(s3key) < 20) || (strlen(s3secret) < 40))
   {
     return NULL;
   }
@@ -47,7 +47,7 @@ ms3_st *ms3_thread_init(const char *s3key, const char *s3secret,
   memcpy(ms3->s3secret, s3secret, 40);
   ms3->region = strdup(region);
 
-  if (base_domain and strlen(base_domain))
+  if (base_domain && strlen(base_domain))
   {
     ms3->base_domain = strdup(base_domain);
     // Assume that S3-compatible APIs can't support v2 list
@@ -71,7 +71,7 @@ ms3_st *ms3_thread_init(const char *s3key, const char *s3secret,
 
 void ms3_deinit(ms3_st *ms3)
 {
-  if (not ms3)
+  if (!ms3)
   {
     return;
   }
@@ -85,7 +85,7 @@ void ms3_deinit(ms3_st *ms3)
 
 const char *ms3_server_error(ms3_st *ms3)
 {
-  if (not ms3)
+  if (!ms3)
   {
     return NULL;
   }
@@ -119,7 +119,7 @@ uint8_t ms3_list(ms3_st *ms3, const char *bucket, const char *prefix,
   (void) prefix;
   uint8_t res = 0;
 
-  if (not ms3 or not bucket or not list)
+  if (!ms3 || !bucket || !list)
   {
     return MS3_ERR_PARAMETER;
   }
@@ -134,7 +134,7 @@ uint8_t ms3_put(ms3_st *ms3, const char *bucket, const char *key,
 {
   uint8_t res;
 
-  if (not ms3 or not bucket or not key or not data)
+  if (!ms3 || !bucket || !key || !data)
   {
     return MS3_ERR_PARAMETER;
   }
@@ -162,7 +162,7 @@ uint8_t ms3_get(ms3_st *ms3, const char *bucket, const char *key,
   uint8_t res = 0;
   memory_buffer_st buf;
 
-  if (not ms3 or not bucket or not key or not data or not length)
+  if (!ms3 || !bucket || !key || !data || !length)
   {
     return MS3_ERR_PARAMETER;
   }
@@ -177,7 +177,7 @@ uint8_t ms3_delete(ms3_st *ms3, const char *bucket, const char *key)
 {
   uint8_t res;
 
-  if (not ms3 or not bucket or not key)
+  if (!ms3 || !bucket || !key)
   {
     return MS3_ERR_PARAMETER;
   }
@@ -192,7 +192,7 @@ uint8_t ms3_status(ms3_st *ms3, const char *bucket, const char *key,
 {
   uint8_t res;
 
-  if (not ms3 or not bucket or not key or not status)
+  if (!ms3 || !bucket || !key || !status)
   {
     return MS3_ERR_PARAMETER;
   }
@@ -220,7 +220,7 @@ void ms3_free(uint8_t *data)
 
 uint8_t ms3_buffer_chunk_size(ms3_st *ms3, size_t new_size)
 {
-  if (not ms3)
+  if (!ms3)
   {
     return MS3_ERR_PARAMETER;
   }
@@ -236,7 +236,7 @@ uint8_t ms3_buffer_chunk_size(ms3_st *ms3, size_t new_size)
 
 uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value)
 {
-  if (not ms3)
+  if (!ms3)
   {
     return MS3_ERR_PARAMETER;
   }
@@ -281,7 +281,7 @@ uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value)
     {
       size_t new_size;
 
-      if (not value)
+      if (!value)
       {
         return MS3_ERR_PARAMETER;
       }
@@ -301,14 +301,14 @@ uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value)
     {
       uint8_t list_version;
 
-      if (not value)
+      if (!value)
       {
         return MS3_ERR_PARAMETER;
       }
 
       list_version = *(uint8_t *)value;
 
-      if (list_version < 1 or list_version > 2)
+      if (list_version < 1 || list_version > 2)
       {
         return MS3_ERR_PARAMETER;
       }

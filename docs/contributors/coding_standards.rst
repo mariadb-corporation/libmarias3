@@ -38,36 +38,6 @@ Use C99 types (where possible), this will very much help us to find conversion b
 * ulonglong uint64_t
 * long int → int32_t
 
-Use explicit keywords in comparison statements (we will use the C++ compiler).  Our developers have old eyes and can miss exclamation marks.  It also helps eliminate common logic typos.  For example:
-
-.. code-block:: cpp
-
-   if (a_test == false)
-
-or:
-
-.. code-block:: cpp
-
-   if (not a_test)
-
-not:
-
-.. code-block:: cpp
-
-   if (!a_test)
-
-Also:
-
-.. code-block:: cpp
-
-   if (a_test and another_test)
-
-not:
-
-.. code-block:: cpp
-
-   if (a_test && another_test)
-
 The keyword :c:type:`NULL` should always be used when referring to the pointer NULL
 
 Allocation

@@ -31,7 +31,7 @@ char *parse_error_message(const char *data, size_t length)
 
   doc = xmlReadMemory(data, (int)length, "noname.xml", NULL, 0);
 
-  if (not doc)
+  if (!doc)
   {
     return NULL;
   }
@@ -42,7 +42,7 @@ char *parse_error_message(const char *data, size_t length)
 
   while (node)
   {
-    if (not xmlStrcmp(node->name, (const unsigned char *)"Message"))
+    if (!xmlStrcmp(node->name, (const unsigned char *)"Message"))
     {
       message = xmlNodeGetContent(node);
       xmlFreeDoc(doc);
@@ -75,7 +75,7 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
 
   doc = xmlReadMemory(data, (int)length, "noname.xml", NULL, 0);
 
-  if (not doc)
+  if (!doc)
   {
     return MS3_ERR_RESPONSE_PARSE;
   }
@@ -95,18 +95,18 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
 
   while (node)
   {
-    if (not xmlStrcmp(node->name, (const unsigned char *)"NextContinuationToken"))
+    if (!xmlStrcmp(node->name, (const unsigned char *)"NextContinuationToken"))
     {
       *continuation = (char *)xmlNodeGetContent(node);
     }
 
     if (list_version == 1)
     {
-      if (not xmlStrcmp(node->name, (const unsigned char *)"IsTruncated"))
+      if (!xmlStrcmp(node->name, (const unsigned char *)"IsTruncated"))
       {
         xmlChar *trunc_value = xmlNodeGetContent(node);
 
-        if (not xmlStrcmp(trunc_value, (const unsigned char *)"true"))
+        if (!xmlStrcmp(trunc_value, (const unsigned char *)"true"))
         {
           truncated = true;
         }
@@ -115,7 +115,7 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
       }
     }
 
-    if (not xmlStrcmp(node->name, (const unsigned char *)"Contents"))
+    if (!xmlStrcmp(node->name, (const unsigned char *)"Contents"))
     {
       bool skip = false;
       // Found contents
@@ -123,7 +123,7 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
 
       do
       {
-        if (not xmlStrcmp(child->name, (const unsigned char *)"Key"))
+        if (!xmlStrcmp(child->name, (const unsigned char *)"Key"))
         {
           filename = xmlNodeGetContent(child);
           ms3debug("Filename: %s", filename);
@@ -136,7 +136,7 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
           }
         }
 
-        if (not xmlStrcmp(child->name, (const unsigned char *)"Size"))
+        if (!xmlStrcmp(child->name, (const unsigned char *)"Size"))
         {
           filesize = xmlNodeGetContent(child);
           ms3debug("Size: %s", filesize);
@@ -144,7 +144,7 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
           xmlFree(filesize);
         }
 
-        if (not xmlStrcmp(child->name, (const unsigned char *)"LastModified"))
+        if (!xmlStrcmp(child->name, (const unsigned char *)"LastModified"))
         {
           filedate = xmlNodeGetContent(child);
           ms3debug("Date: %s", filedate);
@@ -155,12 +155,12 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
       }
       while ((child = child->next));
 
-      if (not skip)
+      if (!skip)
       {
         nextptr = malloc(sizeof(ms3_list_st));
         nextptr->next = NULL;
 
-        if (not lastptr)
+        if (!lastptr)
         {
           *list = nextptr;
           lastptr = nextptr;
@@ -196,7 +196,7 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
     node = node->next;
   }
 
-  if (list_version == 1 and truncated and last_key)
+  if (list_version == 1 && truncated && last_key)
   {
     *continuation = strdup(last_key);
   }
