@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include <iso646.h>
 
 #include <curl/curl.h>
 #include <mhash.h>

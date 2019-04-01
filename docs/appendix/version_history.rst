@@ -4,8 +4,13 @@ Version History
 Version 2.1
 -----------
 
-Version 2.1.0 GA
+Version 2.1.1 GA
 ^^^^^^^^^^^^^^^^
+
+* Remove iso646.h support in codebase
+
+Version 2.1.0 GA (2019-03-29)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Add :c:func:`ms3_set_option` to set various connection options
 * Deprecated :c:func:`ms3_buffer_chunk_size`, use :c:func:`ms3_set_option` instead

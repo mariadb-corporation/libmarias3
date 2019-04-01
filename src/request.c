@@ -26,7 +26,7 @@ static void set_error(ms3_st *ms3, const char *error)
 {
   free(ms3->last_error);
 
-  if (not error)
+  if (!error)
   {
     return;
   }
@@ -38,7 +38,7 @@ static void set_error_nocopy(ms3_st *ms3, char *error)
 {
   free(ms3->last_error);
 
-  if (not error)
+  if (!error)
   {
     return;
   }
@@ -121,7 +121,7 @@ static char *generate_path(CURL *curl, const char *object)
   // Keep scanbuild happy
   ret_buf[0] = '\0';
 
-  if (not object)
+  if (!object)
   {
     sprintf(ret_buf, "/");
     return ret_buf;
@@ -530,7 +530,7 @@ static size_t header_callback(char *buffer, size_t size,
   if (userdata)
   {
     // HEAD request
-    if (not strncmp(buffer, "Last-Modified", 13))
+    if (!strncmp(buffer, "Last-Modified", 13))
     {
       ms3_status_st *status = (ms3_status_st *) userdata;
       // Date/time, format: Fri, 15 Mar 2019 16:58:54 GMT
@@ -538,7 +538,7 @@ static size_t header_callback(char *buffer, size_t size,
       strptime(buffer + 15, "%a, %d %b %Y %H:%M:%S %Z", &ttmp);
       status->created = mktime(&ttmp);
     }
-    else if (not strncmp(buffer, "Content-Length", 14))
+    else if (!strncmp(buffer, "Content-Length", 14))
     {
       ms3_status_st *status = (ms3_status_st *) userdata;
       // Length
@@ -560,7 +560,7 @@ static size_t body_callback(void *buffer, size_t size,
   {
     uint8_t *ptr = realloc(mem->data, mem->alloced + mem->buffer_chunk_size);
 
-    if (not ptr)
+    if (!ptr)
     {
       ms3debug("Curl response OOM");
       return 0;
