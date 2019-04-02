@@ -82,9 +82,18 @@ static uint8_t build_request_uri(CURL *curl, const char *base_domain,
       return MS3_ERR_URI_TOO_LONG;
     }
 
-    snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s.%s%s?%s", protocol, bucket,
-             domain,
-             object, query);
+    if (base_domain)
+    {
+      snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s/%s%s?%s", protocol,
+               domain, bucket,
+               object, query);
+    }
+    else
+    {
+      snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s.%s%s?%s", protocol,
+               bucket, domain,
+               object, query);
+    }
   }
   else
   {
@@ -94,9 +103,19 @@ static uint8_t build_request_uri(CURL *curl, const char *base_domain,
       return MS3_ERR_URI_TOO_LONG;
     }
 
-    snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s.%s%s", protocol, bucket,
-             domain,
-             object);
+    if (base_domain)
+    {
+      snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s/%s%s", protocol,
+               domain,
+               bucket,
+               object);
+    }
+    else
+    {
+      snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s.%s%s", protocol,
+               bucket, domain,
+               object);
+    }
   }
 
   ms3debug("URI: %s", uri_buffer);
@@ -213,6 +232,7 @@ static char *generate_query(CURL *curl, const char *value,
 <HashedPayload> - empty if no POST data
 */
 static uint8_t generate_request_hash(uri_method_t method, const char *path,
+                                     const char *bucket,
                                      const char *query, char *post_hash, struct curl_slist *headers,
                                      char *return_hash)
 {
@@ -261,8 +281,17 @@ static uint8_t generate_request_hash(uri_method_t method, const char *path,
   }
 
   // URL path
-  snprintf(signing_data + pos, sizeof(signing_data) - pos, "%s\n", path);
-  pos += strlen(path) + 1;
+  if (bucket)
+  {
+    snprintf(signing_data + pos, sizeof(signing_data) - pos, "/%s%s\n", bucket,
+             path);
+    pos += strlen(path) + strlen(bucket) + 2;
+  }
+  else
+  {
+    snprintf(signing_data + pos, sizeof(signing_data) - pos, "%s\n", path);
+    pos += strlen(path) + 1;
+  }
 
   // URL query (if exists)
   if (query)
@@ -400,8 +429,16 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
   headers = curl_slist_append(headers, headerbuf);
 
   // Builds the request hash
-  ret = generate_request_hash(method, object, query, post_hash, headers,
-                              sha256hash);
+  if (base_domain)
+  {
+    ret = generate_request_hash(method, object, bucket, query, post_hash, headers,
+                                sha256hash);
+  }
+  else
+  {
+    ret = generate_request_hash(method, object, NULL, query, post_hash, headers,
+                                sha256hash);
+  }
 
   if (ret)
   {
@@ -667,6 +704,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   {
     ms3debug("Disabling SSL verification");
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
   }
 
   curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_callback);

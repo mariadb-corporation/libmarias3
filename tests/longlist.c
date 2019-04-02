@@ -37,6 +37,7 @@ struct thread_info
   char *s3secret;
   char *s3region;
   char *s3host;
+  bool noverify;
 };
 
 const char *test_string = "Another one bites the dust";
@@ -47,6 +48,12 @@ static void *put_thread(void *arg)
   struct thread_info *tinfo = arg;
   ms3_st *ms3 = ms3_thread_init(tinfo->s3key, tinfo->s3secret, tinfo->s3region,
                                 tinfo->s3host);
+
+  if (tinfo->noverify)
+  {
+    bool option = true;
+    ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, &option);
+  }
 
   for (int i = tinfo->start_count; i < tinfo->start_count + 150; i++)
   {
@@ -68,6 +75,12 @@ static void *delete_thread(void *arg)
   struct thread_info *tinfo = arg;
   ms3_st *ms3 = ms3_thread_init(tinfo->s3key, tinfo->s3secret, tinfo->s3region,
                                 tinfo->s3host);
+
+  if (tinfo->noverify)
+  {
+    bool option = true;
+    ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, &option);
+  }
 
   for (int i = tinfo->start_count; i < tinfo->start_count + 150; i++)
   {
@@ -92,12 +105,22 @@ int main(int argc, char *argv[])
   char *s3region = getenv("S3REGION");
   char *s3bucket = getenv("S3BUCKET");
   char *s3host = getenv("S3HOST");
+  char *s3noverify = getenv("S3NOVERIFY");
+  bool noverify = false;
+
+  if (s3noverify && !strcmp(s3noverify, "1"))
+  {
+    noverify = true;
+  }
 
   struct thread_info *tinfo;
 
   SKIP_IF_(!s3key, "Environemnt variable S3KEY missing");
+
   SKIP_IF_(!s3secret, "Environemnt variable S3SECRET missing");
+
   SKIP_IF_(!s3region, "Environemnt variable S3REGION missing");
+
   SKIP_IF_(!s3bucket, "Environemnt variable S3BUCKET missing");
 
   ms3_library_init();
@@ -107,7 +130,9 @@ int main(int argc, char *argv[])
   tinfo = calloc(10, sizeof(struct thread_info));
 
   int start_count = 1000;
+
   pthread_attr_t attr;
+
   pthread_attr_init(&attr);
 
   // Write 1500 files using 10 threads
@@ -123,6 +148,7 @@ int main(int argc, char *argv[])
     tinfo[tnum].s3region = s3region;
     tinfo[tnum].s3host = s3host;
     tinfo[tnum].s3bucket = s3bucket;
+    tinfo[tnum].noverify = noverify;
     pthread_create(&tinfo[tnum].thread_id, &attr,
                    &put_thread, &tinfo[tnum]);
   }
@@ -136,6 +162,13 @@ int main(int argc, char *argv[])
 
   uint8_t res;
   ms3_st *ms3 = ms3_thread_init(s3key, s3secret, s3region, s3host);
+
+  if (noverify)
+  {
+    bool option = true;
+    ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, &option);
+  }
+
   ms3_list_st *list = NULL, *list_it = NULL;
   res = ms3_list(ms3, s3bucket, "listtest/", &list);
   ASSERT_EQ(res, 0);
@@ -189,6 +222,7 @@ int main(int argc, char *argv[])
     tinfo[tnum].s3region = s3region;
     tinfo[tnum].s3host = s3host;
     tinfo[tnum].s3bucket = s3bucket;
+    tinfo[tnum].noverify = noverify;
     pthread_create(&tinfo[tnum].thread_id, &attr,
                    &delete_thread, &tinfo[tnum]);
   }

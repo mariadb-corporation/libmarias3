@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
   char *s3region = getenv("S3REGION");
   char *s3bucket = getenv("S3BUCKET");
   char *s3host = getenv("S3HOST");
+  char *s3noverify = getenv("S3NOVERIFY");
 
   SKIP_IF_(!s3key, "Environemnt variable S3KEY missing");
   SKIP_IF_(!s3secret, "Environemnt variable S3SECRET missing");
@@ -45,6 +46,12 @@ int main(int argc, char *argv[])
 
   ms3_library_init();
   ms3_st *ms3 = ms3_thread_init(s3key, s3secret, s3region, s3host);
+
+  if (s3noverify && !strcmp(s3noverify, "1"))
+  {
+    bool option = true;
+    ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, &option);
+  }
 
 //  ms3_debug(true);
   ASSERT_NOT_NULL(ms3);

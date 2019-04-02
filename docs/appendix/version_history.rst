@@ -4,10 +4,14 @@ Version History
 Version 2.1
 -----------
 
-Version 2.1.1 GA
-^^^^^^^^^^^^^^^^
+Version 2.1.1 GA (2019-04-02)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Remove iso646.h support in codebase
+* Autoswitch to bucket path instead of bucket domain access method (for IP urls)
+* Fixed issue with SSL disabled verification
+* Fixed minor leak when base_domain is set
+* Add ``S3NOVERIFY`` env var to tests which will disable SSL verification when set to ``1``
 
 Version 2.1.0 GA (2019-03-29)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
