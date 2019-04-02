@@ -78,6 +78,7 @@ void ms3_deinit(ms3_st *ms3)
 
   ms3debug("deinit: 0x%" PRIXPTR, (uintptr_t)ms3);
   free(ms3->region);
+  free(ms3->base_domain);
   curl_easy_cleanup(ms3->curl);
   free(ms3->last_error);
   free(ms3);
