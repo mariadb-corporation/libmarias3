@@ -19,25 +19,8 @@
 
 #pragma once
 
-#ifdef __cplusplus
-#include <cstddef>
-#endif
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-
-#include <curl/curl.h>
-#include <mhash.h>
-
-#include <libmarias3/marias3.h>
-
-#include "memory.h"
-#include "debug.h"
-#include "error.h"
-#include "structs.h"
-#include "response.h"
-#include "request.h"
-
-
+extern ms3_malloc_callback ms3_cmalloc;
+extern ms3_free_callback ms3_cfree;
+extern ms3_realloc_callback ms3_crealloc;
+extern ms3_strdup_callback ms3_cstrdup;
+extern ms3_calloc_callback ms3_ccalloc;

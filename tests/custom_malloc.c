@@ -20,7 +20,37 @@
 #include <yatl/lite.h>
 #include <libmarias3/marias3.h>
 
-/* Tests basic put, list, get, status, delete using the thread calls */
+/* Tests functions using custom allocators */
+
+static void *cust_malloc(size_t size)
+{
+  printf("Malloc of %zu bytes\n", size);
+  return malloc(size);
+}
+
+static void cust_free(void *ptr)
+{
+  printf("Free called\n");
+  free(ptr);
+}
+
+static void *cust_realloc(void *ptr, size_t size)
+{
+  printf("Realloc of %zu bytes\n", size);
+  return realloc(ptr, size);
+}
+
+static char *cust_strdup(const char *str)
+{
+  printf("Strdup called\n");
+  return strdup(str);
+}
+
+static void *cust_calloc(size_t nmemb, size_t size)
+{
+  printf("Calloc of %zu elements, %zu size\n", nmemb, size);
+  return calloc(nmemb, size);
+}
 
 int main(int argc, char *argv[])
 {
@@ -44,7 +74,7 @@ int main(int argc, char *argv[])
   SKIP_IF_(!s3region, "Environemnt variable S3REGION missing");
   SKIP_IF_(!s3bucket, "Environemnt variable S3BUCKET missing");
 
-  ms3_library_init();
+  ms3_library_init_malloc(cust_malloc, cust_free, cust_realloc, cust_strdup, cust_calloc);
   ms3_st *ms3 = ms3_init(s3key, s3secret, s3region, s3host);
 
   if (s3noverify && !strcmp(s3noverify, "1"))
@@ -56,7 +86,7 @@ int main(int argc, char *argv[])
 //  ms3_debug(true);
   ASSERT_NOT_NULL(ms3);
 
-  res = ms3_put(ms3, s3bucket, "test/basic_thread.txt",
+  res = ms3_put(ms3, s3bucket, "test/custom_malloc.txt",
                 (const uint8_t *)test_string,
                 strlen(test_string));
   ASSERT_EQ_(res, 0, "Result: %u", res);
@@ -73,7 +103,7 @@ int main(int argc, char *argv[])
 
   while (list_it)
   {
-    if (!strncmp(list_it->key, "test/basic_thread.txt", 12))
+    if (!strncmp(list_it->key, "test/custom_malloc.txt", 12))
     {
       found = true;
       break;
@@ -107,7 +137,7 @@ int main(int argc, char *argv[])
 
   while (list_it)
   {
-    if (!strncmp(list_it->key, "test/basic_thread.txt", 12))
+    if (!strncmp(list_it->key, "test/custom_malloc.txt", 12))
     {
       found = true;
       break;
@@ -130,14 +160,14 @@ int main(int argc, char *argv[])
 
   ms3_list_free(list);
 
-  res = ms3_get(ms3, s3bucket, "test/basic_thread.txt", &data, &length);
+  res = ms3_get(ms3, s3bucket, "test/custom_malloc.txt", &data, &length);
   ASSERT_EQ_(res, 0, "Result: %u", res);
   ASSERT_EQ(length, 26);
   ASSERT_STREQ((char *)data, test_string);
 
   for (int i = 0; i <= 3; i++)
   {
-    res = ms3_status(ms3, s3bucket, "test/basic_thread.txt", &status);
+    res = ms3_status(ms3, s3bucket, "test/custom_malloc.txt", &status);
 
     if (res == MS3_ERR_NOT_FOUND)
     {
@@ -154,7 +184,7 @@ int main(int argc, char *argv[])
 
   ASSERT_EQ(status.length, 26);
   ASSERT_NEQ(status.created, 0);
-  res = ms3_delete(ms3, s3bucket, "test/basic_thread.txt");
+  res = ms3_delete(ms3, s3bucket, "test/custom_malloc.txt");
   ASSERT_EQ_(res, 0, "Result: %u", res);
   ms3_free(data);
   ms3_deinit(ms3);

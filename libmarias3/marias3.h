@@ -46,6 +46,12 @@ struct ms3_status_st
 
 typedef struct ms3_status_st ms3_status_st;
 
+typedef void *(*ms3_malloc_callback)(size_t size);
+typedef void (*ms3_free_callback)(void *ptr);
+typedef void *(*ms3_realloc_callback)(void *ptr, size_t size);
+typedef char *(*ms3_strdup_callback)(const char *str);
+typedef void *(*ms3_calloc_callback)(size_t nmemb, size_t size);
+
 enum ms3_error_code_t
 {
   MS3_ERR_NONE,
@@ -77,6 +83,16 @@ typedef enum ms3_set_option_t ms3_set_option_t;
 
 MS3_API
 void ms3_library_init(void);
+
+MS3_API
+bool ms3_library_init_malloc(ms3_malloc_callback m,
+                             ms3_free_callback f, ms3_realloc_callback r,
+                             ms3_strdup_callback s, ms3_calloc_callback c);
+
+MS3_API
+ms3_st *ms3_init(const char *s3key, const char *s3secret,
+                 const char *region,
+                 const char *base_domain);
 
 MS3_API
 ms3_st *ms3_thread_init(const char *s3key, const char *s3secret,

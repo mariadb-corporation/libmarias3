@@ -24,19 +24,19 @@ const char *default_domain = "s3.amazonaws.com";
 
 static void set_error(ms3_st *ms3, const char *error)
 {
-  free(ms3->last_error);
+  ms3_cfree(ms3->last_error);
 
   if (!error)
   {
     return;
   }
 
-  ms3->last_error = strdup(error);
+  ms3->last_error = ms3_cstrdup(error);
 }
 
 static void set_error_nocopy(ms3_st *ms3, char *error)
 {
-  free(ms3->last_error);
+  ms3_cfree(ms3->last_error);
 
   if (!error)
   {
@@ -132,7 +132,7 @@ static uint8_t build_request_uri(CURL *curl, const char *base_domain,
 
 static char *generate_path(CURL *curl, const char *object)
 {
-  char *ret_buf = malloc(sizeof(char) * 1024);
+  char *ret_buf = ms3_cmalloc(sizeof(char) * 1024);
   char *tok_ptr = NULL;
   char *save_ptr = NULL;
   char *out_ptr = ret_buf;
@@ -146,7 +146,7 @@ static char *generate_path(CURL *curl, const char *object)
     return ret_buf;
   }
 
-  char *path = strdup(object); // Because strtok_r is destructive
+  char *path = ms3_cstrdup(object); // Because strtok_r is destructive
 
   tok_ptr = strtok_r((char *)path, "/", &save_ptr);
 
@@ -164,7 +164,7 @@ static char *generate_path(CURL *curl, const char *object)
     sprintf(ret_buf, "/");
   }
 
-  free(path);
+  ms3_cfree(path);
   return ret_buf;
 }
 
@@ -176,7 +176,7 @@ static char *generate_path(CURL *curl, const char *object)
 static char *generate_query(CURL *curl, const char *value,
                             const char *continuation, uint8_t list_version)
 {
-  char *ret_buf = malloc(sizeof(char) * 1024);
+  char *ret_buf = ms3_cmalloc(sizeof(char) * 1024);
   ret_buf[0] = '\0';
   char *encoded;
 
@@ -186,7 +186,7 @@ static char *generate_query(CURL *curl, const char *value,
     {
       encoded = curl_easy_escape(curl, continuation, (int)strlen(continuation));
       snprintf(ret_buf, 1024, "continuation-token=%s&list-type=2", encoded);
-      free(encoded);
+      curl_free(encoded);
     }
     else
     {
@@ -198,7 +198,7 @@ static char *generate_query(CURL *curl, const char *value,
     // Continuation is really marker here
     encoded = curl_easy_escape(curl, continuation, (int)strlen(continuation));
     snprintf(ret_buf, 1024, "marker=%s", encoded);
-    free(encoded);
+    curl_free(encoded);
   }
 
   if (value)
@@ -216,7 +216,7 @@ static char *generate_query(CURL *curl, const char *value,
                encoded);
     }
 
-    free(encoded);
+    curl_free(encoded);
   }
 
   return ret_buf;
@@ -595,7 +595,7 @@ static size_t body_callback(void *buffer, size_t size,
 
   if (realsize + mem->length > mem->alloced)
   {
-    uint8_t *ptr = realloc(mem->data, mem->alloced + mem->buffer_chunk_size);
+    uint8_t *ptr = ms3_crealloc(mem->data, mem->alloced + mem->buffer_chunk_size);
 
     if (!ptr)
     {
@@ -624,7 +624,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   struct curl_slist *headers = NULL;
   uint8_t res = 0;
   struct memory_buffer_st mem;
-  mem.data = malloc(1);
+  mem.data = ms3_cmalloc(1);
   mem.length = 0;
   mem.alloced = 1;
   mem.buffer_chunk_size = ms3->buffer_chunk_size;
@@ -651,9 +651,9 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
   if (res)
   {
-    free(mem.data);
-    free(path);
-    free(query);
+    ms3_cfree(mem.data);
+    ms3_cfree(path);
+    ms3_cfree(query);
 
     return res;
   }
@@ -680,9 +680,9 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
     default:
       ms3debug("Bad cmd detected");
-      free(mem.data);
-      free(path);
-      free(query);
+      ms3_cfree(mem.data);
+      ms3_cfree(path);
+      ms3_cfree(query);
 
       return MS3_ERR_IMPOSSIBLE;
   }
@@ -692,9 +692,9 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
   if (res)
   {
-    free(mem.data);
-    free(path);
-    free(query);
+    ms3_cfree(mem.data);
+    ms3_cfree(path);
+    ms3_cfree(query);
     curl_slist_free_all(headers);
 
     return res;
@@ -717,9 +717,9 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   {
     ms3debug("Curl error: %s", curl_easy_strerror(curl_res));
     set_error(ms3, curl_easy_strerror(curl_res));
-    free(mem.data);
-    free(path);
-    free(query);
+    ms3_cfree(mem.data);
+    ms3_cfree(path);
+    ms3_cfree(query);
     curl_slist_free_all(headers);
 
     return MS3_ERR_REQUEST_ERROR;
@@ -794,16 +794,16 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
           return res;
         }
 
-        free(cont);
+        ms3_cfree(cont);
       }
 
-      free(mem.data);
+      ms3_cfree(mem.data);
       break;
     }
 
     case MS3_CMD_PUT:
     {
-      free(mem.data);
+      ms3_cfree(mem.data);
       break;
     }
 
@@ -817,26 +817,26 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
     case MS3_CMD_DELETE:
     {
-      free(mem.data);
+      ms3_cfree(mem.data);
       break;
     }
 
     case MS3_CMD_HEAD:
     {
-      free(mem.data);
+      ms3_cfree(mem.data);
       break;
     }
 
     default:
     {
-      free(mem.data);
+      ms3_cfree(mem.data);
       ms3debug("Bad cmd detected");
       res = MS3_ERR_IMPOSSIBLE;
     }
   }
 
-  free(path);
-  free(query);
+  ms3_cfree(path);
+  ms3_cfree(query);
   curl_slist_free_all(headers);
 
   return res;
