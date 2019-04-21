@@ -9,14 +9,19 @@ ms3_library_init()
    Initializes the library for use.
    Should be called before any threads are spawned.
 
-ms3_thread_init()
------------------
+ms3_init()
+----------
 
 .. c:function:: ms3_st *ms3_thread_init(const char *s3key, const char *s3secret, const char *region, const char *base_domain)
 
+   .. deprecated:: 2.2.0
+      Use :c:func:`ms3_init` instead. Will be removed in 3.0.0.
+
+.. c:function:: ms3_st *ms3_init(const char *s3key, const char *s3secret, const char *region, const char *base_domain)
+
    Initializes a :c:type:`ms3_st` object. This object should only be used in
    the thread that created it because it reuses connections. But it is safe to
-   have :c:type:`ms3_st` objects running at the same time in other threads.
+   have other :c:type:`ms3_st` objects running at the same time in other threads.
 
    .. note::
        You *MUST* call :c:func:`ms3_library_init` before

@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
   SKIP_IF_(!s3bucket, "Environemnt variable S3BUCKET missing");
 
   ms3_library_init();
-  ms3_st *ms3 = ms3_thread_init(s3key, s3secret, s3region, s3host);
+  ms3_st *ms3 = ms3_init(s3key, s3secret, s3region, s3host);
 
   if (s3noverify && !strcmp(s3noverify, "1"))
   {

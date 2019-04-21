@@ -1,6 +1,14 @@
 Version History
 ===============
 
+Version 2.2
+-----------
+
+Version 2.2.0 GA (2019-04-21)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* Add :c:func:`ms3_init` to replace :c:func:`ms3_thread_init` and deprecate the latter.
+
 Version 2.1
 -----------
 

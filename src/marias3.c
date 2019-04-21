@@ -31,6 +31,13 @@ ms3_st *ms3_thread_init(const char *s3key, const char *s3secret,
                         const char *region,
                         const char *base_domain)
 {
+  return ms3_init(s3key, s3secret, region, base_domain);
+}
+
+ms3_st *ms3_init(const char *s3key, const char *s3secret,
+                        const char *region,
+                        const char *base_domain)
+{
   if ((s3key == NULL) || (s3secret == NULL))
   {
     return NULL;
