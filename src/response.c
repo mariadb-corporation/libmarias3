@@ -157,7 +157,7 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
 
       if (!skip)
       {
-        nextptr = malloc(sizeof(ms3_list_st));
+        nextptr = ms3_cmalloc(sizeof(ms3_list_st));
         nextptr->next = NULL;
 
         if (!lastptr)
@@ -173,7 +173,7 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
 
         if (filename)
         {
-          nextptr->key = strdup((const char *)filename);
+          nextptr->key = ms3_cstrdup((const char *)filename);
 
           if (list_version == 1)
           {
@@ -198,7 +198,7 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
 
   if (list_version == 1 && truncated && last_key)
   {
-    *continuation = strdup(last_key);
+    *continuation = ms3_cstrdup(last_key);
   }
 
   xmlFreeDoc(doc);

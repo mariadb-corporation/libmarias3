@@ -36,3 +36,8 @@ t_longlist_LDADD= src/libmarias3.la
 t_longlist_LDADD+= -lpthread
 check_PROGRAMS+= t/longlist
 noinst_PROGRAMS+= t/longlist
+
+t_custom_malloc_SOURCES= tests/custom_malloc.c
+t_custom_malloc_LDADD= src/libmarias3.la
+check_PROGRAMS+= t/custom_malloc
+noinst_PROGRAMS+= t/custom_malloc

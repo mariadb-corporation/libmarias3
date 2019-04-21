@@ -9,6 +9,44 @@ ms3_library_init()
    Initializes the library for use.
    Should be called before any threads are spawned.
 
+ms3_library_init_malloc()
+-------------------------
+
+.. c:function:: bool ms3_library_init_malloc(ms3_malloc_callback m, ms3_free_callback f, ms3_realloc_callback r, ms3_strdup_callback s, ms3_calloc_callback c)
+
+   Initialize the library for use with custom allocator replacement functions. These functions are also fed into libcurl and libxml2. The function prototypes should be as follows:
+
+   .. c:function:: void *ms3_malloc_callback(size_t size)
+
+      To replace ``malloc()``.
+
+   .. c:function:: void ms3_free_callback(void *ptr)
+
+      To replace ``free()``.
+
+   .. c:function:: void *ms3_realloc_callback(void *ptr, size_t size)
+
+      To replace ``realloc()``.
+
+   .. c:function:: char *ms3_strdup_callback(const char *str)
+
+      To replace ``strdup()``.
+
+   .. c:function:: void *ms3_calloc_callback(size_t nmemb, size_t size)
+
+      To replace ``calloc()``.
+
+   Should be called before any threads are spawned. All parameters are required or the function *will* fail.
+
+   Remember: With great power comes great responsibility.
+
+   :param m: The malloc callback
+   :param f: The free callback
+   :param r: The realloc callback
+   :param s: The strdup callback
+   :param c: The calloc callback
+   :returns: ``true`` on success, ``false`` if a parameter is ``NULL``
+
 ms3_init()
 ----------
 

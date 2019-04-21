@@ -20,7 +20,42 @@
 #include "config.h"
 #include "common.h"
 
+#include <libxml/xmlmemory.h>
 #include <pthread.h>
+
+ms3_malloc_callback ms3_cmalloc = (ms3_malloc_callback)malloc;
+ms3_free_callback ms3_cfree = (ms3_free_callback)free;
+ms3_realloc_callback ms3_crealloc = (ms3_realloc_callback)realloc;
+ms3_strdup_callback ms3_cstrdup = (ms3_strdup_callback)strdup;
+ms3_calloc_callback ms3_ccalloc = (ms3_calloc_callback)calloc;
+
+bool ms3_library_init_malloc(ms3_malloc_callback m,
+                             ms3_free_callback f, ms3_realloc_callback r,
+                             ms3_strdup_callback s, ms3_calloc_callback c)
+{
+  if (!m || !f || !r || !s || !c)
+  {
+    return false;
+  }
+
+  ms3_cmalloc = m;
+  ms3_cfree = f;
+  ms3_crealloc = r;
+  ms3_cstrdup = s;
+  ms3_ccalloc = c;
+
+  if (curl_global_init_mem(CURL_GLOBAL_DEFAULT, m, f, r, s, c))
+  {
+    return false;
+  }
+
+  if (xmlMemSetup(f, m, r, s))
+  {
+    return false;
+  }
+
+  return true;
+}
 
 void ms3_library_init(void)
 {
@@ -48,15 +83,15 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
     return NULL;
   }
 
-  ms3_st *ms3 = malloc(sizeof(ms3_st));
+  ms3_st *ms3 = ms3_cmalloc(sizeof(ms3_st));
 
   memcpy(ms3->s3key, s3key, 20);
   memcpy(ms3->s3secret, s3secret, 40);
-  ms3->region = strdup(region);
+  ms3->region = ms3_cstrdup(region);
 
   if (base_domain && strlen(base_domain))
   {
-    ms3->base_domain = strdup(base_domain);
+    ms3->base_domain = ms3_cstrdup(base_domain);
     // Assume that S3-compatible APIs can't support v2 list
     ms3->list_version = 1;
   }
@@ -84,11 +119,11 @@ void ms3_deinit(ms3_st *ms3)
   }
 
   ms3debug("deinit: 0x%" PRIXPTR, (uintptr_t)ms3);
-  free(ms3->region);
-  free(ms3->base_domain);
+  ms3_cfree(ms3->region);
+  ms3_cfree(ms3->base_domain);
   curl_easy_cleanup(ms3->curl);
-  free(ms3->last_error);
-  free(ms3);
+  ms3_cfree(ms3->last_error);
+  ms3_cfree(ms3);
 }
 
 const char *ms3_server_error(ms3_st *ms3)
@@ -214,16 +249,16 @@ void ms3_list_free(ms3_list_st *list)
 {
   while (list)
   {
-    free(list->key);
+    ms3_cfree(list->key);
     ms3_list_st *tmp = list;
     list = list->next;
-    free(tmp);
+    ms3_cfree(tmp);
   }
 }
 
 void ms3_free(uint8_t *data)
 {
-  free(data);
+  ms3_cfree(data);
 }
 
 uint8_t ms3_buffer_chunk_size(ms3_st *ms3, size_t new_size)
