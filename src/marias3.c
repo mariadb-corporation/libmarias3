@@ -29,13 +29,13 @@ ms3_realloc_callback ms3_crealloc = (ms3_realloc_callback)realloc;
 ms3_strdup_callback ms3_cstrdup = (ms3_strdup_callback)strdup;
 ms3_calloc_callback ms3_ccalloc = (ms3_calloc_callback)calloc;
 
-bool ms3_library_init_malloc(ms3_malloc_callback m,
-                             ms3_free_callback f, ms3_realloc_callback r,
-                             ms3_strdup_callback s, ms3_calloc_callback c)
+uint8_t ms3_library_init_malloc(ms3_malloc_callback m,
+                                ms3_free_callback f, ms3_realloc_callback r,
+                                ms3_strdup_callback s, ms3_calloc_callback c)
 {
   if (!m || !f || !r || !s || !c)
   {
-    return false;
+    return MS3_ERR_PARAMETER;
   }
 
   ms3_cmalloc = m;
@@ -46,20 +46,27 @@ bool ms3_library_init_malloc(ms3_malloc_callback m,
 
   if (curl_global_init_mem(CURL_GLOBAL_DEFAULT, m, f, r, s, c))
   {
-    return false;
+    return MS3_ERR_PARAMETER;
   }
 
   if (xmlMemSetup(f, m, r, s))
   {
-    return false;
+    return MS3_ERR_PARAMETER;
   }
 
-  return true;
+  return 0;
 }
 
 void ms3_library_init(void)
 {
   curl_global_init(CURL_GLOBAL_DEFAULT);
+  xmlInitParser();
+}
+
+void ms3_library_deinit(void)
+{
+  curl_global_cleanup();
+  xmlCleanupParser();
 }
 
 ms3_st *ms3_thread_init(const char *s3key, const char *s3secret,

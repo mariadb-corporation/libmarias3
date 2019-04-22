@@ -233,4 +233,5 @@ int main(int argc, char *argv[])
   }
 
   free(tinfo);
+  ms3_library_deinit();
 }

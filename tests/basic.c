@@ -158,4 +158,5 @@ int main(int argc, char *argv[])
   ASSERT_EQ_(res, 0, "Result: %u", res);
   ms3_free(data);
   ms3_deinit(ms3);
+  ms3_library_deinit();
 }

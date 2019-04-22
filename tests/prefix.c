@@ -109,4 +109,5 @@ int main(int argc, char *argv[])
   res = ms3_delete(ms3, s3bucket, "other/prefix.txt");
   ASSERT_EQ(res, 0);
   ms3_deinit(ms3);
+  ms3_library_deinit();
 }

@@ -45,4 +45,5 @@ int main(int argc, char *argv[])
   ASSERT_EQ(res, MS3_ERR_AUTH); // Bad auth
   free(data);
   ms3_deinit(ms3);
+  ms3_library_deinit();
 }
