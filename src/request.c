@@ -609,7 +609,7 @@ static size_t body_callback(void *buffer, size_t size,
 
   memcpy(&(mem->data[mem->length]), buffer, realsize);
   mem->length += realsize;
-  mem->data[mem->length] = 0;
+  mem->data[mem->length] = '\0';
 
   ms3debug("Read %lu bytes, buffer %lu bytes", realsize, mem->length);
   return nitems * size;
@@ -624,7 +624,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   struct curl_slist *headers = NULL;
   uint8_t res = 0;
   struct memory_buffer_st mem;
-  mem.data = ms3_cmalloc(1);
+  mem.data = NULL;
   mem.length = 0;
   mem.alloced = 1;
   mem.buffer_chunk_size = ms3->buffer_chunk_size;
@@ -637,7 +637,15 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   post_data.offset = 0;
 
   curl = ms3->curl;
-  curl_easy_reset(curl);
+
+  if (!ms3->first_run)
+  {
+    curl_easy_reset(curl);
+  }
+  else
+  {
+    ms3->first_run = false;
+  }
 
   path = generate_path(curl, object);
 

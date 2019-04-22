@@ -29,6 +29,11 @@ char *parse_error_message(const char *data, size_t length)
   xmlNodePtr node;
   xmlChar *message = NULL;
 
+  if (!data || !length)
+  {
+    return NULL;
+  }
+
   doc = xmlReadMemory(data, (int)length, "noname.xml", NULL, 0);
 
   if (!doc)
@@ -72,6 +77,12 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
   bool truncated = false;
   const char *last_key = NULL;
   ms3_list_st *nextptr = NULL, *lastptr = NULL;
+
+  // Empty list
+  if (!data || !length)
+  {
+    return 0;
+  }
 
   doc = xmlReadMemory(data, (int)length, "noname.xml", NULL, 0);
 

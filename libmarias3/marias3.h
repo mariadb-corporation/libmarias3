@@ -85,9 +85,12 @@ MS3_API
 void ms3_library_init(void);
 
 MS3_API
-bool ms3_library_init_malloc(ms3_malloc_callback m,
-                             ms3_free_callback f, ms3_realloc_callback r,
-                             ms3_strdup_callback s, ms3_calloc_callback c);
+void ms3_library_deinit(void);
+
+MS3_API
+uint8_t ms3_library_init_malloc(ms3_malloc_callback m,
+                                ms3_free_callback f, ms3_realloc_callback r,
+                                ms3_strdup_callback s, ms3_calloc_callback c);
 
 MS3_API
 ms3_st *ms3_init(const char *s3key, const char *s3secret,

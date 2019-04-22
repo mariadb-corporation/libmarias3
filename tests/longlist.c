@@ -47,7 +47,7 @@ static void *put_thread(void *arg)
   uint8_t res;
   struct thread_info *tinfo = arg;
   ms3_st *ms3 = ms3_init(tinfo->s3key, tinfo->s3secret, tinfo->s3region,
-                                tinfo->s3host);
+                         tinfo->s3host);
 
   if (tinfo->noverify)
   {
@@ -74,7 +74,7 @@ static void *delete_thread(void *arg)
   uint8_t res;
   struct thread_info *tinfo = arg;
   ms3_st *ms3 = ms3_init(tinfo->s3key, tinfo->s3secret, tinfo->s3region,
-                                tinfo->s3host);
+                         tinfo->s3host);
 
   if (tinfo->noverify)
   {
@@ -233,4 +233,5 @@ int main(int argc, char *argv[])
   }
 
   free(tinfo);
+  ms3_library_deinit();
 }

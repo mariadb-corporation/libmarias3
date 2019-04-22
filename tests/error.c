@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
   size_t length;
 
   ms3_st *ms3 = ms3_init("12345678901234567890",
-                                "1234567890123456789012345678901234567890", "us-east-1", NULL);
+                         "1234567890123456789012345678901234567890", "us-east-1", NULL);
 
   // Enable here so cppcheck shows coverage
   ms3_debug(true);
@@ -45,4 +45,5 @@ int main(int argc, char *argv[])
   ASSERT_EQ(res, MS3_ERR_AUTH); // Bad auth
   free(data);
   ms3_deinit(ms3);
+  ms3_library_deinit();
 }
