@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
   size_t length;
 
   ms3_st *ms3 = ms3_init("12345678901234567890",
-                                "1234567890123456789012345678901234567890", "us-east-1", NULL);
+                         "1234567890123456789012345678901234567890", "us-east-1", NULL);
 
   // Enable here so cppcheck shows coverage
   ms3_debug(true);

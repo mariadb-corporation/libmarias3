@@ -70,8 +70,8 @@ ms3_st *ms3_thread_init(const char *s3key, const char *s3secret,
 }
 
 ms3_st *ms3_init(const char *s3key, const char *s3secret,
-                        const char *region,
-                        const char *base_domain)
+                 const char *region,
+                 const char *base_domain)
 {
   if ((s3key == NULL) || (s3secret == NULL))
   {
@@ -107,6 +107,7 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
   ms3->last_error = NULL;
   ms3->use_http = false;
   ms3->disable_verification = false;
+  ms3->first_run = true;
 
   return ms3;
 }
