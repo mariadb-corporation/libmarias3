@@ -175,7 +175,8 @@ uint8_t ms3_list(ms3_st *ms3, const char *bucket, const char *prefix,
     return MS3_ERR_PARAMETER;
   }
 
-  res = execute_request(ms3, MS3_CMD_LIST, bucket, NULL, prefix, NULL, 0, NULL,
+  res = execute_request(ms3, MS3_CMD_LIST, bucket, NULL, NULL, NULL, prefix, NULL,
+                        0, NULL,
                         list);
   return res;
 }
@@ -201,7 +202,8 @@ uint8_t ms3_put(ms3_st *ms3, const char *bucket, const char *key,
     return MS3_ERR_TOO_BIG;
   }
 
-  res = execute_request(ms3, MS3_CMD_PUT, bucket, key, NULL, data, length, NULL,
+  res = execute_request(ms3, MS3_CMD_PUT, bucket, key, NULL, NULL, NULL, data,
+                        length, NULL,
                         NULL);
 
   return res;
@@ -218,9 +220,47 @@ uint8_t ms3_get(ms3_st *ms3, const char *bucket, const char *key,
     return MS3_ERR_PARAMETER;
   }
 
-  res = execute_request(ms3, MS3_CMD_GET, bucket, key, NULL, NULL, 0, NULL, &buf);
+  res = execute_request(ms3, MS3_CMD_GET, bucket, key, NULL, NULL, NULL, NULL, 0,
+                        NULL, &buf);
   *data = buf.data;
   *length = buf.length;
+  return res;
+}
+
+uint8_t ms3_copy(ms3_st *ms3, const char *source_bucket, const char *source_key,
+                 const char *dest_bucket, const char *dest_key)
+{
+  uint8_t res = 0;
+
+  if (!ms3 || !source_bucket || !source_key || !dest_bucket || !dest_key)
+  {
+    return MS3_ERR_PARAMETER;
+  }
+
+  res = execute_request(ms3, MS3_CMD_COPY, dest_bucket, dest_key, source_bucket,
+                        source_key, NULL, NULL, 0, NULL, NULL);
+  return res;
+}
+
+uint8_t ms3_move(ms3_st *ms3, const char *source_bucket, const char *source_key,
+                 const char *dest_bucket, const char *dest_key)
+{
+  uint8_t res = 0;
+
+  if (!ms3 || !source_bucket || !source_key || !dest_bucket || !dest_key)
+  {
+    return MS3_ERR_PARAMETER;
+  }
+
+  res = ms3_copy(ms3, source_bucket, source_key, dest_bucket, dest_key);
+
+  if (!res)
+  {
+    return res;
+  }
+
+  res = ms3_delete(ms3, source_bucket, source_key);
+
   return res;
 }
 
@@ -233,7 +273,8 @@ uint8_t ms3_delete(ms3_st *ms3, const char *bucket, const char *key)
     return MS3_ERR_PARAMETER;
   }
 
-  res = execute_request(ms3, MS3_CMD_DELETE, bucket, key, NULL, NULL, 0, NULL,
+  res = execute_request(ms3, MS3_CMD_DELETE, bucket, key, NULL, NULL, NULL, NULL,
+                        0, NULL,
                         NULL);
   return res;
 }
@@ -248,7 +289,8 @@ uint8_t ms3_status(ms3_st *ms3, const char *bucket, const char *key,
     return MS3_ERR_PARAMETER;
   }
 
-  res = execute_request(ms3, MS3_CMD_HEAD, bucket, key, NULL, NULL, 0, NULL,
+  res = execute_request(ms3, MS3_CMD_HEAD, bucket, key, NULL, NULL, NULL, NULL, 0,
+                        NULL,
                         status);
   return res;
 }

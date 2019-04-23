@@ -136,6 +136,14 @@ uint8_t ms3_get(ms3_st *ms3, const char *bucket, const char *key,
                 uint8_t **data, size_t *length);
 
 MS3_API
+uint8_t ms3_copy(ms3_st *ms3, const char *source_bucket, const char *source_key,
+                 const char *dest_bucket, const char *dest_key);
+
+MS3_API
+uint8_t ms3_move(ms3_st *ms3, const char *source_bucket, const char *source_key,
+                 const char *dest_bucket, const char *dest_key);
+
+MS3_API
 void ms3_free(uint8_t *data);
 
 MS3_API

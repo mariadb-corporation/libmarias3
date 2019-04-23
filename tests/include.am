@@ -21,6 +21,11 @@ t_basic_LDADD= src/libmarias3.la
 check_PROGRAMS+= t/basic
 noinst_PROGRAMS+= t/basic
 
+t_copy_SOURCES= tests/copy.c
+t_copy_LDADD= src/libmarias3.la
+check_PROGRAMS+= t/copy
+noinst_PROGRAMS+= t/copy
+
 t_large_file_SOURCES= tests/large_file.c
 t_large_file_LDADD= src/libmarias3.la
 check_PROGRAMS+= t/large_file
