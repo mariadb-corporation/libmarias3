@@ -10,6 +10,7 @@ Version 2.2.0 GA (2019-04-23)
 * Add :c:func:`ms3_init` to replace :c:func:`ms3_thread_init` and deprecate the latter.
 * Add :c:func:`ms3_library_init_malloc` to add custom allocators
 * Add :c:func:`ms3_library_deinit` to cleanup`
+* Add :c:func:`ms3_copy` and c:func:`ms3_move` to use S3's internal file copy
 
 Version 2.1
 -----------

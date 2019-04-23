@@ -211,6 +211,34 @@ Example
    ms3_deinit(ms3);
 
 
+ms3_copy()
+----------
+
+.. c:function:: uint8_t ms3_copy(ms3_st *ms3, const char *source_bucket, const char *source_key, const char *dest_bucket, const char *dest_key)
+
+   S3 internally copies an object from a source bucket and key to a destination bucket and key.
+
+   :param ms3: The marias3 object
+   :param source_bucket: The bucket where the source object is
+   :param source_key: The key/filename of the source object
+   :param dest_bucket: The destination bucket (can be the same as source)
+   :param dest_key: The destination key/filename
+   :returns: ``0`` on success, a positive integer on failure
+
+ms3_move()
+----------
+
+.. c:function:: uint8_t ms3_move(ms3_st *ms3, const char *source_bucket, const char *source_key, const char *dest_bucket, const char *dest_key)
+
+   Moves an object from source to destination. Internally the library performs a copy and if successful performs a delete on the source object.
+
+   :param ms3: The marias3 object
+   :param source_bucket: The bucket where the source object is
+   :param source_key: The key/filename of the source object
+   :param dest_bucket: The destination bucket (can be the same as source)
+   :param dest_key: The destination key/filename
+   :returns: ``0`` on success, a positive integer on failure
+
 ms3_get()
 ---------
 

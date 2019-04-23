@@ -233,7 +233,7 @@ static char *generate_query(CURL *curl, const char *value,
 */
 static uint8_t generate_request_hash(uri_method_t method, const char *path,
                                      const char *bucket,
-                                     const char *query, char *post_hash, struct curl_slist *headers,
+                                     const char *query, char *post_hash, struct curl_slist *headers, bool has_source,
                                      char *return_hash)
 {
   char signing_data[1024];
@@ -318,9 +318,18 @@ static uint8_t generate_request_hash(uri_method_t method, const char *path,
 
   // List if header names
   // The newline between headers and this is important
-  snprintf(signing_data + pos, sizeof(signing_data) - pos,
-           "\nhost;x-amz-content-sha256;x-amz-date\n");
-  pos += 38;
+  if (has_source)
+  {
+    snprintf(signing_data + pos, sizeof(signing_data) - pos,
+             "\nhost;x-amz-content-sha256;x-amz-copy-source;x-amz-date\n");
+    pos += 56;
+  }
+  else
+  {
+    snprintf(signing_data + pos, sizeof(signing_data) - pos,
+             "\nhost;x-amz-content-sha256;x-amz-date\n");
+    pos += 38;
+  }
 
   // Hash of post data (can be hash of empty)
   snprintf(signing_data + pos, sizeof(signing_data) - pos, "%.*s", 64, post_hash);
@@ -376,7 +385,8 @@ static size_t put_callback(void *ptr, size_t size, size_t nmemb, void *stream)
 static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
                                      const char *base_domain, const char *region, const char *key,
                                      const char *secret, const char *object, const char *query,
-                                     uri_method_t method, const char *bucket, put_buffer_st *post_data)
+                                     uri_method_t method, const char *bucket, const char *source_bucket,
+                                     const char *source_key, put_buffer_st *post_data)
 {
   uint8_t ret = 0;
   time_t now;
@@ -420,6 +430,13 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
            post_hash);
   headers = curl_slist_append(headers, headerbuf);
 
+  if (source_bucket)
+  {
+    snprintf(headerbuf, sizeof(headerbuf), "x-amz-copy-source:/%s/%s",
+             source_bucket, source_key);
+    headers = curl_slist_append(headers, headerbuf);
+  }
+
   // Date/time header
   time(&now);
   snprintf(headerbuf, sizeof(headerbuf), "x-amz-date:");
@@ -428,15 +445,24 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
            gmtime(&now));
   headers = curl_slist_append(headers, headerbuf);
 
+  bool has_source = false;
+
+  if (source_bucket)
+  {
+    has_source = true;
+  }
+
   // Builds the request hash
   if (base_domain)
   {
     ret = generate_request_hash(method, object, bucket, query, post_hash, headers,
+                                has_source,
                                 sha256hash);
   }
   else
   {
     ret = generate_request_hash(method, object, NULL, query, post_hash, headers,
+                                has_source,
                                 sha256hash);
   }
 
@@ -498,16 +524,26 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
   }
 
   // Make auth header
-  snprintf(headerbuf, sizeof(headerbuf),
-           "Authorization: AWS4-HMAC-SHA256 Credential=%.*s/%s/%s/s3/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=%s",
-           20, key, date, region, sha256hash);
+  if (source_bucket)
+  {
+    snprintf(headerbuf, sizeof(headerbuf),
+             "Authorization: AWS4-HMAC-SHA256 Credential=%.*s/%s/%s/s3/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-copy-source;x-amz-date, Signature=%s",
+             20, key, date, region, sha256hash);
+  }
+  else
+  {
+    snprintf(headerbuf, sizeof(headerbuf),
+             "Authorization: AWS4-HMAC-SHA256 Credential=%.*s/%s/%s/s3/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=%s",
+             20, key, date, region, sha256hash);
+  }
+
   headers = curl_slist_append(headers, headerbuf);
 
   // Disable this header or PUT will barf with a 501
   sprintf(headerbuf, "Transfer-Encoding:");
   headers = curl_slist_append(headers, headerbuf);
 
-  if (method == MS3_PUT)
+  if ((method == MS3_PUT) && !source_bucket)
   {
     snprintf(headerbuf, sizeof(headerbuf), "Content-Length:%zu", post_data->length);
     headers = curl_slist_append(headers, headerbuf);
@@ -539,8 +575,8 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
 
     case MS3_PUT:
     {
-      curl_easy_setopt(curl, CURLOPT_UPLOAD, 1);
       curl_easy_setopt(curl, CURLOPT_PUT, 1L);
+      curl_easy_setopt(curl, CURLOPT_UPLOAD, 1);
       curl_easy_setopt(curl, CURLOPT_READDATA, post_data);
       curl_easy_setopt(curl, CURLOPT_READFUNCTION, put_callback);
       break;
@@ -616,7 +652,8 @@ static size_t body_callback(void *buffer, size_t size,
 }
 
 uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
-                        const char *object, const char *filter, const uint8_t *data, size_t data_size,
+                        const char *object, const char *source_bucket, const char *source_object,
+                        const char *filter, const uint8_t *data, size_t data_size,
                         char *continuation,
                         void *ret_ptr)
 {
@@ -668,6 +705,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
   switch (cmd)
   {
+    case MS3_CMD_COPY:
     case MS3_CMD_PUT:
       method = MS3_PUT;
       break;
@@ -696,7 +734,8 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   }
 
   res = build_request_headers(curl, &headers, ms3->base_domain, ms3->region,
-                              ms3->s3key, ms3->s3secret, path, query, method, bucket, &post_data);
+                              ms3->s3key, ms3->s3secret, path, query, method, bucket, source_bucket,
+                              source_object, &post_data);
 
   if (res)
   {
@@ -786,7 +825,8 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
       if (cont)
       {
         ms3_list_st *append_list = NULL;
-        res = execute_request(ms3, cmd, bucket, object, filter, data, data_size, cont,
+        res = execute_request(ms3, cmd, bucket, object, source_bucket, source_object,
+                              filter, data, data_size, cont,
                               &append_list);
         ms3_list_st *list_it = *list;
 
@@ -809,6 +849,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
       break;
     }
 
+    case MS3_CMD_COPY:
     case MS3_CMD_PUT:
     {
       ms3_cfree(mem.data);
