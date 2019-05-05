@@ -19,6 +19,10 @@
 
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <curl/curl.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -152,3 +156,7 @@ uint8_t ms3_delete(ms3_st *ms3, const char *bucket, const char *key);
 MS3_API
 uint8_t ms3_status(ms3_st *ms3, const char *bucket, const char *key,
                    ms3_status_st *status);
+
+#ifdef __cplusplus
+}
+#endif

@@ -136,6 +136,7 @@ static char *generate_path(CURL *curl, const char *object)
   char *tok_ptr = NULL;
   char *save_ptr = NULL;
   char *out_ptr = ret_buf;
+  char *path;
 
   // Keep scanbuild happy
   ret_buf[0] = '\0';
@@ -146,7 +147,7 @@ static char *generate_path(CURL *curl, const char *object)
     return ret_buf;
   }
 
-  char *path = ms3_cstrdup(object); // Because strtok_r is destructive
+  path = ms3_cstrdup(object); // Because strtok_r is destructive
 
   tok_ptr = strtok_r((char *)path, "/", &save_ptr);
 
@@ -177,8 +178,8 @@ static char *generate_query(CURL *curl, const char *value,
                             const char *continuation, uint8_t list_version)
 {
   char *ret_buf = ms3_cmalloc(sizeof(char) * 1024);
-  ret_buf[0] = '\0';
   char *encoded;
+  ret_buf[0] = '\0';
 
   if (list_version == 2)
   {
@@ -241,6 +242,7 @@ static uint8_t generate_request_hash(uri_method_t method, const char *path,
   MHASH td;
   uint8_t sha256hash[32]; // SHA_256 binary length
   uint8_t hash_pos = 0;
+  struct curl_slist *current_header = headers;
 
   // Method first
   switch (method)
@@ -304,9 +306,6 @@ static uint8_t generate_request_hash(uri_method_t method, const char *path,
     sprintf(signing_data + pos, "\n");
     pos++;
   }
-
-  // All the headers
-  struct curl_slist *current_header = headers;
 
   do
   {
@@ -400,6 +399,9 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
   uint8_t hash_pos = 0;
   const char *domain;
   struct curl_slist *headers = NULL;
+  uint8_t offset;
+  bool has_source = false;
+  struct curl_slist *current_header;
 
   // Host header
   if (base_domain)
@@ -440,12 +442,10 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
   // Date/time header
   time(&now);
   snprintf(headerbuf, sizeof(headerbuf), "x-amz-date:");
-  uint8_t offset = strlen(headerbuf);
+  offset = strlen(headerbuf);
   strftime(headerbuf + offset, sizeof(headerbuf) - offset, "%Y%m%dT%H%M%SZ",
            gmtime(&now));
   headers = curl_slist_append(headers, headerbuf);
-
-  bool has_source = false;
 
   if (source_bucket)
   {
@@ -549,7 +549,7 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
     headers = curl_slist_append(headers, headerbuf);
   }
 
-  struct curl_slist *current_header = headers;
+  current_header = headers;
 
   do
   {
@@ -661,14 +661,18 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   struct curl_slist *headers = NULL;
   uint8_t res = 0;
   struct memory_buffer_st mem;
-  mem.data = NULL;
-  mem.length = 0;
-  mem.alloced = 1;
-  mem.buffer_chunk_size = ms3->buffer_chunk_size;
   uri_method_t method;
   char *path = NULL;
   char *query = NULL;
   struct put_buffer_st post_data;
+  CURLcode curl_res;
+  long response_code;
+
+  mem.data = NULL;
+  mem.length = 0;
+  mem.alloced = 1;
+  mem.buffer_chunk_size = ms3->buffer_chunk_size;
+
   post_data.data = (uint8_t *) data;
   post_data.length = data_size;
   post_data.offset = 0;
@@ -758,7 +762,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, body_callback);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&mem);
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
-  CURLcode curl_res = curl_easy_perform(curl);
+  curl_res = curl_easy_perform(curl);
 
   if (curl_res != CURLE_OK)
   {
@@ -772,7 +776,6 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     return MS3_ERR_REQUEST_ERROR;
   }
 
-  long response_code;
   curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
   ms3debug("Response code: %ld", response_code);
 
@@ -824,11 +827,12 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
       if (cont)
       {
+        ms3_list_st *list_it;
         ms3_list_st *append_list = NULL;
         res = execute_request(ms3, cmd, bucket, object, source_bucket, source_object,
                               filter, data, data_size, cont,
                               &append_list);
-        ms3_list_st *list_it = *list;
+        list_it = *list;
 
         while (list_it->next != NULL)
         {

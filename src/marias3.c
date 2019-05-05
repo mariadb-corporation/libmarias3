@@ -80,6 +80,7 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
                  const char *region,
                  const char *base_domain)
 {
+  ms3_st *ms3;
   if ((s3key == NULL) || (s3secret == NULL))
   {
     return NULL;
@@ -90,7 +91,7 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
     return NULL;
   }
 
-  ms3_st *ms3 = ms3_cmalloc(sizeof(ms3_st));
+  ms3 = ms3_cmalloc(sizeof(ms3_st));
 
   memcpy(ms3->s3key, s3key, 20);
   memcpy(ms3->s3secret, s3secret, 40);
@@ -167,8 +168,8 @@ const char *ms3_error(uint8_t errcode)
 uint8_t ms3_list(ms3_st *ms3, const char *bucket, const char *prefix,
                  ms3_list_st **list)
 {
-  (void) prefix;
   uint8_t res = 0;
+  (void) prefix;
 
   if (!ms3 || !bucket || !list)
   {
@@ -299,8 +300,8 @@ void ms3_list_free(ms3_list_st *list)
 {
   while (list)
   {
-    ms3_cfree(list->key);
     ms3_list_st *tmp = list;
+    ms3_cfree(list->key);
     list = list->next;
     ms3_cfree(tmp);
   }
