@@ -81,6 +81,7 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
                  const char *base_domain)
 {
   ms3_st *ms3;
+
   if ((s3key == NULL) || (s3secret == NULL))
   {
     return NULL;
@@ -169,7 +170,6 @@ uint8_t ms3_list(ms3_st *ms3, const char *bucket, const char *prefix,
                  ms3_list_st **list)
 {
   uint8_t res = 0;
-  (void) prefix;
 
   if (!ms3 || !bucket || !list)
   {
@@ -255,7 +255,7 @@ uint8_t ms3_move(ms3_st *ms3, const char *source_bucket, const char *source_key,
 
   res = ms3_copy(ms3, source_bucket, source_key, dest_bucket, dest_key);
 
-  if (!res)
+  if (res)
   {
     return res;
   }

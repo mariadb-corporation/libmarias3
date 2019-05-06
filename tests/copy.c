@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
   }
 
   ASSERT_EQ_(found_new, 1, "Copied file not found");
-  ASSERT_EQ_(found_orig, 1, "Original file still exists after move");
+  ASSERT_EQ_(found_orig, 0, "Original file still exists after move");
 
   ms3_list_free(list);
 

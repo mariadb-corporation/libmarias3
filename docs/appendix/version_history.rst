@@ -4,6 +4,12 @@ Version History
 Version 2.2
 -----------
 
+Version 2.2.1 GA
+^^^^^^^^^^^^^^^^
+
+* Allow compiling with a C++ compiler
+* Fix logic error in :c:func:`ms3_move`
+
 Version 2.2.0 GA (2019-04-23)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
