@@ -9,6 +9,7 @@ Version 2.2.1 GA
 
 * Allow compiling with a C++ compiler
 * Fix logic error in :c:func:`ms3_move`
+* Stop :c:func:`ms3_get` returning the error message as the object data on error
 
 Version 2.2.0 GA (2019-04-23)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

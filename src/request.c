@@ -863,8 +863,19 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     case MS3_CMD_GET:
     {
       memory_buffer_st *buf = (memory_buffer_st *) ret_ptr;
-      buf->data = mem.data;
-      buf->length = mem.length;
+
+      if (res)
+      {
+        ms3_cfree(mem.data);
+        buf->data = NULL;
+        buf->length = 0;
+      }
+      else
+      {
+        buf->data = mem.data;
+        buf->length = mem.length;
+      }
+
       break;
     }
 
