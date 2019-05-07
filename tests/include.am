@@ -46,3 +46,9 @@ t_custom_malloc_SOURCES= tests/custom_malloc.c
 t_custom_malloc_LDADD= src/libmarias3.la
 check_PROGRAMS+= t/custom_malloc
 noinst_PROGRAMS+= t/custom_malloc
+
+t_list_SOURCES= tests/list.c
+t_list_LDADD= src/libmarias3.la
+check_PROGRAMS+= t/list
+noinst_PROGRAMS+= t/list
+

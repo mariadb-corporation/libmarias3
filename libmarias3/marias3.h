@@ -129,6 +129,10 @@ uint8_t ms3_list(ms3_st *ms3, const char *bucket, const char *prefix,
                  ms3_list_st **list);
 
 MS3_API
+uint8_t ms3_list_dir(ms3_st *ms3, const char *bucket, const char *prefix,
+                 ms3_list_st **list);
+
+MS3_API
 void ms3_list_free(ms3_list_st *list);
 
 MS3_API
