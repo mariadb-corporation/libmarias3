@@ -157,6 +157,10 @@ int main(int argc, char *argv[])
   res = ms3_delete(ms3, s3bucket, "test/basic_thread.txt");
   ASSERT_EQ_(res, 0, "Result: %u", res);
   ms3_free(data);
+  res = ms3_get(ms3, s3bucket, "test/basic_thread.txt", &data, &length);
+  ASSERT_NEQ_(res, 0, "Object should error");
+  ASSERT_NULL_(data, "Data should be NULL");
+  ASSERT_EQ_(length, 0, "There should be no data");
   ms3_deinit(ms3);
   ms3_library_deinit();
 }
