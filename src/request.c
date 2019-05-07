@@ -175,30 +175,56 @@ static char *generate_path(CURL *curl, const char *object)
  */
 
 static char *generate_query(CURL *curl, const char *value,
-                            const char *continuation, uint8_t list_version)
+                            const char *continuation, uint8_t list_version, bool use_delimiter)
 {
   char *ret_buf = ms3_cmalloc(sizeof(char) * 1024);
   char *encoded;
   ret_buf[0] = '\0';
+
+  if (use_delimiter)
+  {
+    snprintf(ret_buf, 1024, "delimiter=%%2F");
+  }
 
   if (list_version == 2)
   {
     if (continuation)
     {
       encoded = curl_easy_escape(curl, continuation, (int)strlen(continuation));
-      snprintf(ret_buf, 1024, "continuation-token=%s&list-type=2", encoded);
+      if (strlen(ret_buf))
+      {
+        snprintf(ret_buf + strlen(ret_buf), 1024 - strlen(ret_buf), "&continuation-token=%s&list-type=2", encoded);
+      }
+      else
+      {
+        snprintf(ret_buf, 1024, "continuation-token=%s&list-type=2", encoded);
+      }
       curl_free(encoded);
     }
     else
     {
-      sprintf(ret_buf, "list-type=2");
+      if (strlen(ret_buf))
+      {
+        snprintf(ret_buf + strlen(ret_buf), 1024 - strlen(ret_buf), "&list-type=2");
+      }
+      else
+      {
+        sprintf(ret_buf, "list-type=2");
+      }
     }
   }
   else if (continuation)
   {
     // Continuation is really marker here
     encoded = curl_easy_escape(curl, continuation, (int)strlen(continuation));
-    snprintf(ret_buf, 1024, "marker=%s", encoded);
+    if (strlen(ret_buf))
+    {
+      snprintf(ret_buf + strlen(ret_buf), 1024 - strlen(ret_buf), "&marker=%s", encoded);
+    }
+    else
+    {
+      snprintf(ret_buf, 1024, "marker=%s", encoded);
+    }
     curl_free(encoded);
   }
 
@@ -213,7 +239,7 @@ static char *generate_query(CURL *curl, const char *value,
     }
     else
     {
-      snprintf(ret_buf, 1024 - strlen(ret_buf), "prefix=%s",
+      snprintf(ret_buf, 1024, "prefix=%s",
                encoded);
     }
 
@@ -648,6 +674,7 @@ static size_t body_callback(void *buffer, size_t size,
   mem->data[mem->length] = '\0';
 
   ms3debug("Read %lu bytes, buffer %lu bytes", realsize, mem->length);
+  ms3debug("%s", mem->data);
   return nitems * size;
 }
 
@@ -690,9 +717,13 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
   path = generate_path(curl, object);
 
-  if (cmd == MS3_CMD_LIST)
+  if (cmd == MS3_CMD_LIST_RECURSIVE)
   {
-    query = generate_query(curl, filter, continuation, ms3->list_version);
+    query = generate_query(curl, filter, continuation, ms3->list_version, false);
+  }
+  else if (cmd == MS3_CMD_LIST)
+  {
+    query = generate_query(curl, filter, continuation, ms3->list_version, true);
   }
 
   res = build_request_uri(curl, ms3->base_domain, bucket, path, query,
@@ -724,6 +755,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
       break;
 
     case MS3_CMD_LIST:
+    case MS3_CMD_LIST_RECURSIVE:
     case MS3_CMD_GET:
       method = MS3_GET;
       break;
@@ -818,6 +850,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
   switch (cmd)
   {
+    case MS3_CMD_LIST_RECURSIVE:
     case MS3_CMD_LIST:
     {
       ms3_list_st **list = (ms3_list_st **) ret_ptr;

@@ -126,6 +126,8 @@ ms3_list()
 
    Retrieves a list of files from a given S3 bucket and fills it into a :c:type:`ms3_list_st`.
 
+   The list generated is the eqivilent of a recursive directory listing but only has files in it, no entries for directories.
+
    The resulting list should be freed using :c:func:`ms3_list_free`
 
    :param ms3: The marias3 object
@@ -163,6 +165,24 @@ Example
    }
    ms3_list_free(list);
    ms3_deinit(ms3);
+
+ms3_list_dir()
+--------------
+
+.. c:function:: uint8_t ms3_list_dir(ms3_st *ms3, const char *bucket, const char *prefix, ms3_list_st **list)
+
+   Retrieves a list of files from a given S3 bucket and fills it into a :c:type:`ms3_list_st`.
+
+   The list generated will automatically add the delimiter ``/`` and therefore filter up to the first ``/`` after the prefix. Unlike :c:func:`ms3_list` it includes directory entries. This is the eqivilent of doing a regular directory listing in a current directory (as designated by ``prefix``).
+
+   The resulting list should be freed using :c:func:`ms3_list_free`
+
+   :param ms3: The marias3 object
+   :param bucket: The bucket name to use
+   :param prefix: An optional path/file prefix to use (``NULL`` for all files)
+   :param list: A pointer to a pointer that will contain the returned list
+   :returns: ``0`` on success, a positive integer on failure
+
 
 ms3_list_free()
 ---------------
@@ -301,7 +321,7 @@ ms3_buffer_chunk_size()
    If you are receiving a large file a realloc will have to happen every time the buffer is full. For performance reasons you may want to increase the size of this buffer to reduce the reallocs and associated memory copies.
 
    .. note::
-      Attempts to set this lower than 1MB will be ignored and will result in an error
+      Attempts to set this lower than 1 byte will be ignored and will result in an error
 
    .. deprecated:: 2.1.0
       Use :c:func:`ms3_set_option` with MS3_OPT_BUFFER_CHUNK_SIZE instead. Will be removed in 3.0.0.

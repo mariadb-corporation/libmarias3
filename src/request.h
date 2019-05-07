@@ -27,7 +27,7 @@
 // URI length this
 #define MAX_URI_LENGTH 1024
 
-#define READ_BUFFER_GROW_SIZE 1024*1024
+#define READ_BUFFER_DEFAULT_SIZE 1024*1024
 
 enum uri_method_t
 {
@@ -42,6 +42,7 @@ typedef enum uri_method_t uri_method_t;
 enum command_t
 {
   MS3_CMD_LIST,
+  MS3_CMD_LIST_RECURSIVE,
   MS3_CMD_PUT,
   MS3_CMD_GET,
   MS3_CMD_DELETE,

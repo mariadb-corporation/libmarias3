@@ -1,15 +1,20 @@
 Version History
 ===============
 
-Version 2.2
+Version 2.3
 -----------
 
-Version 2.2.1 GA
+Version 2.3.0 GA
 ^^^^^^^^^^^^^^^^
 
 * Allow compiling with a C++ compiler
 * Fix logic error in :c:func:`ms3_move`
 * Stop :c:func:`ms3_get` returning the error message as the object data on error
+* Add :c:func:`ms3_list_dir` to get a non-recursive directory listing
+* Setting the buffer chunk size using :c:func:`ms3_buffer_chunk_size` or :c:func:`ms3_set_option` no longer has a lower limit of 1MB
+
+Version 2.2
+-----------
 
 Version 2.2.0 GA (2019-04-23)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

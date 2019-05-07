@@ -110,7 +110,7 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
     ms3->list_version = 2;
   }
 
-  ms3->buffer_chunk_size = READ_BUFFER_GROW_SIZE;
+  ms3->buffer_chunk_size = READ_BUFFER_DEFAULT_SIZE;
 
   ms3->curl = curl_easy_init();
   ms3->last_error = NULL;
@@ -166,7 +166,7 @@ const char *ms3_error(uint8_t errcode)
   return errmsgs[errcode];
 }
 
-uint8_t ms3_list(ms3_st *ms3, const char *bucket, const char *prefix,
+uint8_t ms3_list_dir(ms3_st *ms3, const char *bucket, const char *prefix,
                  ms3_list_st **list)
 {
   uint8_t res = 0;
@@ -177,6 +177,22 @@ uint8_t ms3_list(ms3_st *ms3, const char *bucket, const char *prefix,
   }
 
   res = execute_request(ms3, MS3_CMD_LIST, bucket, NULL, NULL, NULL, prefix, NULL,
+                        0, NULL,
+                        list);
+  return res;
+}
+
+uint8_t ms3_list(ms3_st *ms3, const char *bucket, const char *prefix,
+                 ms3_list_st **list)
+{
+  uint8_t res = 0;
+
+  if (!ms3 || !bucket || !list)
+  {
+    return MS3_ERR_PARAMETER;
+  }
+
+  res = execute_request(ms3, MS3_CMD_LIST_RECURSIVE, bucket, NULL, NULL, NULL, prefix, NULL,
                         0, NULL,
                         list);
   return res;
@@ -319,7 +335,7 @@ uint8_t ms3_buffer_chunk_size(ms3_st *ms3, size_t new_size)
     return MS3_ERR_PARAMETER;
   }
 
-  if (new_size < READ_BUFFER_GROW_SIZE)
+  if (new_size < 1)
   {
     return MS3_ERR_PARAMETER;
   }
@@ -382,7 +398,7 @@ uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value)
 
       new_size = *(size_t *)value;
 
-      if (new_size < READ_BUFFER_GROW_SIZE)
+      if (new_size < 1)
       {
         return MS3_ERR_PARAMETER;
       }
