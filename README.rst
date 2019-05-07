@@ -1,6 +1,10 @@
 libMariaS3
 ==========
 
+.. image:: https://readthedocs.org/projects/libmarias3/badge/?version=latest
+   :target: https://libmarias3.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+
 This is a lightweight C library to read/write to AWS S3 buckets using objects in memory.
 
 You will need an access key which for AWS can be created at `the AWS security crenditials page <https://console.aws.amazon.com/iam/home?#/security_credentials>`_.
