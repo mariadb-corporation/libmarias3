@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
   (void) argv;
   int res;
   ms3_list_st *list = NULL, *list_it = NULL;
+  int i;
   const char *test_string = "Another one bites the dust";
   char *s3key = getenv("S3KEY");
   char *s3secret = getenv("S3SECRET");
@@ -63,7 +64,7 @@ int main(int argc, char *argv[])
   bool found_good = false;
   bool found_bad = false;
 
-  for (int i = 0; i <= 3; i++)
+  for (i = 0; i <= 3; i++)
   {
     res = ms3_list(ms3, s3bucket, "test", &list);
     ASSERT_EQ(res, 0);
@@ -110,4 +111,5 @@ int main(int argc, char *argv[])
   ASSERT_EQ(res, 0);
   ms3_deinit(ms3);
   ms3_library_deinit();
+  return 0;
 }

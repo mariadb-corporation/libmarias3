@@ -268,6 +268,7 @@ static uint8_t generate_request_hash(uri_method_t method, const char *path,
   MHASH td;
   uint8_t sha256hash[32]; // SHA_256 binary length
   uint8_t hash_pos = 0;
+  uint8_t i;
   struct curl_slist *current_header = headers;
 
   // Method first
@@ -365,7 +366,7 @@ static uint8_t generate_request_hash(uri_method_t method, const char *path,
   mhash(td, signing_data, (uint32_t)strlen(signing_data));
   mhash_deinit(td, sha256hash);
 
-  for (uint8_t i = 0; i < mhash_get_block_size(MHASH_SHA256); i++)
+  for (i = 0; i < (uint8_t)mhash_get_block_size(MHASH_SHA256); i++)
   {
     sprintf(return_hash + hash_pos, "%.2x", sha256hash[i]);
     hash_pos += 2;
@@ -426,6 +427,7 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
   const char *domain;
   struct curl_slist *headers = NULL;
   uint8_t offset;
+  uint8_t i;
   bool has_source = false;
   struct curl_slist *current_header;
 
@@ -448,7 +450,7 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
   mhash(td, post_data->data, (uint32_t)post_data->length);
   mhash_deinit(td, tmp_hash);
 
-  for (uint8_t i = 0; i < mhash_get_block_size(MHASH_SHA256); i++)
+  for (i = 0; i < (uint8_t)mhash_get_block_size(MHASH_SHA256); i++)
   {
     sprintf(post_hash + hash_pos, "%.2x", tmp_hash[i]);
     hash_pos += 2;
@@ -543,7 +545,7 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
 
   hash_pos = 0;
 
-  for (uint8_t i = 0; i < mhash_get_block_size(MHASH_SHA256); i++)
+  for (i = 0; i < (uint8_t)mhash_get_block_size(MHASH_SHA256); i++)
   {
     sprintf(sha256hash + hash_pos, "%.2x", hmac_hash[i]);
     hash_pos += 2;

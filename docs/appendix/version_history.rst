@@ -4,6 +4,11 @@ Version History
 Version 2.3
 -----------
 
+Version 2.3.1 GA
+^^^^^^^^^^^^^^^^
+
+* Allow compiling to work with gnu89 compiler
+
 Version 2.3.0 GA
 ^^^^^^^^^^^^^^^^
 
