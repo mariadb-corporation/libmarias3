@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
   (void) argc;
   (void) argv;
   int res;
+  int i;
   ms3_list_st *list = NULL, *list_it = NULL;
   uint8_t *data;
   size_t length;
@@ -166,7 +167,7 @@ int main(int argc, char *argv[])
   ASSERT_EQ(length, 26);
   ASSERT_STREQ((char *)data, test_string);
 
-  for (int i = 0; i <= 3; i++)
+  for (i = 0; i <= 3; i++)
   {
     res = ms3_status(ms3, s3bucket, "test/custom_malloc.txt", &status);
 
@@ -190,4 +191,5 @@ int main(int argc, char *argv[])
   ms3_free(data);
   ms3_deinit(ms3);
   ms3_library_deinit();
+  return 0;
 }

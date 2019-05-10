@@ -45,6 +45,7 @@ const char *test_string = "Another one bites the dust";
 static void *put_thread(void *arg)
 {
   uint8_t res;
+  int i;
   struct thread_info *tinfo = arg;
   ms3_st *ms3 = ms3_init(tinfo->s3key, tinfo->s3secret, tinfo->s3region,
                          tinfo->s3host);
@@ -55,7 +56,7 @@ static void *put_thread(void *arg)
     ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, &option);
   }
 
-  for (int i = tinfo->start_count; i < tinfo->start_count + 150; i++)
+  for (i = tinfo->start_count; i < tinfo->start_count + 150; i++)
   {
     char fname[64];
     snprintf(fname, 64, "listtest/list-%d.dat", i);
@@ -72,6 +73,7 @@ static void *put_thread(void *arg)
 static void *delete_thread(void *arg)
 {
   uint8_t res;
+  int i;
   struct thread_info *tinfo = arg;
   ms3_st *ms3 = ms3_init(tinfo->s3key, tinfo->s3secret, tinfo->s3region,
                          tinfo->s3host);
@@ -82,7 +84,7 @@ static void *delete_thread(void *arg)
     ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, &option);
   }
 
-  for (int i = tinfo->start_count; i < tinfo->start_count + 150; i++)
+  for (i = tinfo->start_count; i < tinfo->start_count + 150; i++)
   {
     char fname[64];
     snprintf(fname, 64, "listtest/list-%d.dat", i);
@@ -100,6 +102,7 @@ int main(int argc, char *argv[])
   (void) argc;
   (void) argv;
 
+  int tnum;
   char *s3key = getenv("S3KEY");
   char *s3secret = getenv("S3SECRET");
   char *s3region = getenv("S3REGION");
@@ -138,7 +141,7 @@ int main(int argc, char *argv[])
   // Write 1500 files using 10 threads
   printf("Writing 1500 items\n");
 
-  for (int tnum = 0; tnum < 10; tnum++)
+  for (tnum = 0; tnum < 10; tnum++)
   {
     tinfo[tnum].thread_num = tnum + 1;
     tinfo[tnum].start_count = start_count;
@@ -153,7 +156,7 @@ int main(int argc, char *argv[])
                    &put_thread, &tinfo[tnum]);
   }
 
-  for (int tnum = 0; tnum < 10; tnum++)
+  for (tnum = 0; tnum < 10; tnum++)
   {
     pthread_join(tinfo[tnum].thread_id, NULL);
   }
@@ -212,7 +215,7 @@ int main(int argc, char *argv[])
   // Destroy 1500 files using 10 threads
   printf("Deleting 1500 items");
 
-  for (int tnum = 0; tnum < 10; tnum++)
+  for (tnum = 0; tnum < 10; tnum++)
   {
     tinfo[tnum].thread_num = tnum + 1;
     tinfo[tnum].start_count = start_count;
@@ -227,11 +230,12 @@ int main(int argc, char *argv[])
                    &delete_thread, &tinfo[tnum]);
   }
 
-  for (int tnum = 0; tnum < 10; tnum++)
+  for (tnum = 0; tnum < 10; tnum++)
   {
     pthread_join(tinfo[tnum].thread_id, NULL);
   }
 
   free(tinfo);
   ms3_library_deinit();
+  return 0;
 }

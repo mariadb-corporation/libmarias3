@@ -135,4 +135,5 @@ int main(int argc, char *argv[])
   ms3_free(data);
   ms3_deinit(ms3);
   ms3_library_deinit();
+  return 0;
 }

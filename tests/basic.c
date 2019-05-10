@@ -30,6 +30,7 @@ int main(int argc, char *argv[])
   ms3_list_st *list = NULL, *list_it = NULL;
   uint8_t *data;
   size_t length;
+  int i;
   const char *test_string = "Another one bites the dust";
   ms3_status_st status;
   char *s3key = getenv("S3KEY");
@@ -135,7 +136,7 @@ int main(int argc, char *argv[])
   ASSERT_EQ(length, 26);
   ASSERT_STREQ((char *)data, test_string);
 
-  for (int i = 0; i <= 3; i++)
+  for (i = 0; i <= 3; i++)
   {
     res = ms3_status(ms3, s3bucket, "test/basic_thread.txt", &status);
 
@@ -163,4 +164,5 @@ int main(int argc, char *argv[])
   ASSERT_EQ_(length, 0, "There should be no data");
   ms3_deinit(ms3);
   ms3_library_deinit();
+  return 0;
 }
