@@ -69,13 +69,6 @@ void ms3_library_deinit(void)
   xmlCleanupParser();
 }
 
-ms3_st *ms3_thread_init(const char *s3key, const char *s3secret,
-                        const char *region,
-                        const char *base_domain)
-{
-  return ms3_init(s3key, s3secret, region, base_domain);
-}
-
 ms3_st *ms3_init(const char *s3key, const char *s3secret,
                  const char *region,
                  const char *base_domain)
@@ -146,9 +139,10 @@ const char *ms3_server_error(ms3_st *ms3)
   return ms3->last_error;
 }
 
-void ms3_debug(bool state)
+void ms3_debug(void)
 {
-  ms3debug_set(state);
+  bool state = ms3debug_get();
+  ms3debug_set(!state);
 
   if (state)
   {
@@ -167,7 +161,7 @@ const char *ms3_error(uint8_t errcode)
 }
 
 uint8_t ms3_list_dir(ms3_st *ms3, const char *bucket, const char *prefix,
-                 ms3_list_st **list)
+                     ms3_list_st **list)
 {
   uint8_t res = 0;
 
@@ -192,7 +186,8 @@ uint8_t ms3_list(ms3_st *ms3, const char *bucket, const char *prefix,
     return MS3_ERR_PARAMETER;
   }
 
-  res = execute_request(ms3, MS3_CMD_LIST_RECURSIVE, bucket, NULL, NULL, NULL, prefix, NULL,
+  res = execute_request(ms3, MS3_CMD_LIST_RECURSIVE, bucket, NULL, NULL, NULL,
+                        prefix, NULL,
                         0, NULL,
                         list);
   return res;
@@ -230,7 +225,7 @@ uint8_t ms3_get(ms3_st *ms3, const char *bucket, const char *key,
                 uint8_t **data, size_t *length)
 {
   uint8_t res = 0;
-  memory_buffer_st buf;
+  struct memory_buffer_st buf;
 
   if (!ms3 || !bucket || !key || !data || !length)
   {
@@ -328,22 +323,6 @@ void ms3_free(uint8_t *data)
   ms3_cfree(data);
 }
 
-uint8_t ms3_buffer_chunk_size(ms3_st *ms3, size_t new_size)
-{
-  if (!ms3)
-  {
-    return MS3_ERR_PARAMETER;
-  }
-
-  if (new_size < 1)
-  {
-    return MS3_ERR_PARAMETER;
-  }
-
-  ms3->buffer_chunk_size = new_size;
-  return 0;
-}
-
 uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value)
 {
   if (!ms3)
@@ -355,35 +334,13 @@ uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value)
   {
     case MS3_OPT_USE_HTTP:
     {
-      bool param;
-
-      if (value)
-      {
-        param = *(bool *)value;
-      }
-      else
-      {
-        param = true;
-      }
-
-      ms3->use_http = param;
+      ms3->use_http = ms3->use_http ? 0 : 1;
       break;
     }
 
     case MS3_OPT_DISABLE_SSL_VERIFY:
     {
-      bool param;
-
-      if (value)
-      {
-        param = *(bool *)value;
-      }
-      else
-      {
-        param = true;
-      }
-
-      ms3->disable_verification = param;
+      ms3->disable_verification = ms3->disable_verification ? 0 : 1;
       break;
     }
 

@@ -138,6 +138,7 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
         {
           filename = xmlNodeGetContent(child);
           ms3debug("Filename: %s", filename);
+
           if (filename[strlen((const char *)filename) - 1] == '/')
           {
             skip = true;
@@ -206,30 +207,32 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
     if (!xmlStrcmp(node->name, (const unsigned char *)"CommonPrefixes"))
     {
       child = node->xmlChildrenNode;
+
       if (!xmlStrcmp(child->name, (const unsigned char *)"Prefix"))
       {
-          filename = xmlNodeGetContent(child);
-          ms3debug("Filename: %s", filename);
-          nextptr = ms3_cmalloc(sizeof(ms3_list_st));
-          nextptr->next = NULL;
+        filename = xmlNodeGetContent(child);
+        ms3debug("Filename: %s", filename);
+        nextptr = ms3_cmalloc(sizeof(ms3_list_st));
+        nextptr->next = NULL;
 
-          if (!lastptr)
-          {
-            *list = nextptr;
-            lastptr = nextptr;
-          }
-          else
-          {
-            lastptr->next = nextptr;
-            lastptr = nextptr;
-          }
+        if (!lastptr)
+        {
+          *list = nextptr;
+          lastptr = nextptr;
+        }
+        else
+        {
+          lastptr->next = nextptr;
+          lastptr = nextptr;
+        }
 
-          nextptr->key = ms3_cstrdup((const char *)filename);
-          nextptr->length = 0;
-          nextptr->created = 0;
-          xmlFree(filename);
+        nextptr->key = ms3_cstrdup((const char *)filename);
+        nextptr->length = 0;
+        nextptr->created = 0;
+        xmlFree(filename);
       }
     }
+
     node = node->next;
   }
 

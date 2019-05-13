@@ -52,8 +52,7 @@ static void *put_thread(void *arg)
 
   if (tinfo->noverify)
   {
-    bool option = true;
-    ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, &option);
+    ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, NULL);
   }
 
   for (i = tinfo->start_count; i < tinfo->start_count + 150; i++)
@@ -80,8 +79,7 @@ static void *delete_thread(void *arg)
 
   if (tinfo->noverify)
   {
-    bool option = true;
-    ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, &option);
+    ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, NULL);
   }
 
   for (i = tinfo->start_count; i < tinfo->start_count + 150; i++)
@@ -168,8 +166,7 @@ int main(int argc, char *argv[])
 
   if (noverify)
   {
-    bool option = true;
-    ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, &option);
+    ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, NULL);
   }
 
   ms3_list_st *list = NULL, *list_it = NULL;

@@ -1,22 +1,30 @@
 Version History
 ===============
 
+Version 3.0
+-----------
+
+Version 3.0.0 GA
+^^^^^^^^^^^^^^^^
+
+* Allow compiling to work with gnu89 compiler mode
+* Fix building in CLang
+* Removed previous deprecated ``ms3_thread_init`` and ``ms3_buffer_chunk_size``
+* Remove ``bool`` from frontend API by:
+  - Making :c:func:`ms3_debug` a toggle
+  - Making the boolean options of :c:func:`ms3_set_option` toggles
+
 Version 2.3
 -----------
 
-Version 2.3.1 GA
-^^^^^^^^^^^^^^^^
-
-* Allow compiling to work with gnu89 compiler
-
-Version 2.3.0 GA
-^^^^^^^^^^^^^^^^
+Version 2.3.0 GA (2019-05-07)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Allow compiling with a C++ compiler
 * Fix logic error in :c:func:`ms3_move`
 * Stop :c:func:`ms3_get` returning the error message as the object data on error
 * Add :c:func:`ms3_list_dir` to get a non-recursive directory listing
-* Setting the buffer chunk size using :c:func:`ms3_buffer_chunk_size` or :c:func:`ms3_set_option` no longer has a lower limit of 1MB
+* Setting the buffer chunk size using ``ms3_buffer_chunk_size`` or :c:func:`ms3_set_option` no longer has a lower limit of 1MB
 
 Version 2.2
 -----------
@@ -24,10 +32,10 @@ Version 2.2
 Version 2.2.0 GA (2019-04-23)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* Add :c:func:`ms3_init` to replace :c:func:`ms3_thread_init` and deprecate the latter.
+* Add :c:func:`ms3_init` to replace ``ms3_thread_init`` and deprecate the latter.
 * Add :c:func:`ms3_library_init_malloc` to add custom allocators
 * Add :c:func:`ms3_library_deinit` to cleanup`
-* Add :c:func:`ms3_copy` and c:func:`ms3_move` to use S3's internal file copy
+* Add :c:func:`ms3_copy` and :c:func:`ms3_move` to use S3's internal file copy
 
 Version 2.1
 -----------
@@ -45,7 +53,7 @@ Version 2.1.0 GA (2019-03-29)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Add :c:func:`ms3_set_option` to set various connection options
-* Deprecated :c:func:`ms3_buffer_chunk_size`, use :c:func:`ms3_set_option` instead
+* Deprecated ``ms3_buffer_chunk_size``, use :c:func:`ms3_set_option` instead
 * Added options to use ``http`` instead of ``https`` and to disable SSL verification
 * Added debugging output for server/curl error messages
 * Added compatibility for V1 bucket list API. Will turn on automatically for non-Amazon S3 compatible servers. Additionally an option has been created to force V1 or V2
@@ -56,12 +64,12 @@ Version 2.0
 Version 2.0.0 GA (2019-03-28)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* Fix double-free when using :c:func:`ms3_thread_init` and an error occurs
+* Fix double-free when using ``ms3_thread_init`` and an error occurs
 * Fix error when a PUT >= 65535 is attempted
 * Improve performance of GET for large files
-* Make :c:func:`ms3_thread_init` treat empty string base_domain as ``NULL``
+* Make ``ms3_thread_init`` treat empty string base_domain as ``NULL``
 * Add :c:func:`ms3_free`
-* Add :c:func:`ms3_buffer_chunk_size`
+* Add ``ms3_buffer_chunk_size``
 * Cleanup linking
 * Removed ``ms3_init``
 * Added :c:func:`ms3_server_error` to get the last server or Curl error
@@ -75,7 +83,7 @@ Version 1.1.0 GA (2019-03-27)
 * Fix memory leak in libxml2 function usage
 * Fix memory leaks in libcurl usage
 * Fix test collisions causing failures
-* Added :c:func:`ms3_library_init` and :c:func:`ms3_thread_init` for higher-performance acceses
+* Added :c:func:`ms3_library_init` and ``ms3_thread_init`` for higher-performance acceses
 
 Version 1.0
 -----------

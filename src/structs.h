@@ -36,8 +36,6 @@ struct ms3_st
   bool first_run;
 };
 
-typedef struct ms3_st ms3_st;
-
 struct memory_buffer_st
 {
   uint8_t *data;
@@ -46,13 +44,9 @@ struct memory_buffer_st
   size_t buffer_chunk_size;
 };
 
-typedef struct memory_buffer_st memory_buffer_st;
-
 struct put_buffer_st
 {
   const uint8_t *data;
   size_t length;
   size_t offset;
 };
-
-typedef struct put_buffer_st put_buffer_st;

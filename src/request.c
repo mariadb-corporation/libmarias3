@@ -191,14 +191,17 @@ static char *generate_query(CURL *curl, const char *value,
     if (continuation)
     {
       encoded = curl_easy_escape(curl, continuation, (int)strlen(continuation));
+
       if (strlen(ret_buf))
       {
-        snprintf(ret_buf + strlen(ret_buf), 1024 - strlen(ret_buf), "&continuation-token=%s&list-type=2", encoded);
+        snprintf(ret_buf + strlen(ret_buf), 1024 - strlen(ret_buf),
+                 "&continuation-token=%s&list-type=2", encoded);
       }
       else
       {
         snprintf(ret_buf, 1024, "continuation-token=%s&list-type=2", encoded);
       }
+
       curl_free(encoded);
     }
     else
@@ -217,14 +220,17 @@ static char *generate_query(CURL *curl, const char *value,
   {
     // Continuation is really marker here
     encoded = curl_easy_escape(curl, continuation, (int)strlen(continuation));
+
     if (strlen(ret_buf))
     {
-      snprintf(ret_buf + strlen(ret_buf), 1024 - strlen(ret_buf), "&marker=%s", encoded);
+      snprintf(ret_buf + strlen(ret_buf), 1024 - strlen(ret_buf), "&marker=%s",
+               encoded);
     }
     else
     {
       snprintf(ret_buf, 1024, "marker=%s", encoded);
     }
+
     curl_free(encoded);
   }
 
@@ -380,7 +386,7 @@ static uint8_t generate_request_hash(uri_method_t method, const char *path,
 
 static size_t put_callback(void *ptr, size_t size, size_t nmemb, void *stream)
 {
-  put_buffer_st *buf = (put_buffer_st *)stream;
+  struct put_buffer_st *buf = (struct put_buffer_st *)stream;
   size_t buffer_size = size * nmemb;
 
   ms3debug("PUT callback %lu bytes remaining, %lu buffer",
@@ -412,7 +418,7 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
                                      const char *base_domain, const char *region, const char *key,
                                      const char *secret, const char *object, const char *query,
                                      uri_method_t method, const char *bucket, const char *source_bucket,
-                                     const char *source_key, put_buffer_st *post_data)
+                                     const char *source_key, struct put_buffer_st *post_data)
 {
   uint8_t ret = 0;
   time_t now;
@@ -897,7 +903,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
     case MS3_CMD_GET:
     {
-      memory_buffer_st *buf = (memory_buffer_st *) ret_ptr;
+      struct memory_buffer_st *buf = (struct memory_buffer_st *) ret_ptr;
 
       if (res)
       {
