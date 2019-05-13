@@ -384,36 +384,6 @@ static uint8_t generate_request_hash(uri_method_t method, const char *path,
   return 0;
 }
 
-static size_t put_callback(void *ptr, size_t size, size_t nmemb, void *stream)
-{
-  struct put_buffer_st *buf = (struct put_buffer_st *)stream;
-  size_t buffer_size = size * nmemb;
-
-  ms3debug("PUT callback %lu bytes remaining, %lu buffer",
-           buf->length - buf->offset, buffer_size);
-
-  // All data copied
-  if (buf->length == buf->offset)
-  {
-    return 0;
-  }
-
-  if (buffer_size >= buf->length - buf->offset)
-  {
-    size_t transfer = buf->length - buf->offset;
-    memcpy(ptr, buf->data + buf->offset, transfer);
-    buf->offset = buf->length;
-    return transfer;
-  }
-  else
-  {
-    memcpy(ptr, buf->data + buf->offset, buffer_size);
-    buf->offset += buffer_size;
-    return buffer_size;
-  }
-
-}
-
 static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
                                      const char *base_domain, const char *region, const char *key,
                                      const char *secret, const char *object, const char *query,
@@ -609,10 +579,7 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
 
     case MS3_PUT:
     {
-      curl_easy_setopt(curl, CURLOPT_PUT, 1L);
-      curl_easy_setopt(curl, CURLOPT_UPLOAD, 1);
-      curl_easy_setopt(curl, CURLOPT_READDATA, post_data);
-      curl_easy_setopt(curl, CURLOPT_READFUNCTION, put_callback);
+      curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
       break;
     }
 
@@ -751,6 +718,8 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     case MS3_CMD_COPY:
     case MS3_CMD_PUT:
       method = MS3_PUT;
+      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, (char*)data);
+      curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, data_size);
       break;
 
     case MS3_CMD_DELETE:
