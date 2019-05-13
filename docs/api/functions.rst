@@ -57,11 +57,6 @@ ms3_library_init_malloc()
 ms3_init()
 ----------
 
-.. c:function:: ms3_st *ms3_thread_init(const char *s3key, const char *s3secret, const char *region, const char *base_domain)
-
-   .. deprecated:: 2.2.0
-      Use :c:func:`ms3_init` instead. Will be removed in 3.0.0.
-
 .. c:function:: ms3_st *ms3_init(const char *s3key, const char *s3secret, const char *region, const char *base_domain)
 
    Initializes a :c:type:`ms3_st` object. This object should only be used in
@@ -110,14 +105,12 @@ ms3_error()
 ms3_debug()
 -----------
 
-.. c:function:: void ms3_debug(bool state)
+.. c:function:: void ms3_debug()
 
-   Enables and disables debugging output on stderr
+   Enables and disables debugging output on stderr. Each call toggles enable / disable.
 
    Note::
        This enables/disables globally for the library
-
-   :param state: Set to ``true`` to enable and ``false`` to disable
 
 ms3_list()
 ----------
@@ -311,23 +304,6 @@ ms3_free()
    Used to free the data allocated by :c:func:`ms3_get`.
 
    :param data: The data to free
-
-ms3_buffer_chunk_size()
------------------------
-
-.. c:function:: uint8_t ms3_buffer_chunk_size(size_t new_size)
-
-   Set the chunk size for the receive buffer. Default is 1MB.
-   If you are receiving a large file a realloc will have to happen every time the buffer is full. For performance reasons you may want to increase the size of this buffer to reduce the reallocs and associated memory copies.
-
-   .. note::
-      Attempts to set this lower than 1 byte will be ignored and will result in an error
-
-   .. deprecated:: 2.1.0
-      Use :c:func:`ms3_set_option` with MS3_OPT_BUFFER_CHUNK_SIZE instead. Will be removed in 3.0.0.
-
-   :param new_size: The new buffer chunk size to set
-   :returns: ``0`` on success, a positive integer on failure
 
 ms3_set_option()
 ----------------

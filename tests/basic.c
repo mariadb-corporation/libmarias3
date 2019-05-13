@@ -50,8 +50,7 @@ int main(int argc, char *argv[])
 
   if (s3noverify && !strcmp(s3noverify, "1"))
   {
-    bool option = true;
-    ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, &option);
+    ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, NULL);
   }
 
 //  ms3_debug(true);

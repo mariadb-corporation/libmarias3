@@ -25,7 +25,6 @@ extern "C" {
 
 #include <curl/curl.h>
 #include <stdint.h>
-#include <stdbool.h>
 
 #include <libmarias3/visibility.h>
 
@@ -102,14 +101,6 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
                  const char *base_domain);
 
 MS3_API
-ms3_st *ms3_thread_init(const char *s3key, const char *s3secret,
-                        const char *region,
-                        const char *base_domain);
-
-MS3_API
-uint8_t ms3_buffer_chunk_size(ms3_st *ms3, size_t new_size);
-
-MS3_API
 uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value);
 
 MS3_API
@@ -122,7 +113,7 @@ MS3_API
 const char *ms3_error(uint8_t errcode);
 
 MS3_API
-void ms3_debug(bool state);
+void ms3_debug(void);
 
 MS3_API
 uint8_t ms3_list(ms3_st *ms3, const char *bucket, const char *prefix,
@@ -130,7 +121,7 @@ uint8_t ms3_list(ms3_st *ms3, const char *bucket, const char *prefix,
 
 MS3_API
 uint8_t ms3_list_dir(ms3_st *ms3, const char *bucket, const char *prefix,
-                 ms3_list_st **list);
+                     ms3_list_st **list);
 
 MS3_API
 void ms3_list_free(ms3_list_st *list);

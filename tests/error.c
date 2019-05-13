@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
                          "1234567890123456789012345678901234567890", "us-east-1", NULL);
 
   // Enable here so cppcheck shows coverage
-  ms3_debug(true);
+  ms3_debug();
   ASSERT_NOT_NULL(ms3);
   const char *errmsg = ms3_error(255);
   ASSERT_STREQ(errmsg, "No such error code");

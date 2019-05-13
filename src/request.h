@@ -53,7 +53,6 @@ enum command_t
 typedef enum command_t command_t;
 
 struct ms3_st;
-typedef struct ms3_st ms3_st;
 
 uint8_t execute_request(ms3_st *ms3, command_t command, const char *bucket,
                         const char *object, const char *source_bucket, const char *source_object,
