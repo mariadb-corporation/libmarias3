@@ -4,8 +4,13 @@ Version History
 Version 3.0
 -----------
 
-Version 3.0.0 GA
+Version 3.0.1 GA
 ^^^^^^^^^^^^^^^^
+
+* Improve performance of PUT
+
+Version 3.0.0 GA (2019-05-13)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Allow compiling to work with gnu89 compiler mode
 * Fix building in CLang
