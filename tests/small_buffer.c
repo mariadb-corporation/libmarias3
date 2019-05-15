@@ -20,7 +20,7 @@
 #include <yatl/lite.h>
 #include <libmarias3/marias3.h>
 
-/* Tests basic PUT/GET a 64MB file */
+/* Tests basic GET with a small buffer */
 
 int main(int argc, char *argv[])
 {
@@ -29,8 +29,8 @@ int main(int argc, char *argv[])
   int res;
   uint8_t *data;
   size_t length;
-  char *test_string = malloc(64 * 1024 * 1024);
-  memset(test_string, 'a', 64 * 1024 * 1024);
+  char *test_string = malloc(64 * 1024);
+  memset(test_string, 'a', 64 * 1024);
   char *s3key = getenv("S3KEY");
   char *s3secret = getenv("S3SECRET");
   char *s3region = getenv("S3REGION");
@@ -54,17 +54,24 @@ int main(int argc, char *argv[])
 //  ms3_debug(true);
   ASSERT_NOT_NULL(ms3);
 
-  res = ms3_put(ms3, s3bucket, "test/large_file.dat",
+  res = ms3_put(ms3, s3bucket, "test/small_buffer.dat",
                 (const uint8_t *)test_string,
-                64 * 1024 * 1024);
+                64 * 1024);
   ASSERT_EQ_(res, 0, "Result: %u", res);
-  size_t new_buffer_size = 4 * 1024 * 1024;
+  size_t new_buffer_size = 64 * 1024;
   res = ms3_set_option(ms3, MS3_OPT_BUFFER_CHUNK_SIZE, &new_buffer_size);
   ASSERT_EQ_(res, 0, "Result: %u", res);
-  res = ms3_get(ms3, s3bucket, "test/large_file.dat", &data, &length);
+  res = ms3_get(ms3, s3bucket, "test/small_buffer.dat", &data, &length);
   ASSERT_EQ_(res, 0, "Result: %u", res);
-  ASSERT_EQ(length, 64 * 1024 * 1024);
-  res = ms3_delete(ms3, s3bucket, "test/large_file.dat");
+  ASSERT_EQ(length, 64 * 1024);
+  ms3_free(data);
+
+  new_buffer_size = 1024;
+  res = ms3_set_option(ms3, MS3_OPT_BUFFER_CHUNK_SIZE, &new_buffer_size);
+  res = ms3_get(ms3, s3bucket, "test/small_buffer.dat", &data, &length);
+  ASSERT_EQ_(res, 0, "Result: %u", res);
+  ASSERT_EQ(length, 64 * 1024);
+  res = ms3_delete(ms3, s3bucket, "test/small_buffer.dat");
   ASSERT_EQ_(res, 0, "Result: %u", res);
   free(test_string);
   ms3_free(data);

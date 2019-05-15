@@ -44,7 +44,6 @@ const char *test_string = "Another one bites the dust";
 
 static void *put_thread(void *arg)
 {
-  uint8_t res;
   int i;
   struct thread_info *tinfo = arg;
   ms3_st *ms3 = ms3_init(tinfo->s3key, tinfo->s3secret, tinfo->s3region,
@@ -57,6 +56,7 @@ static void *put_thread(void *arg)
 
   for (i = tinfo->start_count; i < tinfo->start_count + 150; i++)
   {
+    uint8_t res;
     char fname[64];
     snprintf(fname, 64, "listtest/list-%d.dat", i);
     res = ms3_put(ms3, tinfo->s3bucket, fname, (const uint8_t *)test_string,
@@ -71,7 +71,6 @@ static void *put_thread(void *arg)
 
 static void *delete_thread(void *arg)
 {
-  uint8_t res;
   int i;
   struct thread_info *tinfo = arg;
   ms3_st *ms3 = ms3_init(tinfo->s3key, tinfo->s3secret, tinfo->s3region,
@@ -84,6 +83,7 @@ static void *delete_thread(void *arg)
 
   for (i = tinfo->start_count; i < tinfo->start_count + 150; i++)
   {
+    uint8_t res;
     char fname[64];
     snprintf(fname, 64, "listtest/list-%d.dat", i);
     res = ms3_delete(ms3, tinfo->s3bucket, fname);

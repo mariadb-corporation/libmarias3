@@ -20,6 +20,8 @@
 #include "config.h"
 #include "common.h"
 
+#include <math.h>
+
 const char *default_domain = "s3.amazonaws.com";
 
 static void set_error(ms3_st *ms3, const char *error)
@@ -154,7 +156,7 @@ static char *generate_path(CURL *curl, const char *object)
   while (tok_ptr != NULL)
   {
     char *encoded = curl_easy_escape(curl, tok_ptr, (int)strlen(tok_ptr));
-    snprintf(out_ptr, 1024 - (ret_buf - out_ptr), "/%s", encoded);
+    snprintf(out_ptr, 1024 - (out_ptr - ret_buf), "/%s", encoded);
     out_ptr += strlen(encoded) + 1;
     curl_free(encoded);
     tok_ptr = strtok_r(NULL, "/", &save_ptr);
@@ -392,6 +394,7 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
 {
   uint8_t ret = 0;
   time_t now;
+  struct tm tmp_tm;
   char headerbuf[1024];
   char date[9];
   MHASH td;
@@ -447,8 +450,9 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
   time(&now);
   snprintf(headerbuf, sizeof(headerbuf), "x-amz-date:");
   offset = strlen(headerbuf);
+  gmtime_r(&now, &tmp_tm);
   strftime(headerbuf + offset, sizeof(headerbuf) - offset, "%Y%m%dT%H%M%SZ",
-           gmtime(&now));
+           &tmp_tm);
   headers = curl_slist_append(headers, headerbuf);
 
   if (source_bucket)
@@ -480,7 +484,7 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
   snprintf(headerbuf, sizeof(headerbuf), "AWS4%.*s", 40, secret);
   td = mhash_hmac_init(MHASH_SHA256, headerbuf, (uint32_t)strlen(headerbuf),
                        mhash_get_hash_pblock(MHASH_SHA1));
-  strftime(headerbuf, sizeof(headerbuf), "%Y%m%d", gmtime(&now));
+  strftime(headerbuf, sizeof(headerbuf), "%Y%m%d", &tmp_tm);
   mhash(td, headerbuf, (uint32_t)strlen(headerbuf));
   mhash_hmac_deinit(td, hmac_hash);
 
@@ -508,9 +512,9 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
   snprintf(headerbuf, sizeof(headerbuf), "AWS4-HMAC-SHA256\n");
   offset = strlen(headerbuf);
   strftime(headerbuf + offset, sizeof(headerbuf) - offset, "%Y%m%dT%H%M%SZ\n",
-           gmtime(&now));
+           &tmp_tm);
   offset = strlen(headerbuf);
-  strftime(date, 9, "%Y%m%d", gmtime(&now));
+  strftime(date, 9, "%Y%m%d", &tmp_tm);
   snprintf(headerbuf + offset, sizeof(headerbuf) - offset,
            "%.*s/%s/s3/aws4_request\n%.*s", 8, date, region, 64, sha256hash);
   ms3debug("Data to sign: %s", headerbuf);
@@ -630,9 +634,17 @@ static size_t body_callback(void *buffer, size_t size,
 
   struct memory_buffer_st *mem = (struct memory_buffer_st *)userdata;
 
-  if (realsize + mem->length > mem->alloced)
+  if (realsize + mem->length >= mem->alloced)
   {
-    uint8_t *ptr = ms3_crealloc(mem->data, mem->alloced + mem->buffer_chunk_size);
+    size_t additional_size = mem->buffer_chunk_size;
+
+    if (realsize >= mem->buffer_chunk_size)
+    {
+      additional_size = (ceil((double)realsize / (double)mem->buffer_chunk_size) + 1)
+                        * mem->buffer_chunk_size;
+    }
+
+    uint8_t *ptr = ms3_crealloc(mem->data, mem->alloced + additional_size);
 
     if (!ptr)
     {
@@ -640,7 +652,7 @@ static size_t body_callback(void *buffer, size_t size,
       return 0;
     }
 
-    mem->alloced += mem->buffer_chunk_size;
+    mem->alloced += additional_size;
     mem->data = ptr;
   }
 
@@ -648,8 +660,7 @@ static size_t body_callback(void *buffer, size_t size,
   mem->length += realsize;
   mem->data[mem->length] = '\0';
 
-  ms3debug("Read %lu bytes, buffer %lu bytes", realsize, mem->length);
-  ms3debug("%s", mem->data);
+  ms3debug("Read %zu bytes, buffer %zu bytes", realsize, mem->length);
   return nitems * size;
 }
 
@@ -668,7 +679,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   char *query = NULL;
   struct put_buffer_st post_data;
   CURLcode curl_res;
-  long response_code;
+  long response_code = 0;
 
   mem.data = NULL;
   mem.length = 0;
@@ -706,7 +717,6 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
   if (res)
   {
-    ms3_cfree(mem.data);
     ms3_cfree(path);
     ms3_cfree(query);
 
@@ -718,7 +728,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     case MS3_CMD_COPY:
     case MS3_CMD_PUT:
       method = MS3_PUT;
-      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, (char*)data);
+      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, (char *)data);
       curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, data_size);
       break;
 
@@ -877,8 +887,6 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
       if (res)
       {
         ms3_cfree(mem.data);
-        buf->data = NULL;
-        buf->length = 0;
       }
       else
       {
