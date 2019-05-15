@@ -8,6 +8,12 @@ Version 3.0.1 GA
 ^^^^^^^^^^^^^^^^
 
 * Improve performance of PUT
+* Fix a few potential pointer arithmatic issues
+* Fix race condition on time generation
+* Added TSAN to ci-scripts
+* Fix minor issues found in cppcheck
+* Stop buffer overrun if the buffer chunk size is set smaller than packet
+* Fix :c:func:`ms3_get` returning random data if a CURL request completely fails
 
 Version 3.0.0 GA (2019-05-13)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

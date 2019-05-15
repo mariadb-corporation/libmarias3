@@ -227,6 +227,9 @@ uint8_t ms3_get(ms3_st *ms3, const char *bucket, const char *key,
   uint8_t res = 0;
   struct memory_buffer_st buf;
 
+  buf.data = NULL;
+  buf.length = 0;
+
   if (!ms3 || !bucket || !key || !data || !length)
   {
     return MS3_ERR_PARAMETER;
