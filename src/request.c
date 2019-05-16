@@ -30,6 +30,7 @@ static void set_error(ms3_st *ms3, const char *error)
 
   if (!error)
   {
+    ms3->last_error = NULL;
     return;
   }
 
@@ -42,6 +43,7 @@ static void set_error_nocopy(ms3_st *ms3, char *error)
 
   if (!error)
   {
+    ms3->last_error = NULL;
     return;
   }
 

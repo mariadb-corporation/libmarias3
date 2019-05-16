@@ -14,6 +14,8 @@ Version 3.0.1 GA
 * Fix minor issues found in cppcheck
 * Stop buffer overrun if the buffer chunk size is set smaller than packet
 * Fix :c:func:`ms3_get` returning random data if a CURL request completely fails
+* Fix potential crash if the server error message is junk
+* Fix double-free if a server error message is ``NULL``
 
 Version 3.0.0 GA (2019-05-13)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
