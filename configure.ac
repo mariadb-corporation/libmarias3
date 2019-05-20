@@ -83,6 +83,7 @@ AC_CHECK_PROGS([RPM],[rpm])
 PKG_CHECK_MODULES([LIBCURL], [libcurl >= 7.0], [ax_cv_libcurl=yes], [AC_MSG_ERROR(could not find a suitable version of libcurl)])
 PKG_CHECK_MODULES([LIBXML2], [libxml-2.0 >= 2.0], [ax_cv_libxml2=yes], [AC_MSG_ERROR(could not find a suitable version of libxml2)])
 AX_LIBMHASH([], [AC_MSG_ERROR(could not find libmhash)])
+LT_LIB_M
 
 AX_ENDIAN
 AX_HEX_VERSION([LIBCURL],[$VERSION])

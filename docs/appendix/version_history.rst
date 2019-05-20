@@ -4,6 +4,11 @@ Version History
 Version 3.0
 -----------
 
+Version 3.0.2 GA
+^^^^^^^^^^^^^^^^
+
+* Fix libm linkage
+
 Version 3.0.1 GA
 ^^^^^^^^^^^^^^^^
 
