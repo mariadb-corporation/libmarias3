@@ -45,7 +45,7 @@ PROTECT_AC_USE_SYSTEM_EXTENSIONS
 AC_CONFIG_HEADERS([config.h:config.in])dnl Keep filename to 8.3 for MS-DOS.
 
 # shared library versioning
-LIBMARIAS3_LIBRARY_VERSION=3:1:0
+LIBMARIAS3_LIBRARY_VERSION=3:2:0
 #                          | | |
 #                   +------+ | +---+
 #                   |        |     |
@@ -82,7 +82,6 @@ AC_CHECK_PROGS([RPM],[rpm])
 
 PKG_CHECK_MODULES([LIBCURL], [libcurl >= 7.0], [ax_cv_libcurl=yes], [AC_MSG_ERROR(could not find a suitable version of libcurl)])
 PKG_CHECK_MODULES([LIBXML2], [libxml-2.0 >= 2.0], [ax_cv_libxml2=yes], [AC_MSG_ERROR(could not find a suitable version of libxml2)])
-AX_LIBMHASH([], [AC_MSG_ERROR(could not find libmhash)])
 LT_LIB_M
 
 AX_ENDIAN
@@ -130,7 +129,6 @@ echo "   * Assertions enabled:        $ax_enable_assert"
 echo "   * Debug enabled:             $ax_enable_debug"
 echo "   * Warnings as failure:       $ac_cv_warnings_as_errors"
 echo "   * libcurl                    $ax_cv_libcurl"
-echo "   * libmhash:                  $ax_cv_libmhash"
 echo "   * make -j:                   $enable_jobserver"
 echo "   * VCS checkout:              $ac_cv_vcs_system"
 echo ""

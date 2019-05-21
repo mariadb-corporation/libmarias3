@@ -27,9 +27,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <inttypes.h>
 
 #include <curl/curl.h>
-#include <mhash.h>
 
 #include <libmarias3/marias3.h>
 

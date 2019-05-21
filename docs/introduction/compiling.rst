@@ -6,11 +6,11 @@ libMariaS3 is designed to be compiled with GCC or CLang on a modern Linux distru
 Prerequisites
 -------------
 
-libMariaS3 requires *libcurl 7.x*, *libxml2* and *libmhash* to be installed. For RPM based distributions this can be installed using:
+libMariaS3 requires *libcurl 7.x* and *libxml2* to be installed. For RPM based distributions this can be installed using:
 
 .. code-block:: bash
 
-   sudo dnf install libcurl-devel libxml2-devel mhash-devel
+   sudo dnf install libcurl-devel libxml2-devel
 
 Building
 --------

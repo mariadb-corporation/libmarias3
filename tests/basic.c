@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
     ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, NULL);
   }
 
-//  ms3_debug(true);
+//  ms3_debug();
   ASSERT_NOT_NULL(ms3);
 
   res = ms3_put(ms3, s3bucket, "test/basic_thread.txt",

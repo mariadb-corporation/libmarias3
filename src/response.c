@@ -42,11 +42,13 @@ char *parse_error_message(const char *data, size_t length)
   }
 
   node = xmlDocGetRootElement(doc);
+
   if (!node)
   {
     xmlFreeDoc(doc);
     return NULL;
   }
+
   // First node is Error
   node = node->xmlChildrenNode;
 

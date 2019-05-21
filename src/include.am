@@ -22,6 +22,9 @@ src_libmarias3_la_SOURCES+= src/response.c
 src_libmarias3_la_SOURCES+= src/error.c
 src_libmarias3_la_SOURCES+= src/debug.c
 
+src_libmarias3_la_SOURCES+= src/sha256.c
+src_libmarias3_la_SOURCES+= src/sha256-internal.c
+
 src_libmarias3_la_LDFLAGS+= -version-info ${LIBMARIAS3_LIBRARY_VERSION}
 
-src_libmarias3_la_LIBADD+= @LIBCURL_LIBS@ @LIBMHASH_LIB@ @LIBXML2_LIBS@ @LIBM@
+src_libmarias3_la_LIBADD+= @LIBCURL_LIBS@ @LIBXML2_LIBS@ @LIBM@
