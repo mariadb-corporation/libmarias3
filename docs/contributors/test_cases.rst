@@ -11,7 +11,7 @@ Test cases are basic C applications in the ``tests/`` directory.  To add a test 
 .. code-block:: makefile
 
    t_mytest_SOURCES= tests/mytest.c
-   t_mytest_LDADD= src/libmarias3.la @LIBMHASH_LIB@
+   t_mytest_LDADD= src/libmarias3.la
    check_PROGRAMS+= t/mytest
    noinst_PROGRAMS+= t/mytest
 

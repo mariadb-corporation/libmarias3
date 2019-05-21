@@ -8,9 +8,10 @@ Version 3.0.2 GA
 ^^^^^^^^^^^^^^^^
 
 * Fix libm linkage
+* Remove mhash dependency and use a modified cut-down version of wpa_supplicant's BSD licensed crypto code (required for Windows compiling)
 
-Version 3.0.1 GA
-^^^^^^^^^^^^^^^^
+Version 3.0.1 GA (2019-05-16)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Improve performance of PUT
 * Fix a few potential pointer arithmatic issues
@@ -29,8 +30,9 @@ Version 3.0.0 GA (2019-05-13)
 * Fix building in CLang
 * Removed previous deprecated ``ms3_thread_init`` and ``ms3_buffer_chunk_size``
 * Remove ``bool`` from frontend API by:
-  - Making :c:func:`ms3_debug` a toggle
-  - Making the boolean options of :c:func:`ms3_set_option` toggles
+
+  * Making :c:func:`ms3_debug` a toggle
+  * Making the boolean options of :c:func:`ms3_set_option` toggles
 
 Version 2.3
 -----------

@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "common.h"
+#include "sha256.h"
 
 #include <math.h>
 
@@ -275,7 +276,6 @@ static uint8_t generate_request_hash(uri_method_t method, const char *path,
 {
   char signing_data[1024];
   size_t pos = 0;
-  MHASH td;
   uint8_t sha256hash[32]; // SHA_256 binary length
   uint8_t hash_pos = 0;
   uint8_t i;
@@ -372,11 +372,9 @@ static uint8_t generate_request_hash(uri_method_t method, const char *path,
   //pos+= 64;
 
   // Hash all of the above
-  td = mhash_init(MHASH_SHA256);
-  mhash(td, signing_data, (uint32_t)strlen(signing_data));
-  mhash_deinit(td, sha256hash);
+  sha256((uint8_t *)signing_data, strlen(signing_data), (uint8_t *)sha256hash);
 
-  for (i = 0; i < (uint8_t)mhash_get_block_size(MHASH_SHA256); i++)
+  for (i = 0; i < 32; i++)
   {
     sprintf(return_hash + hash_pos, "%.2x", sha256hash[i]);
     hash_pos += 2;
@@ -398,12 +396,14 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
   time_t now;
   struct tm tmp_tm;
   char headerbuf[1024];
+  char secrethead[45];
   char date[9];
-  MHASH td;
   char sha256hash[65];
   char post_hash[65];
   uint8_t tmp_hash[32];
+  // Alternate between these two so hmac doesn't overwrite itself
   uint8_t hmac_hash[32];
+  uint8_t hmac_hash2[32];
   uint8_t hash_pos = 0;
   const char *domain;
   struct curl_slist *headers = NULL;
@@ -427,11 +427,9 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
   *head = headers;
 
   // Hash post data
-  td = mhash_init(MHASH_SHA256);
-  mhash(td, post_data->data, (uint32_t)post_data->length);
-  mhash_deinit(td, tmp_hash);
+  sha256(post_data->data, post_data->length, tmp_hash);
 
-  for (i = 0; i < (uint8_t)mhash_get_block_size(MHASH_SHA256); i++)
+  for (i = 0; i < 32; i++)
   {
     sprintf(post_hash + hash_pos, "%.2x", tmp_hash[i]);
     hash_pos += 2;
@@ -483,32 +481,24 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
 
   // User signing key hash
   // Date hashed using AWS4:secret_key
-  snprintf(headerbuf, sizeof(headerbuf), "AWS4%.*s", 40, secret);
-  td = mhash_hmac_init(MHASH_SHA256, headerbuf, (uint32_t)strlen(headerbuf),
-                       mhash_get_hash_pblock(MHASH_SHA1));
+  snprintf(secrethead, sizeof(secrethead), "AWS4%.*s", 40, secret);
   strftime(headerbuf, sizeof(headerbuf), "%Y%m%d", &tmp_tm);
-  mhash(td, headerbuf, (uint32_t)strlen(headerbuf));
-  mhash_hmac_deinit(td, hmac_hash);
+  hmac_sha256((uint8_t *)secrethead, strlen(secrethead), (uint8_t *)headerbuf,
+              strlen(headerbuf), hmac_hash);
 
   // Region signed by above key
-  td = mhash_hmac_init(MHASH_SHA256, hmac_hash, 32,
-                       mhash_get_hash_pblock(MHASH_SHA1));
-  mhash(td, region, (uint32_t)strlen(region));
-  mhash_hmac_deinit(td, hmac_hash);
+  hmac_sha256(hmac_hash, 32, (uint8_t *)region, strlen(region),
+              hmac_hash2);
 
   // Service signed by above key (s3 always)
-  td = mhash_hmac_init(MHASH_SHA256, hmac_hash, 32,
-                       mhash_get_hash_pblock(MHASH_SHA1));
   sprintf(headerbuf, "s3");
-  mhash(td, headerbuf, (uint32_t)strlen(headerbuf));
-  mhash_hmac_deinit(td, hmac_hash);
+  hmac_sha256(hmac_hash2, 32, (uint8_t *)headerbuf, strlen(headerbuf),
+              hmac_hash);
 
   // Request version signed by above key (always "aws4_request")
-  td = mhash_hmac_init(MHASH_SHA256, hmac_hash, 32,
-                       mhash_get_hash_pblock(MHASH_SHA1));
   sprintf(headerbuf, "aws4_request");
-  mhash(td, headerbuf, (uint32_t)strlen(headerbuf));
-  mhash_hmac_deinit(td, hmac_hash);
+  hmac_sha256(hmac_hash, 32, (uint8_t *)headerbuf, strlen(headerbuf),
+              hmac_hash2);
 
   // Sign everything with the key
   snprintf(headerbuf, sizeof(headerbuf), "AWS4-HMAC-SHA256\n");
@@ -520,14 +510,12 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
   snprintf(headerbuf + offset, sizeof(headerbuf) - offset,
            "%.*s/%s/s3/aws4_request\n%.*s", 8, date, region, 64, sha256hash);
   ms3debug("Data to sign: %s", headerbuf);
-  td = mhash_hmac_init(MHASH_SHA256, hmac_hash, 32,
-                       mhash_get_hash_pblock(MHASH_SHA1));
-  mhash(td, headerbuf, (uint32_t)strlen(headerbuf));
-  mhash_hmac_deinit(td, hmac_hash);
+  hmac_sha256(hmac_hash2, 32, (uint8_t *)headerbuf, strlen(headerbuf),
+              hmac_hash);
 
   hash_pos = 0;
 
-  for (i = 0; i < (uint8_t)mhash_get_block_size(MHASH_SHA256); i++)
+  for (i = 0; i < 32; i++)
   {
     sprintf(sha256hash + hash_pos, "%.2x", hmac_hash[i]);
     hash_pos += 2;
@@ -663,6 +651,7 @@ static size_t body_callback(void *buffer, size_t size,
   mem->data[mem->length] = '\0';
 
   ms3debug("Read %zu bytes, buffer %zu bytes", realsize, mem->length);
+  ms3debug("Body: %s", buffer);
   return nitems * size;
 }
 
