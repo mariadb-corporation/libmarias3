@@ -651,7 +651,6 @@ static size_t body_callback(void *buffer, size_t size,
   mem->data[mem->length] = '\0';
 
   ms3debug("Read %zu bytes, buffer %zu bytes", realsize, mem->length);
-  ms3debug("Body: %s", buffer);
   return nitems * size;
 }
 

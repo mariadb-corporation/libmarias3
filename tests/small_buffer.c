@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
 
   new_buffer_size = 1024;
   res = ms3_set_option(ms3, MS3_OPT_BUFFER_CHUNK_SIZE, &new_buffer_size);
+  ASSERT_EQ_(res, 0, "Result: %u", res);
   res = ms3_get(ms3, s3bucket, "test/small_buffer.dat", &data, &length);
   ASSERT_EQ_(res, 0, "Result: %u", res);
   ASSERT_EQ(length, 64 * 1024);

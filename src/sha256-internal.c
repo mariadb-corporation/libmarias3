@@ -80,8 +80,7 @@ static const uint32_t K[64] =
 /* compress 512-bits */
 static int sha256_compress(struct sha256_state *md, unsigned char *buf)
 {
-  uint32_t S[8], W[64], t0, t1;
-  uint32_t t;
+  uint32_t S[8], W[64];
   int i;
 
   /* copy state into S */
@@ -103,6 +102,7 @@ static int sha256_compress(struct sha256_state *md, unsigned char *buf)
 
   /* Compress */
 #define RND(a,b,c,d,e,f,g,h,i)                          \
+    uint32_t t0, t1; \
 	t0 = h + Sigma1(e) + Ch(e, f, g) + K[i] + W[i];	\
 	t1 = Sigma0(a) + Maj(a, b, c);			\
 	d += t0;					\
@@ -110,6 +110,7 @@ static int sha256_compress(struct sha256_state *md, unsigned char *buf)
 
   for (i = 0; i < 64; ++i)
   {
+    uint32_t t;
     RND(S[0], S[1], S[2], S[3], S[4], S[5], S[6], S[7], i);
     t = S[7];
     S[7] = S[6];
