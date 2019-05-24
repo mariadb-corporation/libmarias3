@@ -34,6 +34,8 @@ struct ms3_st
   bool disable_verification;
   uint8_t list_version;
   bool first_run;
+  char *path_buffer;
+  char *query_buffer;
 };
 
 struct memory_buffer_st

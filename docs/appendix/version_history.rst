@@ -4,11 +4,17 @@ Version History
 Version 3.0
 -----------
 
-Version 3.0.2 GA
-^^^^^^^^^^^^^^^^
+Version 3.0.2 GA (2019-05-24)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Fix libm linkage
 * Remove mhash dependency and use a modified cut-down version of wpa_supplicant's BSD licensed crypto code (required for Windows compiling)
+* Several minor performance optimizations
+
+  * Removed 2x1kb mallocs on every request (now on :c:func:`ms3_init` instead)
+  * Compiling with ``-O3`` by default
+  * Stop executing string compares in list loop when something is found
+  * Remove unneeded ``strdup()`` usage
 
 Version 3.0.1 GA (2019-05-16)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

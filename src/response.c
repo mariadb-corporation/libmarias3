@@ -111,11 +111,12 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
   // First node is ListBucketResponse
   node = node->xmlChildrenNode;
 
-  while (node)
+  do
   {
     if (!xmlStrcmp(node->name, (const unsigned char *)"NextContinuationToken"))
     {
       *continuation = (char *)xmlNodeGetContent(node);
+      continue;
     }
 
     if (list_version == 1)
@@ -130,6 +131,7 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
         }
 
         xmlFree(trunc_value);
+        continue;
       }
     }
 
@@ -152,6 +154,8 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
             xmlFree(filename);
             break;
           }
+
+          continue;
         }
 
         if (!xmlStrcmp(child->name, (const unsigned char *)"Size"))
@@ -160,6 +164,7 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
           ms3debug("Size: %s", filesize);
           size = strtoull((const char *)filesize, NULL, 10);
           xmlFree(filesize);
+          continue;
         }
 
         if (!xmlStrcmp(child->name, (const unsigned char *)"LastModified"))
@@ -169,6 +174,7 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
           strptime((const char *)filedate, "%Y-%m-%dT%H:%M:%SZ", &ttmp);
           tout = mktime(&ttmp);
           xmlFree(filedate);
+          continue;
         }
       }
       while ((child = child->next));
@@ -191,14 +197,12 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
 
         if (filename)
         {
-          nextptr->key = ms3_cstrdup((const char *)filename);
+          nextptr->key = (char *)filename;
 
           if (list_version == 1)
           {
             last_key = nextptr->key;
           }
-
-          xmlFree(filename);
         }
         else
         {
@@ -209,6 +213,7 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
         nextptr->created = tout;
       }
 
+      continue;
     }
 
     if (!xmlStrcmp(node->name, (const unsigned char *)"CommonPrefixes"))
@@ -233,15 +238,14 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
           lastptr = nextptr;
         }
 
-        nextptr->key = ms3_cstrdup((const char *)filename);
+        nextptr->key = (char *)filename;
         nextptr->length = 0;
         nextptr->created = 0;
-        xmlFree(filename);
       }
     }
 
-    node = node->next;
   }
+  while ((node = node->next));
 
   if (list_version == 1 && truncated && last_key)
   {

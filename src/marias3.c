@@ -110,6 +110,8 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
   ms3->use_http = false;
   ms3->disable_verification = false;
   ms3->first_run = true;
+  ms3->path_buffer = ms3_cmalloc(sizeof(char) * 1024);
+  ms3->query_buffer = ms3_cmalloc(sizeof(char) * 1024);
 
   return ms3;
 }
@@ -126,6 +128,8 @@ void ms3_deinit(ms3_st *ms3)
   ms3_cfree(ms3->base_domain);
   curl_easy_cleanup(ms3->curl);
   ms3_cfree(ms3->last_error);
+  ms3_cfree(ms3->path_buffer);
+  ms3_cfree(ms3->query_buffer);
   ms3_cfree(ms3);
 }
 
@@ -315,7 +319,7 @@ void ms3_list_free(ms3_list_st *list)
   while (list)
   {
     ms3_list_st *tmp = list;
-    ms3_cfree(list->key);
+    xmlFree(list->key);
     list = list->next;
     ms3_cfree(tmp);
   }
