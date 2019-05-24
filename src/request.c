@@ -135,21 +135,20 @@ static uint8_t build_request_uri(CURL *curl, const char *base_domain,
  * Not very efficient but works until we write a custom encoder.
  */
 
-static char *generate_path(CURL *curl, const char *object)
+static char *generate_path(CURL *curl, const char *object, char *path_buffer)
 {
-  char *ret_buf = ms3_cmalloc(sizeof(char) * 1024);
   char *tok_ptr = NULL;
   char *save_ptr = NULL;
-  char *out_ptr = ret_buf;
+  char *out_ptr = path_buffer;
   char *path;
 
   // Keep scanbuild happy
-  ret_buf[0] = '\0';
+  path_buffer[0] = '\0';
 
   if (!object)
   {
-    sprintf(ret_buf, "/");
-    return ret_buf;
+    sprintf(path_buffer, "/");
+    return path_buffer;
   }
 
   path = ms3_cstrdup(object); // Because strtok_r is destructive
@@ -159,19 +158,19 @@ static char *generate_path(CURL *curl, const char *object)
   while (tok_ptr != NULL)
   {
     char *encoded = curl_easy_escape(curl, tok_ptr, (int)strlen(tok_ptr));
-    snprintf(out_ptr, 1024 - (out_ptr - ret_buf), "/%s", encoded);
+    snprintf(out_ptr, 1024 - (out_ptr - path_buffer), "/%s", encoded);
     out_ptr += strlen(encoded) + 1;
     curl_free(encoded);
     tok_ptr = strtok_r(NULL, "/", &save_ptr);
   }
 
-  if (ret_buf[0] != '/')
+  if (path_buffer[0] != '/')
   {
-    sprintf(ret_buf, "/");
+    sprintf(path_buffer, "/");
   }
 
   ms3_cfree(path);
-  return ret_buf;
+  return path_buffer;
 }
 
 
@@ -180,15 +179,15 @@ static char *generate_path(CURL *curl, const char *object)
  */
 
 static char *generate_query(CURL *curl, const char *value,
-                            const char *continuation, uint8_t list_version, bool use_delimiter)
+                            const char *continuation, uint8_t list_version, bool use_delimiter,
+                            char *query_buffer)
 {
-  char *ret_buf = ms3_cmalloc(sizeof(char) * 1024);
   char *encoded;
-  ret_buf[0] = '\0';
+  query_buffer[0] = '\0';
 
   if (use_delimiter)
   {
-    snprintf(ret_buf, 1024, "delimiter=%%2F");
+    snprintf(query_buffer, 1024, "delimiter=%%2F");
   }
 
   if (list_version == 2)
@@ -197,27 +196,28 @@ static char *generate_query(CURL *curl, const char *value,
     {
       encoded = curl_easy_escape(curl, continuation, (int)strlen(continuation));
 
-      if (strlen(ret_buf))
+      if (strlen(query_buffer))
       {
-        snprintf(ret_buf + strlen(ret_buf), 1024 - strlen(ret_buf),
+        snprintf(query_buffer + strlen(query_buffer), 1024 - strlen(query_buffer),
                  "&continuation-token=%s&list-type=2", encoded);
       }
       else
       {
-        snprintf(ret_buf, 1024, "continuation-token=%s&list-type=2", encoded);
+        snprintf(query_buffer, 1024, "continuation-token=%s&list-type=2", encoded);
       }
 
       curl_free(encoded);
     }
     else
     {
-      if (strlen(ret_buf))
+      if (strlen(query_buffer))
       {
-        snprintf(ret_buf + strlen(ret_buf), 1024 - strlen(ret_buf), "&list-type=2");
+        snprintf(query_buffer + strlen(query_buffer), 1024 - strlen(query_buffer),
+                 "&list-type=2");
       }
       else
       {
-        sprintf(ret_buf, "list-type=2");
+        sprintf(query_buffer, "list-type=2");
       }
     }
   }
@@ -226,14 +226,15 @@ static char *generate_query(CURL *curl, const char *value,
     // Continuation is really marker here
     encoded = curl_easy_escape(curl, continuation, (int)strlen(continuation));
 
-    if (strlen(ret_buf))
+    if (strlen(query_buffer))
     {
-      snprintf(ret_buf + strlen(ret_buf), 1024 - strlen(ret_buf), "&marker=%s",
+      snprintf(query_buffer + strlen(query_buffer), 1024 - strlen(query_buffer),
+               "&marker=%s",
                encoded);
     }
     else
     {
-      snprintf(ret_buf, 1024, "marker=%s", encoded);
+      snprintf(query_buffer, 1024, "marker=%s", encoded);
     }
 
     curl_free(encoded);
@@ -243,21 +244,22 @@ static char *generate_query(CURL *curl, const char *value,
   {
     encoded = curl_easy_escape(curl, value, (int)strlen(value));
 
-    if (strlen(ret_buf))
+    if (strlen(query_buffer))
     {
-      snprintf(ret_buf + strlen(ret_buf), 1024 - strlen(ret_buf), "&prefix=%s",
+      snprintf(query_buffer + strlen(query_buffer), 1024 - strlen(query_buffer),
+               "&prefix=%s",
                encoded);
     }
     else
     {
-      snprintf(ret_buf, 1024, "prefix=%s",
+      snprintf(query_buffer, 1024, "prefix=%s",
                encoded);
     }
 
     curl_free(encoded);
   }
 
-  return ret_buf;
+  return query_buffer;
 }
 
 
@@ -691,15 +693,17 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     ms3->first_run = false;
   }
 
-  path = generate_path(curl, object);
+  path = generate_path(curl, object, ms3->path_buffer);
 
   if (cmd == MS3_CMD_LIST_RECURSIVE)
   {
-    query = generate_query(curl, filter, continuation, ms3->list_version, false);
+    query = generate_query(curl, filter, continuation, ms3->list_version, false,
+                           ms3->query_buffer);
   }
   else if (cmd == MS3_CMD_LIST)
   {
-    query = generate_query(curl, filter, continuation, ms3->list_version, true);
+    query = generate_query(curl, filter, continuation, ms3->list_version, true,
+                           ms3->query_buffer);
   }
 
   res = build_request_uri(curl, ms3->base_domain, bucket, path, query,
@@ -907,8 +911,6 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     }
   }
 
-  ms3_cfree(path);
-  ms3_cfree(query);
   curl_slist_free_all(headers);
 
   return res;

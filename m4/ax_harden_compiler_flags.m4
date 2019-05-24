@@ -94,7 +94,7 @@ AC_DEFUN([_HARDEN_CC_COMPILER_FLAGS],
            _APPEND_COMPILE_FLAGS_ERROR([-O0])
            ],[
            _APPEND_COMPILE_FLAGS_ERROR([-g])
-           _APPEND_COMPILE_FLAGS_ERROR([-O2])
+           _APPEND_COMPILE_FLAGS_ERROR([-O3])
            ])
 
          AS_IF([test "x$ac_cv_vcs_checkout" = xyes],
@@ -196,7 +196,7 @@ AC_DEFUN([_HARDEN_CXX_COMPILER_FLAGS],
            _APPEND_COMPILE_FLAGS_ERRPR([-O0])
            ],[
            _APPEND_COMPILE_FLAGS_ERROR([-g])
-           _APPEND_COMPILE_FLAGS_ERROR([-O2])
+           _APPEND_COMPILE_FLAGS_ERROR([-O3])
            ])
 
          AS_IF([test "x$ac_cv_vcs_checkout" = xyes],
