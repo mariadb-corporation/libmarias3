@@ -4,6 +4,11 @@ Version History
 Version 3.0
 -----------
 
+Version 3.0.3
+^^^^^^^^^^^^^
+
+* Fix compiling issue in C90 mode
+
 Version 3.0.2 GA (2019-05-24)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
