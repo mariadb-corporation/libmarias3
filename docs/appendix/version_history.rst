@@ -4,10 +4,11 @@ Version History
 Version 3.0
 -----------
 
-Version 3.0.3
+Version 3.1.0
 ^^^^^^^^^^^^^
 
-* Fix compiling issue in C90 mode
+* Fix compiling issues when -Wdeclaration-after-statement is enabled
+* Add ``MS3_OPT_FORCE_PROTOCOL_VERSION`` for use with :c:func:`ms3_set_option` which will force use of AWS S3 methods and paths (version 2) or compatible methods and paths (version 1)
 
 Version 3.0.2 GA (2019-05-24)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

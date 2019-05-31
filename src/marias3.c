@@ -96,11 +96,13 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
     ms3->base_domain = ms3_cstrdup(base_domain);
     // Assume that S3-compatible APIs can't support v2 list
     ms3->list_version = 1;
+    ms3->protocol_version = 1;
   }
   else
   {
     ms3->base_domain = NULL;
     ms3->list_version = 2;
+    ms3->protocol_version = 2;
   }
 
   ms3->buffer_chunk_size = READ_BUFFER_DEFAULT_SIZE;
@@ -388,6 +390,27 @@ uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value)
       }
 
       ms3->list_version = list_version;
+      break;
+    }
+
+    case MS3_OPT_FORCE_PROTOCOL_VERSION:
+    {
+      uint8_t protocol_version;
+
+      if (!value)
+      {
+        return MS3_ERR_PARAMETER;
+      }
+
+      protocol_version = *(uint8_t *)value;
+
+      if (protocol_version < 1 || protocol_version > 2)
+      {
+        return MS3_ERR_PARAMETER;
+      }
+
+      ms3->protocol_version = protocol_version;
+      ms3->list_version = protocol_version;
       break;
     }
 

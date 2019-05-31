@@ -21,6 +21,11 @@ t_basic_LDADD= src/libmarias3.la
 check_PROGRAMS+= t/basic
 noinst_PROGRAMS+= t/basic
 
+t_basic_host_SOURCES= tests/basic_host.c
+t_basic_host_LDADD= src/libmarias3.la
+check_PROGRAMS+= t/basic_host
+noinst_PROGRAMS+= t/basic_host
+
 t_copy_SOURCES= tests/copy.c
 t_copy_LDADD= src/libmarias3.la
 check_PROGRAMS+= t/copy

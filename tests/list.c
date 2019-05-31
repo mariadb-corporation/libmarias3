@@ -24,10 +24,11 @@
 
 int main(int argc, char *argv[])
 {
-  (void) argc;
-  (void) argv;
   int res;
   ms3_list_st *list = NULL, *list_it = NULL;
+  ms3_st *ms3;
+  bool found, found_bad;
+  uint8_t list_version;
   const char *test_string = "Another one bites the dust";
   char *s3key = getenv("S3KEY");
   char *s3secret = getenv("S3SECRET");
@@ -41,8 +42,11 @@ int main(int argc, char *argv[])
   SKIP_IF_(!s3region, "Environemnt variable S3REGION missing");
   SKIP_IF_(!s3bucket, "Environemnt variable S3BUCKET missing");
 
+  (void) argc;
+  (void) argv;
+
   ms3_library_init();
-  ms3_st *ms3 = ms3_init(s3key, s3secret, s3region, s3host);
+  ms3 = ms3_init(s3key, s3secret, s3region, s3host);
 
   if (s3noverify && !strcmp(s3noverify, "1"))
   {
@@ -69,8 +73,8 @@ int main(int argc, char *argv[])
 
   res = ms3_list_dir(ms3, s3bucket, NULL, &list);
   ASSERT_EQ_(res, 0, "Result: %u", res);
-  bool found = false;
-  bool found_bad = false;
+  found = false;
+  found_bad = false;
   list_it = list;
 
   while (list_it)
@@ -99,7 +103,7 @@ int main(int argc, char *argv[])
   ms3_list_free(list);
 
   // Retry list with V1 API
-  uint8_t list_version = 1;
+  list_version = 1;
   list = NULL;
   ms3_set_option(ms3, MS3_OPT_FORCE_LIST_VERSION, &list_version);
   res = ms3_list_dir(ms3, s3bucket, NULL, &list);

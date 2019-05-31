@@ -24,12 +24,12 @@
 
 int main(int argc, char *argv[])
 {
-  (void) argc;
-  (void) argv;
   int res;
   ms3_list_st *list = NULL, *list_it = NULL;
   uint8_t *data;
   size_t length;
+  bool found, found_orig, found_new;
+  ms3_st *ms3;
   const char *test_string = "Another one bites the dust";
   char *s3key = getenv("S3KEY");
   char *s3secret = getenv("S3SECRET");
@@ -43,8 +43,11 @@ int main(int argc, char *argv[])
   SKIP_IF_(!s3region, "Environemnt variable S3REGION missing");
   SKIP_IF_(!s3bucket, "Environemnt variable S3BUCKET missing");
 
+  (void) argc;
+  (void) argv;
+
   ms3_library_init();
-  ms3_st *ms3 = ms3_init(s3key, s3secret, s3region, s3host);
+  ms3 = ms3_init(s3key, s3secret, s3region, s3host);
 
   if (s3noverify && !strcmp(s3noverify, "1"))
   {
@@ -65,7 +68,7 @@ int main(int argc, char *argv[])
 
   res = ms3_list(ms3, s3bucket, NULL, &list);
   ASSERT_EQ_(res, 0, "Result: %u", res);
-  bool found = false;
+  found = false;
   list_it = list;
 
   while (list_it)
@@ -98,8 +101,8 @@ int main(int argc, char *argv[])
 
   res = ms3_list(ms3, s3bucket, NULL, &list);
   ASSERT_EQ_(res, 0, "Result: %u", res);
-  bool found_orig = false;
-  bool found_new = false;
+  found_orig = false;
+  found_new = false;
   list_it = list;
 
   while (list_it)
