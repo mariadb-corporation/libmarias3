@@ -97,8 +97,7 @@ static void *delete_thread(void *arg)
 
 int main(int argc, char *argv[])
 {
-  (void) argc;
-  (void) argv;
+
 
   int tnum;
   char *s3key = getenv("S3KEY");
@@ -108,31 +107,33 @@ int main(int argc, char *argv[])
   char *s3host = getenv("S3HOST");
   char *s3noverify = getenv("S3NOVERIFY");
   bool noverify = false;
+  struct thread_info *tinfo;
+  int start_count;
+  uint8_t res;
+  uint8_t list_version;
+  pthread_attr_t attr;
+  ms3_st *ms3;
+  int res_count;
+  ms3_list_st *list = NULL, *list_it = NULL;
 
   if (s3noverify && !strcmp(s3noverify, "1"))
   {
     noverify = true;
   }
 
-  struct thread_info *tinfo;
-
   SKIP_IF_(!s3key, "Environemnt variable S3KEY missing");
-
   SKIP_IF_(!s3secret, "Environemnt variable S3SECRET missing");
-
   SKIP_IF_(!s3region, "Environemnt variable S3REGION missing");
-
   SKIP_IF_(!s3bucket, "Environemnt variable S3BUCKET missing");
-
+  (void) argc;
+  (void) argv;
   ms3_library_init();
 
 //  ms3_debug(true);
 
   tinfo = calloc(10, sizeof(struct thread_info));
 
-  int start_count = 1000;
-
-  pthread_attr_t attr;
+  start_count = 1000;
 
   pthread_attr_init(&attr);
 
@@ -161,19 +162,17 @@ int main(int argc, char *argv[])
 
   free(tinfo);
 
-  uint8_t res;
-  ms3_st *ms3 = ms3_init(s3key, s3secret, s3region, s3host);
+  ms3 = ms3_init(s3key, s3secret, s3region, s3host);
 
   if (noverify)
   {
     ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, NULL);
   }
 
-  ms3_list_st *list = NULL, *list_it = NULL;
   res = ms3_list(ms3, s3bucket, "listtest/", &list);
   ASSERT_EQ(res, 0);
   list_it = list;
-  int res_count = 0;
+  res_count = 0;
 
   while (list_it)
   {
@@ -186,7 +185,7 @@ int main(int argc, char *argv[])
   ms3_list_free(list);
 
   // Reattempt with list version 1
-  uint8_t list_version = 1;
+  list_version = 1;
   list = NULL;
   ms3_set_option(ms3, MS3_OPT_FORCE_LIST_VERSION, &list_version);
   res = ms3_list(ms3, s3bucket, "listtest/", &list);

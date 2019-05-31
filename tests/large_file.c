@@ -24,19 +24,22 @@
 
 int main(int argc, char *argv[])
 {
-  (void) argc;
-  (void) argv;
   int res;
   uint8_t *data;
   size_t length;
+  size_t new_buffer_size;
+  ms3_st *ms3;
   char *test_string = malloc(64 * 1024 * 1024);
-  memset(test_string, 'a', 64 * 1024 * 1024);
   char *s3key = getenv("S3KEY");
   char *s3secret = getenv("S3SECRET");
   char *s3region = getenv("S3REGION");
   char *s3bucket = getenv("S3BUCKET");
   char *s3host = getenv("S3HOST");
   char *s3noverify = getenv("S3NOVERIFY");
+  memset(test_string, 'a', 64 * 1024 * 1024);
+
+  (void) argc;
+  (void) argv;
 
   SKIP_IF_(!s3key, "Environemnt variable S3KEY missing");
   SKIP_IF_(!s3secret, "Environemnt variable S3SECRET missing");
@@ -44,7 +47,7 @@ int main(int argc, char *argv[])
   SKIP_IF_(!s3bucket, "Environemnt variable S3BUCKET missing");
 
   ms3_library_init();
-  ms3_st *ms3 = ms3_init(s3key, s3secret, s3region, s3host);
+  ms3 = ms3_init(s3key, s3secret, s3region, s3host);
 
   if (s3noverify && !strcmp(s3noverify, "1"))
   {
@@ -58,7 +61,7 @@ int main(int argc, char *argv[])
                 (const uint8_t *)test_string,
                 64 * 1024 * 1024);
   ASSERT_EQ_(res, 0, "Result: %u", res);
-  size_t new_buffer_size = 4 * 1024 * 1024;
+  new_buffer_size = 4 * 1024 * 1024;
   res = ms3_set_option(ms3, MS3_OPT_BUFFER_CHUNK_SIZE, &new_buffer_size);
   ASSERT_EQ_(res, 0, "Result: %u", res);
   res = ms3_get(ms3, s3bucket, "test/large_file.dat", &data, &length);

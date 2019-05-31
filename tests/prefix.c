@@ -25,11 +25,12 @@
 
 int main(int argc, char *argv[])
 {
-  (void) argc;
-  (void) argv;
   int res;
   ms3_list_st *list = NULL, *list_it = NULL;
   int i;
+  ms3_st *ms3;
+  bool found_good, found_bad;
+  uint8_t file_count;
   const char *test_string = "Another one bites the dust";
   char *s3key = getenv("S3KEY");
   char *s3secret = getenv("S3SECRET");
@@ -43,7 +44,10 @@ int main(int argc, char *argv[])
   SKIP_IF_(!s3region, "Environemnt variable S3REGION missing");
   SKIP_IF_(!s3bucket, "Environemnt variable S3BUCKET missing");
 
-  ms3_st *ms3 = ms3_init(s3key, s3secret, s3region, s3host);
+  (void) argc;
+  (void) argv;
+
+  ms3 = ms3_init(s3key, s3secret, s3region, s3host);
 
   if (s3noverify && !strcmp(s3noverify, "1"))
   {
@@ -60,15 +64,15 @@ int main(int argc, char *argv[])
                 strlen(test_string));
   ASSERT_EQ(res, 0);
 
-  bool found_good = false;
-  bool found_bad = false;
+  found_good = false;
+  found_bad = false;
 
   for (i = 0; i <= 3; i++)
   {
     res = ms3_list(ms3, s3bucket, "test", &list);
     ASSERT_EQ(res, 0);
     list_it = list;
-    uint8_t file_count = 0;
+    file_count = 0;
 
     while (list_it)
     {

@@ -139,8 +139,9 @@ do \
 { \
   if ((__expression)) { \
     size_t ask= snprintf(0, 0, __VA_ARGS__); \
+    char *buffer; \
     ask++; \
-    char *buffer= (char*)alloca(sizeof(char) * ask); \
+    buffer= (char*)alloca(sizeof(char) * ask); \
     snprintf(buffer, ask, __VA_ARGS__); \
     if (YATL_FULL) { \
       SKIP(#__expression, buffer); \
@@ -179,8 +180,9 @@ do \
 { \
   if ((__expression) != NULL) { \
     size_t ask= snprintf(0, 0, __VA_ARGS__); \
+    char *buffer; \
     ask++; \
-    char *buffer= (char*)alloca(sizeof(char) * ask); \
+    buffer= (char*)alloca(sizeof(char) * ask); \
     snprintf(buffer, ask, __VA_ARGS__); \
     if (YATL_FULL) { \
       FAIL("Assertion '%s' != NULL [ %s ]", #__expression, buffer);\
@@ -223,8 +225,9 @@ do \
 { \
   if (! (__expression)) { \
     size_t ask= snprintf(0, 0, __VA_ARGS__); \
+    char *buffer; \
     ask++; \
-    char *buffer= (char*)alloca(sizeof(char) * ask); \
+    buffer= (char*)alloca(sizeof(char) * ask); \
     snprintf(buffer, ask, __VA_ARGS__); \
     if (YATL_FULL) { \
       FAIL("Assertion '%s' [ %s ]", #__expression, buffer); \
@@ -251,8 +254,9 @@ do \
 { \
   if ((__expected) != (__actual)) { \
     size_t ask= snprintf(0, 0, __VA_ARGS__); \
+    char *buffer; \
     ask++; \
-    char *buffer= (char*)alloca(sizeof(char) * ask); \
+    buffer= (char*)alloca(sizeof(char) * ask); \
     snprintf(buffer, ask, __VA_ARGS__); \
     if (YATL_FULL) { \
       FAIL("Assertion '%s' != '%s' [ %s ]", #__expected, #__actual, buffer); \
@@ -391,8 +395,9 @@ do \
 { \
   if ((__expected) == (__actual)) { \
     size_t ask= snprintf(0, 0, __VA_ARGS__); \
+    char *buffer; \
     ask++; \
-    char *buffer= (char*)alloca(sizeof(char) * ask); \
+    buffer= (char*)alloca(sizeof(char) * ask); \
     snprintf(buffer, ask, __VA_ARGS__); \
     if (YATL_FULL) { \
       FAIL("Assertion '%s' == '%s' [ %s ]", #__expected, #__actual, buffer); \

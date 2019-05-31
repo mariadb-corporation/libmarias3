@@ -45,7 +45,7 @@ PROTECT_AC_USE_SYSTEM_EXTENSIONS
 AC_CONFIG_HEADERS([config.h:config.in])dnl Keep filename to 8.3 for MS-DOS.
 
 # shared library versioning
-LIBMARIAS3_LIBRARY_VERSION=3:3:0
+LIBMARIAS3_LIBRARY_VERSION=3:0:1
 #                          | | |
 #                   +------+ | +---+
 #                   |        |     |

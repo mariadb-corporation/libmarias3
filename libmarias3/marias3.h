@@ -79,7 +79,8 @@ enum ms3_set_option_t
   MS3_OPT_USE_HTTP,
   MS3_OPT_DISABLE_SSL_VERIFY,
   MS3_OPT_BUFFER_CHUNK_SIZE,
-  MS3_OPT_FORCE_LIST_VERSION
+  MS3_OPT_FORCE_LIST_VERSION,
+  MS3_OPT_FORCE_PROTOCOL_VERSION
 };
 
 typedef enum ms3_set_option_t ms3_set_option_t;

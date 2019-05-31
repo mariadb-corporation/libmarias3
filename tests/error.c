@@ -24,22 +24,24 @@
 
 int main(int argc, char *argv[])
 {
-  (void) argc;
-  (void) argv;
   uint8_t *data;
   size_t length;
-
+  const char *errmsg;
+  uint8_t res;
   ms3_st *ms3 = ms3_init("12345678901234567890",
                          "1234567890123456789012345678901234567890", "us-east-1", NULL);
+
+  (void) argc;
+  (void) argv;
 
   // Enable here so cppcheck shows coverage
   ms3_debug();
   ASSERT_NOT_NULL(ms3);
-  const char *errmsg = ms3_error(255);
+  errmsg = ms3_error(255);
   ASSERT_STREQ(errmsg, "No such error code");
   errmsg = ms3_error(0);
   ASSERT_STREQ(errmsg, "No error");
-  uint8_t res = ms3_get(ms3, "bad", "bad/file.txt", &data, &length);
+  res = ms3_get(ms3, "bad", "bad/file.txt", &data, &length);
   printf("%d\n", res);
   printf("%s\n", ms3_server_error(ms3));
   ASSERT_EQ(res, MS3_ERR_AUTH); // Bad auth

@@ -126,6 +126,7 @@ AC_DEFUN([_HARDEN_CC_COMPILER_FLAGS],
           _APPEND_COMPILE_FLAGS_ERROR([-Wformat=2])
           _APPEND_COMPILE_FLAGS_ERROR([-Wformat-y2k])
           _APPEND_COMPILE_FLAGS_ERROR([-Wmissing-field-initializers])
+          _APPEND_COMPILE_FLAGS_ERROR([-Wdeclaration-after-statement])
           AS_IF([test "x$MINGW" = xyes],
                 [_APPEND_COMPILE_FLAGS_ERROR([-Wno-missing-noreturn])],
                 [_APPEND_COMPILE_FLAGS_ERROR([-Wmissing-noreturn])])
