@@ -622,6 +622,7 @@ static size_t header_callback(char *buffer, size_t size,
 static size_t body_callback(void *buffer, size_t size,
                             size_t nitems, void *userdata)
 {
+  uint8_t *ptr;
   size_t realsize = nitems * size;
 
   struct memory_buffer_st *mem = (struct memory_buffer_st *)userdata;
@@ -636,7 +637,7 @@ static size_t body_callback(void *buffer, size_t size,
                         * mem->buffer_chunk_size;
     }
 
-    uint8_t *ptr = ms3_crealloc(mem->data, mem->alloced + additional_size);
+    ptr = (uint8_t*)ms3_crealloc(mem->data, mem->alloced + additional_size);
 
     if (!ptr)
     {
