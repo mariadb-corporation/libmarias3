@@ -714,9 +714,6 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
   if (res)
   {
-    ms3_cfree(path);
-    ms3_cfree(query);
-
     return res;
   }
 
@@ -747,8 +744,6 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     default:
       ms3debug("Bad cmd detected");
       ms3_cfree(mem.data);
-      ms3_cfree(path);
-      ms3_cfree(query);
 
       return MS3_ERR_IMPOSSIBLE;
   }
@@ -760,8 +755,6 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   if (res)
   {
     ms3_cfree(mem.data);
-    ms3_cfree(path);
-    ms3_cfree(query);
     curl_slist_free_all(headers);
 
     return res;
@@ -785,8 +778,6 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     ms3debug("Curl error: %s", curl_easy_strerror(curl_res));
     set_error(ms3, curl_easy_strerror(curl_res));
     ms3_cfree(mem.data);
-    ms3_cfree(path);
-    ms3_cfree(query);
     curl_slist_free_all(headers);
 
     return MS3_ERR_REQUEST_ERROR;
