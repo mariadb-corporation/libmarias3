@@ -47,6 +47,12 @@ int main(int argc, char *argv[])
   ASSERT_EQ(res, MS3_ERR_AUTH); // Bad auth
   free(data);
   ms3_deinit(ms3);
+  ms3 = ms3_init("12345678901234567890",
+                         "1234567890123456789012345678901234567890", "us-east-1", "bad-domain");
+  res = ms3_get(ms3, "bad", "bad/file.txt", &data, &length);
+  ASSERT_EQ(res, MS3_ERR_REQUEST_ERROR);
+  free(data);
+  ms3_deinit(ms3);
   ms3_library_deinit();
   return 0;
 }
