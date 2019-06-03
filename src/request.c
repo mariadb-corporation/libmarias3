@@ -639,7 +639,7 @@ static size_t body_callback(void *buffer, size_t size,
                         * mem->buffer_chunk_size;
     }
 
-    ptr = (uint8_t*)ms3_crealloc(mem->data, mem->alloced + additional_size);
+    ptr = (uint8_t *)ms3_crealloc(mem->data, mem->alloced + additional_size);
 
     if (!ptr)
     {

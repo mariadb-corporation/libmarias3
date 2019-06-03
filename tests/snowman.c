@@ -20,7 +20,7 @@
 #include <yatl/lite.h>
 #include <libmarias3/marias3.h>
 
-/* Tests basic calls with an expicit hostname */
+/* Tests basic calls using UTF-8 */
 
 int main(int argc, char *argv[])
 {
@@ -30,8 +30,8 @@ int main(int argc, char *argv[])
   size_t length;
   int i;
   bool found;
-  uint8_t protocol_version;
-  const char *test_string = "Another one bites the dust";
+  uint8_t list_version;
+  const char *test_string = "Another ☃☃☃ bites the dust";
   ms3_status_st status;
   ms3_st *ms3;
   char *s3key = getenv("S3KEY");
@@ -49,17 +49,8 @@ int main(int argc, char *argv[])
   (void) argc;
   (void) argv;
 
-  if (!s3host || s3host[0] == '\0')
-  {
-    const char *default_host = "s3.amazonaws.com";
-    s3host = (char *)default_host;
-  }
-
-
   ms3_library_init();
   ms3 = ms3_init(s3key, s3secret, s3region, s3host);
-  protocol_version = 2;
-  ms3_set_option(ms3, MS3_OPT_FORCE_PROTOCOL_VERSION, &protocol_version);
 
   if (s3noverify && !strcmp(s3noverify, "1"))
   {
@@ -69,7 +60,7 @@ int main(int argc, char *argv[])
 //  ms3_debug();
   ASSERT_NOT_NULL(ms3);
 
-  res = ms3_put(ms3, s3bucket, "test/basic_host.txt",
+  res = ms3_put(ms3, s3bucket, "☃/☃.☃",
                 (const uint8_t *)test_string,
                 strlen(test_string));
   ASSERT_EQ_(res, 0, "Result: %u", res);
@@ -86,7 +77,7 @@ int main(int argc, char *argv[])
 
   while (list_it)
   {
-    if (!strncmp(list_it->key, "test/basic_host.txt", 19))
+    if (!strncmp(list_it->key, "☃/☃.☃", 11))
     {
       found = true;
       break;
@@ -99,7 +90,7 @@ int main(int argc, char *argv[])
 
   if (list_it)
   {
-    ASSERT_EQ_(list_it->length, 26, "Created file is unexpected length");
+    ASSERT_EQ_(list_it->length, 32, "Created file is unexpected length");
     ASSERT_NEQ_(list_it->created, 0, "Created file timestamp is bad");
   }
   else
@@ -109,14 +100,48 @@ int main(int argc, char *argv[])
 
   ms3_list_free(list);
 
-  res = ms3_get(ms3, s3bucket, "test/basic_host.txt", &data, &length);
+  // Retry list with V1 API
+  list_version = 1;
+  list = NULL;
+  ms3_set_option(ms3, MS3_OPT_FORCE_LIST_VERSION, &list_version);
+  res = ms3_list(ms3, s3bucket, NULL, &list);
   ASSERT_EQ_(res, 0, "Result: %u", res);
-  ASSERT_EQ(length, 26);
+  found = false;
+  list_it = list;
+
+  while (list_it)
+  {
+    if (!strncmp(list_it->key, "☃/☃.☃", 11))
+    {
+      found = true;
+      break;
+    }
+
+    list_it = list_it->next;
+  }
+
+  ASSERT_EQ_(found, 1, "Created file not found");
+
+  if (list_it)
+  {
+    ASSERT_EQ_(list_it->length, 32, "Created file is unexpected length");
+    ASSERT_NEQ_(list_it->created, 0, "Created file timestamp is bad");
+  }
+  else
+  {
+    ASSERT_TRUE_(false, "No resuts from list");
+  }
+
+  ms3_list_free(list);
+
+  res = ms3_get(ms3, s3bucket, "☃/☃.☃", &data, &length);
+  ASSERT_EQ_(res, 0, "Result: %u", res);
+  ASSERT_EQ(length, 32);
   ASSERT_STREQ((char *)data, test_string);
 
   for (i = 0; i <= 3; i++)
   {
-    res = ms3_status(ms3, s3bucket, "test/basic_host.txt", &status);
+    res = ms3_status(ms3, s3bucket, "☃/☃.☃", &status);
 
     if (res == MS3_ERR_NOT_FOUND)
     {
@@ -131,12 +156,12 @@ int main(int argc, char *argv[])
     }
   }
 
-  ASSERT_EQ(status.length, 26);
+  ASSERT_EQ(status.length, 32);
   ASSERT_NEQ(status.created, 0);
-  res = ms3_delete(ms3, s3bucket, "test/basic_host.txt");
+  res = ms3_delete(ms3, s3bucket, "☃/☃.☃");
   ASSERT_EQ_(res, 0, "Result: %u", res);
   ms3_free(data);
-  res = ms3_get(ms3, s3bucket, "test/basic_host.txt", &data, &length);
+  res = ms3_get(ms3, s3bucket, "☃/☃.☃", &data, &length);
   ASSERT_NEQ_(res, 0, "Object should error");
   ASSERT_NULL_(data, "Data should be NULL");
   ASSERT_EQ_(length, 0, "There should be no data");

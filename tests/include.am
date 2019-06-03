@@ -21,6 +21,11 @@ t_basic_LDADD= src/libmarias3.la
 check_PROGRAMS+= t/basic
 noinst_PROGRAMS+= t/basic
 
+t_snowman_SOURCES= tests/snowman.c
+t_snowman_LDADD= src/libmarias3.la
+check_PROGRAMS+= t/snowman
+noinst_PROGRAMS+= t/snowman
+
 t_basic_host_SOURCES= tests/basic_host.c
 t_basic_host_LDADD= src/libmarias3.la
 check_PROGRAMS+= t/basic_host
