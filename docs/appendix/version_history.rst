@@ -11,6 +11,7 @@ Version 3.1.0
 * Add ``MS3_OPT_FORCE_PROTOCOL_VERSION`` for use with :c:func:`ms3_set_option` which will force use of AWS S3 methods and paths (version 2) or compatible methods and paths (version 1)
 * Fix double-free upon certain errors
 * Add snowman UTF-8 test and minor cleanups
+* Cleanup build system
 
 Version 3.0.2 GA (2019-05-24)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
