@@ -33,14 +33,7 @@ AC_PROG_CC([cc gcc clang])
 AM_INIT_AUTOMAKE(1.11 no-define color-tests -Wno-portability subdir-objects foreign tar-ustar m4_ifndef([AC_PROG_INSTALL], [serial-tests]))
 
 AC_ARG_PROGRAM
-AC_DEFUN([PROTECT_AC_USE_SYSTEM_EXTENSIONS],
-         [AX_SAVE_FLAGS
-          AC_LANG_PUSH([C])
-          AC_USE_SYSTEM_EXTENSIONS
-          AC_LANG_POP([C])
-          AX_RESTORE_FLAGS
-          ])
-PROTECT_AC_USE_SYSTEM_EXTENSIONS
+AC_USE_SYSTEM_EXTENSIONS
 
 AC_CONFIG_HEADERS([config.h:config.in])dnl Keep filename to 8.3 for MS-DOS.
 
@@ -69,11 +62,8 @@ CONFIG_EXTRA
 # Checks for programs.
 AC_CHECK_PROGS([LSB_RELEASE],[lsb_release])
 AC_CHECK_PROGS([DPKG_GENSYMBOLS],[dpkg-gensymbols])
-AC_CHECK_PROGS([PERL],[perl])
 AX_PROG_SPHINX_BUILD(,[AC_MSG_WARN([sphinx-build version 1.0 or greater is required to build man pages])])
 #AX_PROG_VALGRIND([memcheck],[--error-exitcode=1 --leak-check=yes --track-fds=yes --malloc-fill=A5 --free-fill=DE --suppressions=valgrind.supp])
-AX_WITH_PROG([LCOV],[lcov])
-AX_WITH_PROG([LCOV_GENHTML],[genhtml])
 AC_CHECK_PROGS([RPMBUILD],[rpmbuild --nocheck])
 AC_CHECK_PROGS([RPMDEV_SETUPTREE],[rpmdev-setuptree])
 AC_CHECK_PROGS([RPM],[rpm])
@@ -85,11 +75,10 @@ PKG_CHECK_MODULES([LIBXML2], [libxml-2.0 >= 2.0], [ax_cv_libxml2=yes], [AC_MSG_E
 LT_LIB_M
 
 AX_ENDIAN
-AX_HEX_VERSION([LIBCURL],[$VERSION])
+AX_HEX_VERSION([LIBMARIAS3],[$VERSION])
 AC_SUBST([RPM_RELEASE],[1])
 
 AX_HARDEN_COMPILER_FLAGS
-AX_UNIVERSAL_BINARY
 
 AC_DEFINE_UNQUOTED([C_COMPILER_VENDOR],["$ax_cv_c_compiler_vendor"],[Compiler vendor])
 AC_DEFINE_UNQUOTED([CC],["$CC"],[Compiler information for CC compiler])
@@ -128,7 +117,6 @@ echo "   * LDFLAGS Flags:             $LDFLAGS"
 echo "   * Assertions enabled:        $ax_enable_assert"
 echo "   * Debug enabled:             $ax_enable_debug"
 echo "   * Warnings as failure:       $ac_cv_warnings_as_errors"
-echo "   * libcurl                    $ax_cv_libcurl"
 echo "   * make -j:                   $enable_jobserver"
 echo "   * VCS checkout:              $ac_cv_vcs_system"
 echo ""
