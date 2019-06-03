@@ -30,7 +30,6 @@ int main(int argc, char *argv[])
   int i;
   ms3_st *ms3;
   bool found_good, found_bad;
-  uint8_t file_count;
   const char *test_string = "Another one bites the dust";
   char *s3key = getenv("S3KEY");
   char *s3secret = getenv("S3SECRET");
@@ -69,6 +68,7 @@ int main(int argc, char *argv[])
 
   for (i = 0; i <= 3; i++)
   {
+    uint8_t file_count;
     res = ms3_list(ms3, s3bucket, "test", &list);
     ASSERT_EQ(res, 0);
     list_it = list;
