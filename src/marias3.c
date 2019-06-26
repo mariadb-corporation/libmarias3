@@ -22,6 +22,7 @@
 
 #include <libxml/xmlmemory.h>
 #include <pthread.h>
+#include <arpa/inet.h>
 
 ms3_malloc_callback ms3_cmalloc = (ms3_malloc_callback)malloc;
 ms3_free_callback ms3_cfree = (ms3_free_callback)free;
@@ -93,10 +94,24 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
 
   if (base_domain && strlen(base_domain))
   {
+    struct sockaddr_in sa;
     ms3->base_domain = ms3_cstrdup(base_domain);
-    // Assume that S3-compatible APIs can't support v2 list
-    ms3->list_version = 1;
-    ms3->protocol_version = 1;
+    if (inet_pton(AF_INET, base_domain, &(sa.sin_addr)))
+    {
+      ms3->list_version = 1;
+      ms3->protocol_version = 1;
+    }
+    else if (strcmp(base_domain, "s3.amazonaws.com") == 0)
+    {
+      ms3->list_version = 2;
+      ms3->protocol_version = 2;
+    }
+    else
+    {
+      // Assume that S3-compatible APIs can't support v2 list
+      ms3->list_version = 1;
+      ms3->protocol_version = 2;
+    }
   }
   else
   {
@@ -409,7 +424,6 @@ uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value)
         return MS3_ERR_PARAMETER;
       }
 
-      ms3->protocol_version = protocol_version;
       ms3->list_version = protocol_version;
       break;
     }
