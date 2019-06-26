@@ -426,7 +426,14 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
     domain = default_domain;
   }
 
-  snprintf(headerbuf, sizeof(headerbuf), "host:%s.%s", bucket, domain);
+  if (protocol_version == 2)
+  {
+    snprintf(headerbuf, sizeof(headerbuf), "host:%s.%s", bucket, domain);
+  }
+  else
+  {
+    snprintf(headerbuf, sizeof(headerbuf), "host:%s", domain);
+  }
   headers = curl_slist_append(headers, headerbuf);
   *head = headers;
 

@@ -4,6 +4,16 @@ Version History
 Version 3.1
 -----------
 
+Version 3.1.1 GA
+^^^^^^^^^^^^^^^^
+
+* Fix bad host header when path based buckets are used
+* Make autodetection of access type and list version *much* smarter:
+
+  * Checks for S3 domain in provided domain and uses list version 2
+  * Checks for IP provided domain and turns on list version 1 and path based buckets
+  * Any other domain uses list version one and domain based buckets
+
 Version 3.1.0 GA (2019-06-24)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
