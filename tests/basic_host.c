@@ -107,8 +107,6 @@ int main(int argc, char *argv[])
     ASSERT_TRUE_(false, "No resuts from list");
   }
 
-  ms3_list_free(list);
-
   res = ms3_get(ms3, s3bucket, "test/basic_host.txt", &data, &length);
   ASSERT_EQ_(res, 0, "Result: %u", res);
   ASSERT_EQ(length, 26);

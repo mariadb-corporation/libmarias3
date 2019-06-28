@@ -21,6 +21,21 @@
 
 #include "config.h"
 
+struct ms3_pool_alloc_list_st
+{
+  struct ms3_list_st *pool;
+  struct ms3_pool_alloc_list_st *prev;
+};
+
+struct ms3_list_container_st
+{
+  struct ms3_list_st *pool;
+  struct ms3_list_st *start;
+  struct ms3_pool_alloc_list_st *pool_list;
+  struct ms3_list_st *next;
+  size_t pool_free;
+};
+
 struct ms3_st
 {
   char s3key[20];
@@ -37,6 +52,7 @@ struct ms3_st
   bool first_run;
   char *path_buffer;
   char *query_buffer;
+  struct ms3_list_container_st list_container;
 };
 
 struct memory_buffer_st

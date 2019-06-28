@@ -121,7 +121,7 @@ ms3_list()
 
    The list generated is the eqivilent of a recursive directory listing but only has files in it, no entries for directories.
 
-   The resulting list should be freed using :c:func:`ms3_list_free`
+   The list will automatically be freed on the next list/list_dir call or :c:func:`ms3_deinit`
 
    :param ms3: The marias3 object
    :param bucket: The bucket name to use
@@ -156,7 +156,6 @@ Example
      printf("File: %s, size: %ld, tstamp: %ld\n", list_it->key, list_it->length, list_it->created);
      list_it= list_it->next;
    }
-   ms3_list_free(list);
    ms3_deinit(ms3);
 
 ms3_list_dir()
@@ -168,7 +167,7 @@ ms3_list_dir()
 
    The list generated will automatically add the delimiter ``/`` and therefore filter up to the first ``/`` after the prefix. Unlike :c:func:`ms3_list` it includes directory entries. This is the eqivilent of doing a regular directory listing in a current directory (as designated by ``prefix``).
 
-   The resulting list should be freed using :c:func:`ms3_list_free`
+   The list will automatically be freed on the next list/list_dir call or :c:func:`ms3_deinit`
 
    :param ms3: The marias3 object
    :param bucket: The bucket name to use
@@ -182,7 +181,10 @@ ms3_list_free()
 
 .. c:function:: void ms3_list_free(ms3_list_st *list)
 
-   Frees a list generated using :c:func:`ms3_list`
+   .. deprecated:: 3.1.1
+      Now a NULL operation which be removed in 4.0
+
+   A NULL operation, previously free'd :c:func:`ms3_list`, but this is now done internally on :c:func:`ms3_deinit` or when a new list is requested.
 
    :param list: The list to free
 

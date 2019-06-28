@@ -182,7 +182,6 @@ int main(int argc, char *argv[])
 
   printf("Found %d items\n", res_count);
   ASSERT_EQ(res_count, 1500);
-  ms3_list_free(list);
 
   // Reattempt with list version 1
   list_version = 1;
@@ -201,7 +200,6 @@ int main(int argc, char *argv[])
 
   printf("V1 Found %d items\n", res_count);
   ASSERT_EQ(res_count, 1500);
-  ms3_list_free(list);
 
   ms3_deinit(ms3);
 
