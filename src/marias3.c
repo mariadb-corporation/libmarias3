@@ -129,8 +129,37 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
   ms3->first_run = true;
   ms3->path_buffer = ms3_cmalloc(sizeof(char) * 1024);
   ms3->query_buffer = ms3_cmalloc(sizeof(char) * 1024);
+  ms3->list_container.pool = NULL;
+  ms3->list_container.next = NULL;
+  ms3->list_container.start = NULL;
+  ms3->list_container.pool_list = NULL;
+  ms3->list_container.pool_free = 0;
 
   return ms3;
+}
+
+static void list_free(ms3_st *ms3)
+{
+  ms3_list_st *list = ms3->list_container.start;
+  struct ms3_pool_alloc_list_st *plist = NULL, *next = NULL;
+  while (list)
+  {
+    xmlFree(list->key);
+    list = list->next;
+  }
+  plist = ms3->list_container.pool_list;
+  while (plist)
+  {
+    next = plist->prev;
+    ms3_cfree(plist->pool);
+    ms3_cfree(plist);
+    plist = next;
+  }
+  ms3->list_container.pool = NULL;
+  ms3->list_container.next = NULL;
+  ms3->list_container.start = NULL;
+  ms3->list_container.pool_list = NULL;
+  ms3->list_container.pool_free = 0;
 }
 
 void ms3_deinit(ms3_st *ms3)
@@ -147,6 +176,7 @@ void ms3_deinit(ms3_st *ms3)
   ms3_cfree(ms3->last_error);
   ms3_cfree(ms3->path_buffer);
   ms3_cfree(ms3->query_buffer);
+  list_free(ms3);
   ms3_cfree(ms3);
 }
 
@@ -191,9 +221,11 @@ uint8_t ms3_list_dir(ms3_st *ms3, const char *bucket, const char *prefix,
     return MS3_ERR_PARAMETER;
   }
 
+  list_free(ms3);
   res = execute_request(ms3, MS3_CMD_LIST, bucket, NULL, NULL, NULL, prefix, NULL,
                         0, NULL,
-                        list);
+                        NULL);
+  *list = ms3->list_container.start;
   return res;
 }
 
@@ -207,10 +239,12 @@ uint8_t ms3_list(ms3_st *ms3, const char *bucket, const char *prefix,
     return MS3_ERR_PARAMETER;
   }
 
+  list_free(ms3);
   res = execute_request(ms3, MS3_CMD_LIST_RECURSIVE, bucket, NULL, NULL, NULL,
                         prefix, NULL,
                         0, NULL,
-                        list);
+                        NULL);
+  *list = ms3->list_container.start;
   return res;
 }
 
@@ -333,13 +367,8 @@ uint8_t ms3_status(ms3_st *ms3, const char *bucket, const char *key,
 
 void ms3_list_free(ms3_list_st *list)
 {
-  while (list)
-  {
-    ms3_list_st *tmp = list;
-    xmlFree(list->key);
-    list = list->next;
-    ms3_cfree(tmp);
-  }
+  // Deprecated
+  (void) list;
 }
 
 void ms3_free(uint8_t *data)

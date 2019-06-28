@@ -100,8 +100,6 @@ int main(int argc, char *argv[])
     ASSERT_TRUE_(false, "No resuts from list");
   }
 
-  ms3_list_free(list);
-
   // Retry list with V1 API
   list_version = 1;
   list = NULL;
@@ -133,8 +131,6 @@ int main(int argc, char *argv[])
   {
     ASSERT_TRUE_(false, "No resuts from list");
   }
-
-  ms3_list_free(list);
 
   res = ms3_delete(ms3, s3bucket, "test1/test1.txt");
   ASSERT_EQ_(res, 0, "Result: %u", res);

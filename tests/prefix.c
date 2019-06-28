@@ -96,7 +96,6 @@ int main(int argc, char *argv[])
       printf("Bad file count, retrying");
       found_good = false;
       found_bad = false;
-      ms3_list_free(list);
       continue;
     }
     else
@@ -107,7 +106,6 @@ int main(int argc, char *argv[])
 
   ASSERT_EQ_(found_good, 1, "Created file not found");
   ASSERT_EQ_(found_bad, 0, "Filter found file it shouldn't");
-  ms3_list_free(list);
   res = ms3_delete(ms3, s3bucket, "test/prefix.txt");
   ASSERT_EQ(res, 0);
   res = ms3_delete(ms3, s3bucket, "other/prefix.txt");

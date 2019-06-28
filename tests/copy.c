@@ -94,8 +94,6 @@ int main(int argc, char *argv[])
     ASSERT_TRUE_(false, "No resuts from list");
   }
 
-  ms3_list_free(list);
-
   res = ms3_move(ms3, s3bucket, "test/copy_test.txt", s3bucket, "test/moved.txt");
   ASSERT_EQ_(res, 0, "Result: %u", res);
 
@@ -122,8 +120,6 @@ int main(int argc, char *argv[])
 
   ASSERT_EQ_(found_new, 1, "Copied file not found");
   ASSERT_EQ_(found_orig, 0, "Original file still exists after move");
-
-  ms3_list_free(list);
 
   res = ms3_get(ms3, s3bucket, "test/moved.txt", &data, &length);
   ASSERT_EQ_(res, 0, "Result: %u", res);

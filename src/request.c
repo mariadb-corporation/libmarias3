@@ -835,27 +835,15 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     case MS3_CMD_LIST_RECURSIVE:
     case MS3_CMD_LIST:
     {
-      ms3_list_st **list = (ms3_list_st **) ret_ptr;
       char *cont = NULL;
-      parse_list_response((const char *)mem.data, mem.length, list, ms3->list_version,
+      parse_list_response((const char *)mem.data, mem.length, &ms3->list_container, ms3->list_version,
                           &cont);
 
       if (cont)
       {
-        ms3_list_st *list_it;
-        ms3_list_st *append_list = NULL;
         res = execute_request(ms3, cmd, bucket, object, source_bucket, source_object,
                               filter, data, data_size, cont,
-                              &append_list);
-        list_it = *list;
-
-        while (list_it->next != NULL)
-        {
-          list_it = list_it->next;
-        }
-
-        list_it->next = append_list;
-
+                              NULL);
         if (res)
         {
           return res;

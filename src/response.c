@@ -68,7 +68,52 @@ char *parse_error_message(const char *data, size_t length)
   return NULL;
 }
 
-uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
+static ms3_list_st *get_next_list_ptr(struct ms3_list_container_st *container)
+{
+  ms3_list_st *new_alloc = NULL;
+  struct ms3_pool_alloc_list_st *new_pool_next = NULL;
+  struct ms3_pool_alloc_list_st *new_pool_prev = NULL;
+  ms3_list_st *ret = NULL;
+  if (container->pool_free == 0)
+  {
+    new_alloc = (ms3_list_st*)ms3_cmalloc(sizeof(ms3_list_st) * 1024);
+    new_pool_next = (struct ms3_pool_alloc_list_st*)ms3_cmalloc(sizeof(struct ms3_pool_alloc_list_st));
+
+    if (!new_alloc || !new_pool_next)
+    {
+        ms3debug("List realloc OOM");
+        return NULL;
+    }
+
+    new_pool_prev = container->pool_list;
+    container->pool_list = new_pool_next;
+    if (new_pool_prev)
+    {
+      container->pool_list->prev = new_pool_prev;
+    }
+    else
+    {
+      container->pool_list->prev = NULL;
+    }
+    container->pool_list->pool = new_alloc;
+
+    container->pool_free = 1024;
+    if (!container->start)
+    {
+      container->start = new_alloc;
+    }
+    container->pool = container->next = new_alloc;
+  }
+  else
+  {
+    container->next++;
+  }
+  ret = container->next;
+  container->pool_free--;
+  return ret;
+}
+
+uint8_t parse_list_response(const char *data, size_t length, struct ms3_list_container_st *list_container,
                             uint8_t list_version,
                             char **continuation)
 {
@@ -83,7 +128,7 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
   time_t tout = 0;
   bool truncated = false;
   const char *last_key = NULL;
-  ms3_list_st *nextptr = NULL, *lastptr = NULL;
+  ms3_list_st *nextptr = NULL, *lastptr = list_container->next;
 
   // Empty list
   if (!data || !length)
@@ -181,19 +226,14 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
 
       if (!skip)
       {
-        nextptr = ms3_cmalloc(sizeof(ms3_list_st));
+        nextptr = get_next_list_ptr(list_container);
         nextptr->next = NULL;
 
-        if (!lastptr)
-        {
-          *list = nextptr;
-          lastptr = nextptr;
-        }
-        else
+        if (lastptr)
         {
           lastptr->next = nextptr;
-          lastptr = nextptr;
         }
+        lastptr = nextptr;
 
         if (filename)
         {
@@ -224,19 +264,14 @@ uint8_t parse_list_response(const char *data, size_t length, ms3_list_st **list,
       {
         filename = xmlNodeGetContent(child);
         ms3debug("Filename: %s", filename);
-        nextptr = ms3_cmalloc(sizeof(ms3_list_st));
+        nextptr = get_next_list_ptr(list_container);
         nextptr->next = NULL;
 
-        if (!lastptr)
-        {
-          *list = nextptr;
-          lastptr = nextptr;
-        }
-        else
+        if (lastptr)
         {
           lastptr->next = nextptr;
-          lastptr = nextptr;
         }
+        lastptr = nextptr;
 
         nextptr->key = (char *)filename;
         nextptr->length = 0;
