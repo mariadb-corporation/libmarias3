@@ -81,15 +81,10 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
     return NULL;
   }
 
-  if ((strlen(s3key) < 20) || (strlen(s3secret) < 40))
-  {
-    return NULL;
-  }
-
   ms3 = ms3_cmalloc(sizeof(ms3_st));
 
-  memcpy(ms3->s3key, s3key, 20);
-  memcpy(ms3->s3secret, s3secret, 40);
+  ms3->s3key = ms3_cstrdup(s3key);
+  ms3->s3secret = ms3_cstrdup(s3secret);
   ms3->region = ms3_cstrdup(region);
 
   if (base_domain && strlen(base_domain))
@@ -170,6 +165,8 @@ void ms3_deinit(ms3_st *ms3)
   }
 
   ms3debug("deinit: 0x%" PRIXPTR, (uintptr_t)ms3);
+  ms3_cfree(ms3->s3secret);
+  ms3_cfree(ms3->s3key);
   ms3_cfree(ms3->region);
   ms3_cfree(ms3->base_domain);
   curl_easy_cleanup(ms3->curl);

@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, NULL);
   }
 
-//  ms3_debug(true);
+//  ms3_debug();
   ASSERT_NOT_NULL(ms3);
 
   res = ms3_put(ms3, s3bucket, "test/copy_test.txt",
@@ -129,7 +129,6 @@ int main(int argc, char *argv[])
   res = ms3_delete(ms3, s3bucket, "test/moved.txt");
   ASSERT_EQ_(res, 0, "Result: %u", res);
   res = ms3_delete(ms3, s3bucket, "test/copeid.txt");
-  ASSERT_EQ_(res, 0, "Result: %u", res);
   ms3_free(data);
   ms3_deinit(ms3);
   ms3_library_deinit();

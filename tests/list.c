@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
     ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, NULL);
   }
 
-//  ms3_debug(true);
+//  ms3_debug();
   ASSERT_NOT_NULL(ms3);
 
   res = ms3_put(ms3, s3bucket, "list1/test1.txt",
@@ -132,9 +132,9 @@ int main(int argc, char *argv[])
     ASSERT_TRUE_(false, "No resuts from list");
   }
 
-  res = ms3_delete(ms3, s3bucket, "test1/test1.txt");
+  res = ms3_delete(ms3, s3bucket, "list1/test1.txt");
   ASSERT_EQ_(res, 0, "Result: %u", res);
-  res = ms3_delete(ms3, s3bucket, "test2/test2.txt");
+  res = ms3_delete(ms3, s3bucket, "list2/test2.txt");
   ASSERT_EQ_(res, 0, "Result: %u", res);
 
   ms3_deinit(ms3);

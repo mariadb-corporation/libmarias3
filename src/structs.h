@@ -38,8 +38,8 @@ struct ms3_list_container_st
 
 struct ms3_st
 {
-  char s3key[20];
-  char s3secret[40];
+  char *s3key;
+  char *s3secret;
   char *region;
   char *base_domain;
   size_t buffer_chunk_size;

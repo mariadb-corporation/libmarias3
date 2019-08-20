@@ -4,8 +4,13 @@ Version History
 Version 3.1
 -----------
 
-Version 3.1.1 GA
+Version 3.1.2 GA
 ^^^^^^^^^^^^^^^^
+
+* Make library work with quirks in Google Cloud's S3 implementation
+
+Version 3.1.1 GA (2019-06-28)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Fix bad host header when path based buckets are used
 * Make autodetection of access type and list version *much* smarter:
