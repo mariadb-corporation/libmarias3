@@ -536,14 +536,14 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
   if (source_bucket)
   {
     snprintf(headerbuf, sizeof(headerbuf),
-             "Authorization: AWS4-HMAC-SHA256 Credential=%.*s/%s/%s/s3/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-copy-source;x-amz-date, Signature=%s",
-             20, key, date, region, sha256hash);
+             "Authorization: AWS4-HMAC-SHA256 Credential=%s/%s/%s/s3/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-copy-source;x-amz-date, Signature=%s",
+             key, date, region, sha256hash);
   }
   else
   {
     snprintf(headerbuf, sizeof(headerbuf),
-             "Authorization: AWS4-HMAC-SHA256 Credential=%.*s/%s/%s/s3/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=%s",
-             20, key, date, region, sha256hash);
+             "Authorization: AWS4-HMAC-SHA256 Credential=%s/%s/%s/s3/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=%s",
+             key, date, region, sha256hash);
   }
 
   headers = curl_slist_append(headers, headerbuf);
@@ -609,7 +609,7 @@ static size_t header_callback(char *buffer, size_t size,
   if (userdata)
   {
     // HEAD request
-    if (!strncmp(buffer, "Last-Modified", 13))
+    if (!strncasecmp(buffer, "Last-Modified", 13))
     {
       ms3_status_st *status = (ms3_status_st *) userdata;
       // Date/time, format: Fri, 15 Mar 2019 16:58:54 GMT
@@ -617,7 +617,7 @@ static size_t header_callback(char *buffer, size_t size,
       strptime(buffer + 15, "%a, %d %b %Y %H:%M:%S %Z", &ttmp);
       status->created = mktime(&ttmp);
     }
-    else if (!strncmp(buffer, "Content-Length", 14))
+    else if (!strncasecmp(buffer, "Content-Length", 14))
     {
       ms3_status_st *status = (ms3_status_st *) userdata;
       // Length
@@ -663,6 +663,7 @@ static size_t body_callback(void *buffer, size_t size,
   mem->data[mem->length] = '\0';
 
   ms3debug("Read %zu bytes, buffer %zu bytes", realsize, mem->length);
+//  ms3debug("Data: %s", (char*)buffer);
   return nitems * size;
 }
 

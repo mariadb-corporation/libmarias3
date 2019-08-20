@@ -46,6 +46,8 @@ int main(int argc, char *argv[])
   SKIP_IF_(!s3region, "Environemnt variable S3REGION missing");
   SKIP_IF_(!s3bucket, "Environemnt variable S3BUCKET missing");
 
+  SKIP_IF_(s3host, "Test is for non-explicit hostnames");
+
   (void) argc;
   (void) argv;
 
