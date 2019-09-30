@@ -30,6 +30,28 @@ ms3_realloc_callback ms3_crealloc = (ms3_realloc_callback)realloc;
 ms3_strdup_callback ms3_cstrdup = (ms3_strdup_callback)strdup;
 ms3_calloc_callback ms3_ccalloc = (ms3_calloc_callback)calloc;
 
+
+/* Thread locking code for OpenSSL < 1.1.0 */
+#ifdef HAVE_CURL_OPENSSL_UNSAFE
+#include <openssl/crypto.h>
+static pthread_mutex_t *mutex_buf = NULL;
+
+static void __attribute__((unused)) locking_function(int mode, int n, const char *file, int line)
+{
+  (void) file;
+  (void) line;
+  if(mode & CRYPTO_LOCK)
+    pthread_mutex_lock(&(mutex_buf[n]));
+  else
+    pthread_mutex_unlock(&(mutex_buf[n]));
+}
+
+static unsigned long __attribute__((unused)) id_function(void)
+{
+  return ((unsigned long)pthread_self());
+}
+#endif
+
 uint8_t ms3_library_init_malloc(ms3_malloc_callback m,
                                 ms3_free_callback f, ms3_realloc_callback r,
                                 ms3_strdup_callback s, ms3_calloc_callback c)
@@ -60,12 +82,35 @@ uint8_t ms3_library_init_malloc(ms3_malloc_callback m,
 
 void ms3_library_init(void)
 {
+#ifdef HAVE_CURL_OPENSSL_UNSAFE
+  int i;
+  mutex_buf = malloc(CRYPTO_num_locks() * sizeof(pthread_mutex_t));
+  if(mutex_buf)
+  {
+    for(i = 0; i < CRYPTO_num_locks(); i++)
+      pthread_mutex_init(&(mutex_buf[i]), NULL);
+    CRYPTO_set_id_callback(id_function);
+    CRYPTO_set_locking_callback(locking_function);
+  }
+#endif
   curl_global_init(CURL_GLOBAL_DEFAULT);
   xmlInitParser();
 }
 
 void ms3_library_deinit(void)
 {
+#ifdef HAVE_CURL_OPENSSL_UNSAFE
+  int i;
+  if (mutex_buf)
+  {
+    CRYPTO_set_id_callback(NULL);
+    CRYPTO_set_locking_callback(NULL);
+    for(i = 0;  i < CRYPTO_num_locks();  i++)
+      pthread_mutex_destroy(&(mutex_buf[i]));
+    free(mutex_buf);
+    mutex_buf = NULL;
+  }
+#endif
   curl_global_cleanup();
   xmlCleanupParser();
 }
