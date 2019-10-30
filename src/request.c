@@ -52,8 +52,7 @@ static void set_error_nocopy(ms3_st *ms3, char *error)
 }
 
 static uint8_t build_request_uri(CURL *curl, const char *base_domain,
-                                 const char *bucket, const char *object, const char *query, bool use_http,
-                                 uint8_t protocol_version)
+                                 const char *bucket, const char *object, const char *query, bool use_http)
 {
   char uri_buffer[MAX_URI_LENGTH];
   const char *domain;
@@ -88,18 +87,9 @@ static uint8_t build_request_uri(CURL *curl, const char *base_domain,
       return MS3_ERR_URI_TOO_LONG;
     }
 
-    if (protocol_version == 1)
-    {
-      snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s/%s%s?%s", protocol,
-               domain, bucket,
-               object, query);
-    }
-    else
-    {
-      snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s.%s%s?%s", protocol,
-               bucket, domain,
-               object, query);
-    }
+    snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s/%s%s?%s", protocol,
+             domain, bucket,
+             object, query);
   }
   else
   {
@@ -109,19 +99,10 @@ static uint8_t build_request_uri(CURL *curl, const char *base_domain,
       return MS3_ERR_URI_TOO_LONG;
     }
 
-    if (protocol_version == 1)
-    {
-      snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s/%s%s", protocol,
-               domain,
-               bucket,
-               object);
-    }
-    else
-    {
-      snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s.%s%s", protocol,
-               bucket, domain,
-               object);
-    }
+    snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s/%s%s", protocol,
+             domain,
+             bucket,
+             object);
   }
 
   ms3debug("URI: %s", uri_buffer);
@@ -393,8 +374,7 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
                                      const char *base_domain, const char *region, const char *key,
                                      const char *secret, const char *object, const char *query,
                                      uri_method_t method, const char *bucket, const char *source_bucket,
-                                     const char *source_key, struct put_buffer_st *post_data,
-                                     uint8_t protocol_version)
+                                     const char *source_key, struct put_buffer_st *post_data)
 {
   uint8_t ret = 0;
   time_t now;
@@ -426,14 +406,7 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
     domain = default_domain;
   }
 
-  if (protocol_version == 2)
-  {
-    snprintf(headerbuf, sizeof(headerbuf), "host:%s.%s", bucket, domain);
-  }
-  else
-  {
-    snprintf(headerbuf, sizeof(headerbuf), "host:%s", domain);
-  }
+  snprintf(headerbuf, sizeof(headerbuf), "host:%s", domain);
   headers = curl_slist_append(headers, headerbuf);
   *head = headers;
 
@@ -472,18 +445,9 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
   }
 
   // Builds the request hash
-  if (protocol_version == 1)
-  {
-    ret = generate_request_hash(method, object, bucket, query, post_hash, headers,
-                                has_source,
-                                sha256hash);
-  }
-  else
-  {
-    ret = generate_request_hash(method, object, NULL, query, post_hash, headers,
-                                has_source,
-                                sha256hash);
-  }
+  ret = generate_request_hash(method, object, bucket, query, post_hash, headers,
+                              has_source,
+                              sha256hash);
 
   if (ret)
   {
@@ -718,7 +682,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   }
 
   res = build_request_uri(curl, ms3->base_domain, bucket, path, query,
-                          ms3->use_http, ms3->protocol_version);
+                          ms3->use_http);
 
   if (res)
   {
@@ -758,7 +722,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
   res = build_request_headers(curl, &headers, ms3->base_domain, ms3->region,
                               ms3->s3key, ms3->s3secret, path, query, method, bucket, source_bucket,
-                              source_object, &post_data, ms3->protocol_version);
+                              source_object, &post_data);
 
   if (res)
   {
