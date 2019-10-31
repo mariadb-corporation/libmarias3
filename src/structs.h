@@ -48,6 +48,7 @@ struct ms3_st
   bool use_http;
   bool disable_verification;
   uint8_t list_version;
+  uint8_t protocol_version;
   bool first_run;
   char *path_buffer;
   char *query_buffer;
