@@ -131,7 +131,6 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
   ms3->s3key = ms3_cstrdup(s3key);
   ms3->s3secret = ms3_cstrdup(s3secret);
   ms3->region = ms3_cstrdup(region);
-  ms3->protocol_version = 1;
 
   if (base_domain && strlen(base_domain))
   {
@@ -140,21 +139,25 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
     if (inet_pton(AF_INET, base_domain, &(sa.sin_addr)))
     {
       ms3->list_version = 1;
+      ms3->protocol_version = 1;
     }
     else if (strcmp(base_domain, "s3.amazonaws.com") == 0)
     {
       ms3->list_version = 2;
+      ms3->protocol_version = 2;
     }
     else
     {
       // Assume that S3-compatible APIs can't support v2 list
       ms3->list_version = 1;
+      ms3->protocol_version = 2;
     }
   }
   else
   {
     ms3->base_domain = NULL;
     ms3->list_version = 2;
+    ms3->protocol_version = 2;
   }
 
   ms3->buffer_chunk_size = READ_BUFFER_DEFAULT_SIZE;
