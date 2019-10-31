@@ -9,7 +9,6 @@ Version 3.1.2 GA
 
 * Make library work with quirks in Google Cloud's S3 implementation
 * Detect when libcurl was built with OpenSSL < 1.1.0 and add workaround to thread safety issues in the older OpenSSL versions (affects Ubuntu 16.04 in particular)
-* Remove hostname bucket access method as it is pretty much deprecated in Amazon AWS too
 
 Version 3.1.1 GA (2019-06-28)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

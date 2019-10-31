@@ -131,6 +131,7 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
   ms3->s3key = ms3_cstrdup(s3key);
   ms3->s3secret = ms3_cstrdup(s3secret);
   ms3->region = ms3_cstrdup(region);
+  ms3->protocol_version = 1;
 
   if (base_domain && strlen(base_domain))
   {
