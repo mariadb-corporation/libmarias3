@@ -41,6 +41,7 @@ Appendix
    :maxdepth: 2
 
    appendix/version_history
+   appendix/credits
 
 * :ref:`genindex`
 * :ref:`search`
