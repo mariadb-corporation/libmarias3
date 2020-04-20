@@ -20,51 +20,54 @@
 #include "config.h"
 #include "common.h"
 
-#include <libxml/parser.h>
-#include <libxml/tree.h>
+#include "xml.h"
 
 char *parse_error_message(const char *data, size_t length)
 {
-  xmlDocPtr doc;
-  xmlNodePtr node;
-  xmlChar *message = NULL;
+  struct xml_document *doc = NULL;
+  struct xml_node *node = NULL;
+  struct xml_node *root = NULL;
+
+  uint64_t node_it = 0;
 
   if (!data || !length)
   {
     return NULL;
   }
 
-  doc = xmlReadMemory(data, (int)length, "noname.xml", NULL, 0);
+  doc = xml_parse_document((uint8_t*)data, length);
 
   if (!doc)
   {
     return NULL;
   }
 
-  node = xmlDocGetRootElement(doc);
+  root = xml_document_root(doc);
 
   if (!node)
   {
-    xmlFreeDoc(doc);
+    xml_document_free(doc, false);
     return NULL;
   }
 
   // First node is Error
-  node = node->xmlChildrenNode;
-
-  while (node)
+  node = xml_node_child(root, node_it);
+  while(node)
   {
-    if (!xmlStrcmp(node->name, (const unsigned char *)"Message"))
+    if (!xml_node_name_cmp(node, "Message"))
     {
-      message = xmlNodeGetContent(node);
-      xmlFreeDoc(doc);
+      struct xml_string *content = xml_node_content(node);
+      uint8_t *message = ms3_cmalloc(xml_string_length(content) + 1);
+      xml_string_copy(content, message, xml_string_length(content));
+      xml_document_free(doc, false);
       return (char *)message;
     }
 
-    node = node->next;
+    node_it++;
+    node = xml_node_child(root, node_it);
   }
 
-  xmlFreeDoc(doc);
+  xml_document_free(doc, false);
   return NULL;
 }
 
@@ -117,18 +120,20 @@ uint8_t parse_list_response(const char *data, size_t length, struct ms3_list_con
                             uint8_t list_version,
                             char **continuation)
 {
-  xmlDocPtr doc;
-  xmlNodePtr node;
-  xmlNodePtr child;
-  xmlChar *filename = NULL;
-  xmlChar *filesize = NULL;
-  xmlChar *filedate = NULL;
+  struct xml_document *doc;
+  struct xml_node *root;
+  struct xml_node *node;
+  struct xml_node *child;
+  char *filename = NULL;
+  char *filesize = NULL;
+  char *filedate = NULL;
   size_t size = 0;
   struct tm ttmp = {0};
   time_t tout = 0;
   bool truncated = false;
   const char *last_key = NULL;
   ms3_list_st *nextptr = NULL, *lastptr = list_container->next;
+  uint64_t node_it = 0;
 
   // Empty list
   if (!data || !length)
@@ -136,7 +141,7 @@ uint8_t parse_list_response(const char *data, size_t length, struct ms3_list_con
     return 0;
   }
 
-  doc = xmlReadMemory(data, (int)length, "noname.xml", NULL, 0);
+  doc = xml_parse_document((uint8_t*)data, length);
 
   if (!doc)
   {
@@ -152,77 +157,91 @@ uint8_t parse_list_response(const char *data, size_t length, struct ms3_list_con
    * We use the "continuation" return value for both
    */
 
-  node = xmlDocGetRootElement(doc);
+  root = xml_document_root(doc);
   // First node is ListBucketResponse
-  node = node->xmlChildrenNode;
+  node = xml_node_child(root, 0);
 
   do
   {
-    if (!xmlStrcmp(node->name, (const unsigned char *)"NextContinuationToken"))
+    if (!xml_node_name_cmp(node, "NextContinuationToken"))
     {
-      *continuation = (char *)xmlNodeGetContent(node);
+      struct xml_string *content = xml_node_content(node);
+      *continuation = ms3_cmalloc(xml_string_length(content) + 1);
+      xml_string_copy(content, (uint8_t*)*continuation, xml_string_length(content));
       continue;
     }
 
     if (list_version == 1)
     {
-      if (!xmlStrcmp(node->name, (const unsigned char *)"IsTruncated"))
+      if (!xml_node_name_cmp(node, "IsTruncated"))
       {
-        xmlChar *trunc_value = xmlNodeGetContent(node);
+        struct xml_string *content = xml_node_content(node);
+        char *trunc_value = ms3_cmalloc(xml_string_length(content) + 1);
+        xml_string_copy(content, (uint8_t*)trunc_value, xml_string_length(content));
 
-        if (!xmlStrcmp(trunc_value, (const unsigned char *)"true"))
+        if (!strcmp(trunc_value, "true"))
         {
           truncated = true;
         }
 
-        xmlFree(trunc_value);
+        ms3_cfree(trunc_value);
         continue;
       }
     }
 
-    if (!xmlStrcmp(node->name, (const unsigned char *)"Contents"))
+    if (!xml_node_name_cmp(node, "Contents"))
     {
       bool skip = false;
+      uint64_t child_it = 0;
       // Found contents
-      child = node->xmlChildrenNode;
+      child = xml_node_child(node, 0);
 
       do
       {
-        if (!xmlStrcmp(child->name, (const unsigned char *)"Key"))
+        if (!xml_node_name_cmp(child, "Key"))
         {
-          filename = xmlNodeGetContent(child);
+          struct xml_string *content = xml_node_content(child);
+          filename = ms3_cmalloc(xml_string_length(content) + 1);
+          xml_string_copy(content, (uint8_t*)filename, xml_string_length(content));
+
           ms3debug("Filename: %s", filename);
 
           if (filename[strlen((const char *)filename) - 1] == '/')
           {
             skip = true;
-            xmlFree(filename);
+            ms3_cfree(filename);
             break;
           }
 
           continue;
         }
 
-        if (!xmlStrcmp(child->name, (const unsigned char *)"Size"))
+        if (!xml_node_name_cmp(child, "Size"))
         {
-          filesize = xmlNodeGetContent(child);
+          struct xml_string *content = xml_node_content(child);
+          filesize = ms3_cmalloc(xml_string_length(content) + 1);
+          xml_string_copy(content, (uint8_t*)filesize, xml_string_length(content));
+
           ms3debug("Size: %s", filesize);
           size = strtoull((const char *)filesize, NULL, 10);
-          xmlFree(filesize);
+          ms3_cfree(filesize);
           continue;
         }
 
-        if (!xmlStrcmp(child->name, (const unsigned char *)"LastModified"))
+        if (!xml_node_name_cmp(child, "LastModified"))
         {
-          filedate = xmlNodeGetContent(child);
+          struct xml_string *content = xml_node_content(child);
+          filedate = ms3_cmalloc(xml_string_length(content) + 1);
+          xml_string_copy(content, (uint8_t*)filedate, xml_string_length(content));
+
           ms3debug("Date: %s", filedate);
           strptime((const char *)filedate, "%Y-%m-%dT%H:%M:%SZ", &ttmp);
           tout = mktime(&ttmp);
-          xmlFree(filedate);
+          ms3_cfree(filedate);
           continue;
         }
       }
-      while ((child = child->next));
+      while ((child = xml_node_child(node, ++child_it)));
 
       if (!skip)
       {
@@ -256,13 +275,16 @@ uint8_t parse_list_response(const char *data, size_t length, struct ms3_list_con
       continue;
     }
 
-    if (!xmlStrcmp(node->name, (const unsigned char *)"CommonPrefixes"))
+    if (!xml_node_name_cmp(node, "CommonPrefixes"))
     {
-      child = node->xmlChildrenNode;
+      child = xml_node_child(node, 0);
 
-      if (!xmlStrcmp(child->name, (const unsigned char *)"Prefix"))
+      if (!xml_node_name_cmp(child, "Prefix"))
       {
-        filename = xmlNodeGetContent(child);
+        struct xml_string *content = xml_node_content(child);
+        filename = ms3_cmalloc(xml_string_length(content) + 1);
+        xml_string_copy(content, (uint8_t*)filename, xml_string_length(content));
+
         ms3debug("Filename: %s", filename);
         nextptr = get_next_list_ptr(list_container);
         nextptr->next = NULL;
@@ -280,13 +302,13 @@ uint8_t parse_list_response(const char *data, size_t length, struct ms3_list_con
     }
 
   }
-  while ((node = node->next));
+  while ((node = xml_node_child(root, ++node_it)));
 
   if (list_version == 1 && truncated && last_key)
   {
     *continuation = ms3_cstrdup(last_key);
   }
 
-  xmlFreeDoc(doc);
+  xml_document_free(doc, false);
   return 0;
 }

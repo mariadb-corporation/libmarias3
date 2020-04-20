@@ -9,6 +9,9 @@ Version 3.1.2 GA
 
 * Make library work with quirks in Google Cloud's S3 implementation
 * Detect when libcurl was built with OpenSSL < 1.1.0 and add workaround to thread safety issues in the older OpenSSL versions (affects Ubuntu 16.04 in particular)
+* Remove libxml and replace it with a modified version of `xml.c <https://github.com/ooxi/xml.c>`_ which handles <? ?> tags and other minor changes
+* Fix issue where an empty key for :c:func:`ms3_get` turns it into a list call
+* Partially fix issue with ``AC_MSG_ERROR``. Will still fail if you don't have ``libtool`` and ``pkg-config`` installed.
 
 Version 3.1.1 GA (2019-06-28)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

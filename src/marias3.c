@@ -20,7 +20,6 @@
 #include "config.h"
 #include "common.h"
 
-#include <libxml/xmlmemory.h>
 #include <pthread.h>
 #include <arpa/inet.h>
 
@@ -67,12 +66,19 @@ uint8_t ms3_library_init_malloc(ms3_malloc_callback m,
   ms3_cstrdup = s;
   ms3_ccalloc = c;
 
-  if (curl_global_init_mem(CURL_GLOBAL_DEFAULT, m, f, r, s, c))
+#ifdef HAVE_CURL_OPENSSL_UNSAFE
+  int i;
+  mutex_buf = ms3_cmalloc(CRYPTO_num_locks() * sizeof(pthread_mutex_t));
+  if(mutex_buf)
   {
-    return MS3_ERR_PARAMETER;
+    for(i = 0; i < CRYPTO_num_locks(); i++)
+      pthread_mutex_init(&(mutex_buf[i]), NULL);
+    CRYPTO_set_id_callback(id_function);
+    CRYPTO_set_locking_callback(locking_function);
   }
+#endif
 
-  if (xmlMemSetup(f, m, r, s))
+  if (curl_global_init_mem(CURL_GLOBAL_DEFAULT, m, f, r, s, c))
   {
     return MS3_ERR_PARAMETER;
   }
@@ -94,7 +100,6 @@ void ms3_library_init(void)
   }
 #endif
   curl_global_init(CURL_GLOBAL_DEFAULT);
-  xmlInitParser();
 }
 
 void ms3_library_deinit(void)
@@ -107,12 +112,11 @@ void ms3_library_deinit(void)
     CRYPTO_set_locking_callback(NULL);
     for(i = 0;  i < CRYPTO_num_locks();  i++)
       pthread_mutex_destroy(&(mutex_buf[i]));
-    free(mutex_buf);
+    ms3_cfree(mutex_buf);
     mutex_buf = NULL;
   }
 #endif
   curl_global_cleanup();
-  xmlCleanupParser();
 }
 
 ms3_st *ms3_init(const char *s3key, const char *s3secret,
@@ -184,7 +188,7 @@ static void list_free(ms3_st *ms3)
   struct ms3_pool_alloc_list_st *plist = NULL, *next = NULL;
   while (list)
   {
-    xmlFree(list->key);
+    ms3_cfree(list->key);
     list = list->next;
   }
   plist = ms3->list_container.pool_list;
@@ -327,7 +331,7 @@ uint8_t ms3_get(ms3_st *ms3, const char *bucket, const char *key,
   buf.data = NULL;
   buf.length = 0;
 
-  if (!ms3 || !bucket || !key || !data || !length)
+  if (!ms3 || !bucket || !key || key[0] == '\0' || !data || !length)
   {
     return MS3_ERR_PARAMETER;
   }

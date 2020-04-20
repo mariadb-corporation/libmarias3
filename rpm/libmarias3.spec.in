@@ -4,7 +4,7 @@ Version: @VERSION@
 Release: 1
 License: LGPL v2.1
 Group: System Environment/Libraries
-BuildRequires: libcurl libxml2
+BuildRequires: libcurl
 URL: https://github.com/mariadb-corporation/libmarias3
 
 Packager: Andrew Hutchings <linuxjedi@mariadb.com>
