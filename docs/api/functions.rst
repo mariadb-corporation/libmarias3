@@ -21,7 +21,7 @@ ms3_library_init_malloc()
 
 .. c:function:: uint8_t ms3_library_init_malloc(ms3_malloc_callback m, ms3_free_callback f, ms3_realloc_callback r, ms3_strdup_callback s, ms3_calloc_callback c)
 
-   Initialize the library for use with custom allocator replacement functions. These functions are also fed into libcurl and libxml2. The function prototypes should be as follows:
+   Initialize the library for use with custom allocator replacement functions. These functions are also fed into libcurl. The function prototypes should be as follows:
 
    .. c:function:: void *ms3_malloc_callback(size_t size)
 
