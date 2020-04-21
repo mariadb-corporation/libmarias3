@@ -5,7 +5,7 @@
  * This software is provided 'as-is', without any express or implied warranty.
  * In no event will the authors be held liable for any damages arising from the
  * use of this software.
- * 
+ *
  * Permission is granted to anyone to use this software for any purpose,
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
@@ -14,7 +14,7 @@
  *     claim that you wrote the original software. If you use this software in a
  *     product, an acknowledgment in the product documentation would be
  *     appreciated but is not required.
- * 
+ *
  *  2. Altered source versions must be plainly marked as such, and must not be
  *     misrepresented as being the original software.
  *
@@ -37,9 +37,7 @@
 #include "xml.h"
 
 
-
-
-/* 
+/*
  * public domain strtok_r() by Charlie Gordon
  *
  *   from comp.lang.c  9/14/2007
@@ -200,11 +198,12 @@ static size_t get_zero_terminated_array_nodes(struct xml_node** nodes) {
  */
 static _Bool xml_string_equals(struct xml_string* a, struct xml_string* b) {
 
+        size_t i = 0;
 	if (a->length != b->length) {
 		return false;
 	}
 
-	size_t i = 0; for (; i < a->length; ++i) {
+	for (; i < a->length; ++i) {
 		if (a->buffer[i] != b->buffer[i]) {
 			return false;
 		}
@@ -219,11 +218,12 @@ static _Bool xml_string_equals(struct xml_string* a, struct xml_string* b) {
  * [PRIVATE]
  */
 static uint8_t* xml_string_clone(struct xml_string* s) {
+        uint8_t* clone;
 	if (!s) {
 		return 0;
 	}
 
-	uint8_t* clone = ms3_ccalloc(s->length + 1, sizeof(uint8_t));
+	clone = ms3_ccalloc(s->length + 1, sizeof(uint8_t));
 
 	xml_string_copy(s, clone, s->length);
 	clone[s->length] = 0;
@@ -264,24 +264,27 @@ static void xml_attribute_free(struct xml_attribute* attribute) {
 
 /**
  * [PRIVATE]
- * 
+ *
  * Frees the resources allocated by the node
  */
 static void xml_node_free(struct xml_node* node) {
-	xml_string_free(node->name);
+        struct xml_attribute** at;
+        struct xml_node** it;
+
+        xml_string_free(node->name);
 
 	if (node->content) {
 		xml_string_free(node->content);
 	}
 
-	struct xml_attribute** at = node->attributes;
+	at = node->attributes;
 	while(*at) {
 		xml_attribute_free(*at);
 		++at;
 	}
 	ms3_cfree(node->attributes);
 
-	struct xml_node** it = node->children;
+	it = node->children;
 	while (*it) {
 		xml_node_free(*it);
 		++it;
@@ -313,16 +316,15 @@ static void xml_parser_info(struct xml_parser* parser, char const* message) {
  *
  * Echos an error regarding the parser's source to the console
  */
+
+#define tmp_min(X,Y) ((X) < (Y) ? (X) : (Y))
+
+
 static void xml_parser_error(struct xml_parser* parser, enum xml_parser_offset offset, char const* message) {
 	int row = 0;
 	int column = 0;
 
-	#define min(X,Y) ((X) < (Y) ? (X) : (Y))
-	#define max(X,Y) ((X) > (Y) ? (X) : (Y))
-	size_t character = max(0, min(parser->length, parser->position + offset));
-	#undef min
-	#undef max
-
+	size_t character = tmp_min(parser->length, parser->position + offset);
 	size_t position = 0; for (; position < character; ++position) {
 		column++;
 
@@ -414,7 +416,7 @@ static void xml_parser_consume(struct xml_parser* parser, size_t n) {
 
 /**
  * [PRIVATE]
- * 
+ *
  * Skips to the next non-whitespace character
  */
 static void xml_skip_whitespace(struct xml_parser* parser) {
@@ -440,8 +442,6 @@ static void xml_skip_whitespace(struct xml_parser* parser) {
  * @see https://github.com/Molorius
  */
 static struct xml_attribute** xml_find_attributes(struct xml_parser* parser, struct xml_string* tag_open) {
-    (void) parser; // clang for some reason thinks this isn't used
-	xml_parser_info(parser, "find_attributes");
 	char* tmp;
 	char* rest = NULL;
 	char* token;
@@ -455,6 +455,8 @@ static struct xml_attribute** xml_find_attributes(struct xml_parser* parser, str
 	struct xml_attribute** attributes;
 	long position;
 
+        (void) parser; // clang for some reason thinks this isn't used
+        xml_parser_info(parser, "find_attributes");
 	attributes = ms3_ccalloc(1, sizeof(struct xml_attribute*));
 	attributes[0] = 0;
 
@@ -518,9 +520,12 @@ cleanup:
  * ---
  */
 static struct xml_string* xml_parse_tag_end(struct xml_parser* parser) {
-	xml_parser_info(parser, "tag_end");
-	size_t start = parser->position;
-	size_t length = 0;
+        size_t start;
+        size_t length = 0;
+        struct xml_string* name;
+
+        xml_parser_info(parser, "tag_end");
+        start = parser->position;
 
 	/* Parse until `>' or a whitespace is reached
 	 */
@@ -545,7 +550,7 @@ static struct xml_string* xml_parse_tag_end(struct xml_parser* parser) {
 
 	/* Return parsed tag name
 	 */
-	struct xml_string* name = ms3_cmalloc(sizeof(struct xml_string));
+	name = ms3_cmalloc(sizeof(struct xml_string));
 	name->buffer = &parser->buffer[start];
 	name->length = length;
 	return name;
@@ -629,14 +634,17 @@ static struct xml_string* xml_parse_tag_close(struct xml_parser* parser) {
  * @warning CDATA etc. is _not_ and will never be supported
  */
 static struct xml_string* xml_parse_content(struct xml_parser* parser) {
+        size_t start;
+        size_t length = 0;
+        struct xml_string* content;
+
 	xml_parser_info(parser, "content");
 
 	/* Whitespace will be ignored
 	 */
 	xml_skip_whitespace(parser);
 
-	size_t start = parser->position;
-	size_t length = 0;
+	start = parser->position;
 
 	/* Consume until `<' is reached
 	 */
@@ -666,7 +674,7 @@ static struct xml_string* xml_parse_content(struct xml_parser* parser) {
 
 	/* Return text
 	 */
-	struct xml_string* content = ms3_cmalloc(sizeof(struct xml_string));
+	content = ms3_cmalloc(sizeof(struct xml_string));
 	content->buffer = &parser->buffer[start];
 	content->length = length;
 	return content;
@@ -676,7 +684,7 @@ static struct xml_string* xml_parse_content(struct xml_parser* parser) {
 
 /**
  * [PRIVATE]
- * 
+ *
  * Parses an XML fragment node
  *
  * ---( Example without children )---
@@ -692,20 +700,19 @@ static struct xml_string* xml_parse_content(struct xml_parser* parser) {
  * ---
  */
 static struct xml_node* xml_parse_node(struct xml_parser* parser) {
-	xml_parser_info(parser, "node");
-
 	/* Setup variables
 	 */
 	struct xml_string* tag_open = 0;
 	struct xml_string* tag_close = 0;
 	struct xml_string* content = 0;
-
+        struct xml_node* node;
+        struct xml_node** it;
 	size_t original_length;
 	struct xml_attribute** attributes;
-
 	struct xml_node** children = ms3_ccalloc(1, sizeof(struct xml_node*));
 	children[0] = 0;
 
+	xml_parser_info(parser, "node");
 
 	/* Parse open tag
 	 */
@@ -743,6 +750,8 @@ static struct xml_node* xml_parse_node(struct xml_parser* parser) {
 		/* Parse child node
 		 */
 		struct xml_node* child = xml_parse_node(parser);
+		size_t old_elements, new_elements;
+
 		if (!child) {
 			xml_parser_error(parser, NEXT_CHARACTER, "xml_parse_node::child");
 			goto exit_failure;
@@ -750,8 +759,8 @@ static struct xml_node* xml_parse_node(struct xml_parser* parser) {
 
 		/* Grow child array :)
 		 */
-		size_t old_elements = get_zero_terminated_array_nodes(children);
-		size_t new_elements = old_elements + 1;
+		old_elements = get_zero_terminated_array_nodes(children);
+		new_elements = old_elements + 1;
 		children = ms3_crealloc(children, (new_elements + 1) * sizeof(struct xml_node*));
 
 		/* Save child
@@ -783,7 +792,7 @@ static struct xml_node* xml_parse_node(struct xml_parser* parser) {
 	xml_string_free(tag_close);
 
 node_creation:;
-	struct xml_node* node = ms3_cmalloc(sizeof(struct xml_node));
+	node = ms3_cmalloc(sizeof(struct xml_node));
 	node->name = tag_open;
 	node->content = content;
 	node->attributes = attributes;
@@ -804,7 +813,7 @@ exit_failure:
 		xml_string_free(content);
 	}
 
-	struct xml_node** it = children;
+	it = children;
 	while (*it) {
 		xml_node_free(*it);
 		++it;
@@ -846,6 +855,8 @@ struct xml_document* xml_parse_document(uint8_t* buffer, size_t length) {
 		.position = 0,
 		.length = length
 	};
+        struct xml_node* root;
+        struct xml_document* document;
 
 	/* An empty buffer can never contain a valid document
 	 */
@@ -856,8 +867,8 @@ struct xml_document* xml_parse_document(uint8_t* buffer, size_t length) {
 
 	/* Parse the root node
 	 */
-    xml_parse_skip_meta(&parser);
-	struct xml_node* root = xml_parse_node(&parser);
+        xml_parse_skip_meta(&parser);
+	root = xml_parse_node(&parser);
 	if (!root) {
 		xml_parser_error(&parser, NO_CHARACTER, "xml_parse_document::parsing document failed");
 		return 0;
@@ -865,7 +876,7 @@ struct xml_document* xml_parse_document(uint8_t* buffer, size_t length) {
 
 	/* Return parsed document
 	 */
-	struct xml_document* document = ms3_cmalloc(sizeof(struct xml_document));
+	document = ms3_cmalloc(sizeof(struct xml_document));
 	document->buffer.buffer = buffer;
 	document->buffer.length = length;
 	document->root = root;
@@ -886,12 +897,14 @@ struct xml_document* xml_open_document(FILE* source) {
 
 	size_t document_length = 0;
 	size_t buffer_size = 1;	// TODO 4069
+	struct xml_document* document;
 	uint8_t* buffer = ms3_cmalloc(buffer_size * sizeof(uint8_t));
+
 
 	/* Read hole file into buffer
 	 */
 	while (!feof(source)) {
-
+                size_t read;
 		/* Reallocate buffer
 		 */
 		if (buffer_size - document_length < read_chunk) {
@@ -899,10 +912,9 @@ struct xml_document* xml_open_document(FILE* source) {
 			buffer_size += 2 * read_chunk;
 		}
 
-		size_t read = fread(
-			&buffer[document_length],
-			sizeof(uint8_t), read_chunk,
-			source
+		read = fread(&buffer[document_length],
+                             sizeof(uint8_t), read_chunk,
+                             source
 		);
 
 		document_length += read;
@@ -911,7 +923,7 @@ struct xml_document* xml_open_document(FILE* source) {
 
 	/* Try to parse buffer
 	 */
-	struct xml_document* document = xml_parse_document(buffer, document_length);
+	document = xml_parse_document(buffer, document_length);
 
 	if (!document) {
 		ms3_cfree(buffer);
@@ -1143,4 +1155,3 @@ void xml_string_copy(struct xml_string* string, uint8_t* buffer, size_t length) 
 	memcpy(buffer, string->buffer, length);
     buffer[length]= '\0';
 }
-
