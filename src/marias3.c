@@ -31,11 +31,14 @@ ms3_calloc_callback ms3_ccalloc = (ms3_calloc_callback)calloc;
 
 
 /* Thread locking code for OpenSSL < 1.1.0 */
-#ifdef HAVE_CURL_OPENSSL_UNSAFE
-#include <openssl/crypto.h>
+#include <dlfcn.h>
 static pthread_mutex_t *mutex_buf = NULL;
+#define CRYPTO_LOCK 1
+static void (*openssl_set_id_callback)(unsigned long (*func)(void));
+static void (*openssl_set_locking_callback)(void (*func)(int mode,int type, const char *file,int line));
+static int (*openssl_num_locks)(void);
 
-static void __attribute__((unused)) locking_function(int mode, int n, const char *file, int line)
+static void locking_function(int mode, int n, const char *file, int line)
 {
   (void) file;
   (void) line;
@@ -45,11 +48,39 @@ static void __attribute__((unused)) locking_function(int mode, int n, const char
     pthread_mutex_unlock(&(mutex_buf[n]));
 }
 
+static int curl_needs_openssl_locking()
+{
+  curl_version_info_data *data = curl_version_info(CURLVERSION_NOW);
+
+  if (data->ssl_version == NULL)
+  {
+    return 0;
+  }
+
+  if (strncmp(data->ssl_version, "OpenSSL", 7) != 0)
+  {
+    return 0;
+  }
+  if (data->ssl_version[8] == '0')
+  {
+    return 1;
+  }
+  if ((data->ssl_version[8] == '1') && (data->ssl_version[10] == '0'))
+  {
+    openssl_set_id_callback = dlsym(RTLD_DEFAULT, "CRYPTO_set_id_callback");
+    openssl_set_locking_callback = dlsym(RTLD_DEFAULT, "CRYPTO_set_locking_callback");
+    openssl_num_locks = dlsym(RTLD_DEFAULT, "CRYPTO_num_locks");
+    return openssl_set_id_callback != NULL &&
+           openssl_set_locking_callback != NULL &&
+           openssl_num_locks != NULL;
+  }
+  return 0;
+}
+
 static unsigned long __attribute__((unused)) id_function(void)
 {
   return ((unsigned long)pthread_self());
 }
-#endif
 
 uint8_t ms3_library_init_malloc(ms3_malloc_callback m,
                                 ms3_free_callback f, ms3_realloc_callback r,
@@ -66,17 +97,18 @@ uint8_t ms3_library_init_malloc(ms3_malloc_callback m,
   ms3_cstrdup = s;
   ms3_ccalloc = c;
 
-#ifdef HAVE_CURL_OPENSSL_UNSAFE
-  int i;
-  mutex_buf = ms3_cmalloc(CRYPTO_num_locks() * sizeof(pthread_mutex_t));
-  if(mutex_buf)
+  if (curl_needs_openssl_locking())
   {
-    for(i = 0; i < CRYPTO_num_locks(); i++)
-      pthread_mutex_init(&(mutex_buf[i]), NULL);
-    CRYPTO_set_id_callback(id_function);
-    CRYPTO_set_locking_callback(locking_function);
+    int i;
+    mutex_buf = ms3_cmalloc(openssl_num_locks() * sizeof(pthread_mutex_t));
+    if(mutex_buf)
+    {
+      for(i = 0; i < openssl_num_locks(); i++)
+        pthread_mutex_init(&(mutex_buf[i]), NULL);
+      openssl_set_id_callback(id_function);
+      openssl_set_locking_callback(locking_function);
+    }
   }
-#endif
 
   if (curl_global_init_mem(CURL_GLOBAL_DEFAULT, m, f, r, s, c))
   {
@@ -88,34 +120,33 @@ uint8_t ms3_library_init_malloc(ms3_malloc_callback m,
 
 void ms3_library_init(void)
 {
-#ifdef HAVE_CURL_OPENSSL_UNSAFE
-  int i;
-  mutex_buf = malloc(CRYPTO_num_locks() * sizeof(pthread_mutex_t));
-  if(mutex_buf)
+  if (curl_needs_openssl_locking())
   {
-    for(i = 0; i < CRYPTO_num_locks(); i++)
-      pthread_mutex_init(&(mutex_buf[i]), NULL);
-    CRYPTO_set_id_callback(id_function);
-    CRYPTO_set_locking_callback(locking_function);
+    int i;
+    mutex_buf = malloc(openssl_num_locks() * sizeof(pthread_mutex_t));
+    if(mutex_buf)
+    {
+      for(i = 0; i < openssl_num_locks(); i++)
+        pthread_mutex_init(&(mutex_buf[i]), NULL);
+      openssl_set_id_callback(id_function);
+      openssl_set_locking_callback(locking_function);
+    }
   }
-#endif
   curl_global_init(CURL_GLOBAL_DEFAULT);
 }
 
 void ms3_library_deinit(void)
 {
-#ifdef HAVE_CURL_OPENSSL_UNSAFE
   int i;
   if (mutex_buf)
   {
-    CRYPTO_set_id_callback(NULL);
-    CRYPTO_set_locking_callback(NULL);
-    for(i = 0;  i < CRYPTO_num_locks();  i++)
+    openssl_set_id_callback(NULL);
+    openssl_set_locking_callback(NULL);
+    for(i = 0;  i < openssl_num_locks();  i++)
       pthread_mutex_destroy(&(mutex_buf[i]));
     ms3_cfree(mutex_buf);
     mutex_buf = NULL;
   }
-#endif
   curl_global_cleanup();
 }
 
