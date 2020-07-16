@@ -22,6 +22,9 @@
 
 #include <pthread.h>
 #include <arpa/inet.h>
+#ifdef __FreeBSD__
+#include <netinet/in.h>
+#endif
 
 ms3_malloc_callback ms3_cmalloc = (ms3_malloc_callback)malloc;
 ms3_free_callback ms3_cfree = (ms3_free_callback)free;
