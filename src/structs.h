@@ -42,6 +42,7 @@ struct ms3_st
   char *s3secret;
   char *region;
   char *base_domain;
+  int port; // 0 means "Use default"
   size_t buffer_chunk_size;
   CURL *curl;
   char *last_error;
