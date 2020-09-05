@@ -51,7 +51,7 @@ static void set_error_nocopy(ms3_st *ms3, char *error)
   ms3->last_error = error;
 }
 
-static uint8_t build_request_uri(CURL *curl, const char *base_domain, int port,
+static uint8_t build_request_uri(CURL *curl, const char *base_domain,
                                  const char *bucket, const char *object, const char *query, bool use_http,
                                  uint8_t protocol_version)
 {
@@ -61,14 +61,6 @@ static uint8_t build_request_uri(CURL *curl, const char *base_domain, int port,
   const char *http_protocol = "http";
   const char *https_protocol = "https";
   const char *protocol;
-  char port_str[32]; // ":portnumber" or empty string
-
-  if (port)
-  {
-    snprintf(port_str, sizeof(port_str) - 1, ":%d", port);
-  }
-  else
-    port_str[0]= 0; // empty string
 
   if (base_domain)
   {
@@ -91,43 +83,43 @@ static uint8_t build_request_uri(CURL *curl, const char *base_domain, int port,
   if (query)
   {
     if (path_parts + strlen(domain) + strlen(bucket) + strlen(object) + strlen(
-          query) + strlen(port_str) >= MAX_URI_LENGTH - 1)
+          query) >= MAX_URI_LENGTH - 1)
     {
       return MS3_ERR_URI_TOO_LONG;
     }
 
     if (protocol_version == 1)
     {
-      snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s%s/%s%s?%s", protocol,
-               domain, port_str, bucket,
+      snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s/%s%s?%s", protocol,
+               domain, bucket,
                object, query);
     }
     else
     {
-      snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s.%s%s%s?%s", protocol,
-               bucket, domain, port_str,
+      snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s.%s%s?%s", protocol,
+               bucket, domain,
                object, query);
     }
   }
   else
   {
     if (path_parts + strlen(domain) + strlen(bucket) + strlen(
-          object) + strlen(port_str) >= MAX_URI_LENGTH - 1)
+          object) >= MAX_URI_LENGTH - 1)
     {
       return MS3_ERR_URI_TOO_LONG;
     }
 
     if (protocol_version == 1)
     {
-      snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s%s/%s%s", protocol,
-               domain, port_str,
+      snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s/%s%s", protocol,
+               domain,
                bucket,
                object);
     }
     else
     {
-      snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s.%s%s%s", protocol,
-               bucket, domain, port_str,
+      snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s.%s%s", protocol,
+               bucket, domain,
                object);
     }
   }
@@ -725,8 +717,8 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
                            ms3->query_buffer);
   }
 
-  res = build_request_uri(curl, ms3->base_domain, ms3->port, bucket, path,
-                          query, ms3->use_http, ms3->protocol_version);
+  res = build_request_uri(curl, ms3->base_domain, bucket, path, query,
+                          ms3->use_http, ms3->protocol_version);
 
   if (res)
   {
@@ -782,6 +774,9 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
   }
+
+  if (ms3->port)
+    curl_easy_setopt(curl, CURLOPT_PORT, (long)ms3->port);
 
   curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_callback);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, body_callback);
