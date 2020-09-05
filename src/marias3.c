@@ -169,6 +169,7 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
   ms3->s3key = ms3_cstrdup(s3key);
   ms3->s3secret = ms3_cstrdup(s3secret);
   ms3->region = ms3_cstrdup(region);
+  ms3->port = 0; /* The default value */
 
   if (base_domain && strlen(base_domain))
   {
@@ -537,6 +538,19 @@ uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value)
       break;
     }
 
+    case MS3_OPT_PORT_NUMBER:
+    {
+      int port_number;
+
+      if (!value)
+      {
+        return MS3_ERR_PARAMETER;
+      }
+      memcpy(&port_number, (void*)value, sizeof(int));
+
+      ms3->port = port_number;
+      break;
+    }
     default:
       return MS3_ERR_PARAMETER;
   }
