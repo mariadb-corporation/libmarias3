@@ -19,6 +19,7 @@ src_libmarias3_la_CFLAGS= -DBUILDING_MS3
 src_libmarias3_la_SOURCES+= src/marias3.c
 src_libmarias3_la_SOURCES+= src/request.c
 src_libmarias3_la_SOURCES+= src/response.c
+src_libmarias3_la_SOURCES+= src/assume_role.c
 src_libmarias3_la_SOURCES+= src/error.c
 src_libmarias3_la_SOURCES+= src/debug.c
 

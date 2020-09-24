@@ -47,7 +47,9 @@ enum command_t
   MS3_CMD_GET,
   MS3_CMD_DELETE,
   MS3_CMD_HEAD,
-  MS3_CMD_COPY
+  MS3_CMD_COPY,
+  MS3_CMD_LIST_ROLE,
+  MS3_CMD_ASSUME_ROLE
 };
 
 typedef enum command_t command_t;
