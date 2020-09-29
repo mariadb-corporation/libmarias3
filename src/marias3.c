@@ -212,6 +212,8 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
   ms3->list_container.pool_list = NULL;
   ms3->list_container.pool_free = 0;
 
+  ms3->iam_role = NULL;
+
   return ms3;
 }
 
