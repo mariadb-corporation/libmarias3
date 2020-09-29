@@ -863,6 +863,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     }
 
     set_error_nocopy(ms3, message);
+    res = MS3_ERR_AUTH;
   }
   else if (response_code >= 400)
   {
