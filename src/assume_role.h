@@ -1,5 +1,5 @@
 /* vim:expandtab:shiftwidth=2:tabstop=2:smarttab:
- * Copyright 2019 MariaDB Corporation Ab. All rights reserved.
+ * Copyright 2020 MariaDB Corporation Ab. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,14 +19,4 @@
 
 #pragma once
 
-#include "config.h"
-#include <stdint.h>
-
-char *parse_error_message(const char *data, size_t length);
-
-uint8_t parse_list_response(const char *data, size_t length,
-                            struct ms3_list_container_st *list_container, uint8_t list_version, char **continuation);
-
-uint8_t parse_role_list_response(const char *data, size_t length, char *role_name, char* arn, char **continuation);
-
-uint8_t parse_assume_role_response(const char *data, size_t length, char *assume_role_key, char *assume_role_secret, char *assume_role_token);
+uint8_t execute_assume_role_request(ms3_st *ms3, command_t cmd, const uint8_t *data, size_t data_size, char *continuation, void *ret_ptr);

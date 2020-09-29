@@ -39,5 +39,5 @@
 #include "structs.h"
 #include "response.h"
 #include "request.h"
-
+#include "assume_role.h"
 

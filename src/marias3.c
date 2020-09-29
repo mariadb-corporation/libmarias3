@@ -205,7 +205,7 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
   ms3->disable_verification = false;
   ms3->first_run = true;
   ms3->path_buffer = ms3_cmalloc(sizeof(char) * 1024);
-  ms3->query_buffer = ms3_cmalloc(sizeof(char) * 1024);
+  ms3->query_buffer = ms3_cmalloc(sizeof(char) * 3072);
   ms3->list_container.pool = NULL;
   ms3->list_container.next = NULL;
   ms3->list_container.start = NULL;
@@ -213,6 +213,40 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
   ms3->list_container.pool_free = 0;
 
   return ms3;
+}
+
+uint8_t ms3_init_assume_role(ms3_st *ms3, const char *iam_role, const char *sts_endpoint)
+{
+  uint8_t ret=0;
+
+  if (iam_role == NULL)
+  {
+      return MS3_ERR_PARAMETER;
+  }
+  ms3->iam_role = ms3_cstrdup(iam_role);
+
+  if (sts_endpoint && strlen(sts_endpoint))
+  {
+      ms3->sts_endpoint = ms3_cstrdup(sts_endpoint);
+  }
+  else
+  {
+      ms3->sts_endpoint = ms3_cstrdup("sts.amazonaws.com");
+  }
+
+  ms3->iam_endpoint = ms3_cstrdup("iam.amazonaws.com");
+
+  ms3->iam_role_arn = ms3_cmalloc(sizeof(char) * 2048);
+  ms3->role_key = ms3_cmalloc(sizeof(char) * 128);
+  ms3->role_secret = ms3_cmalloc(sizeof(char) * 1024);
+  // aws says theres no maximum length here.. 2048 might be overkill
+  ms3->role_session_token = ms3_cmalloc(sizeof(char) * 2048);
+  // 0 will uses the default and not set a value in the request
+  ms3->role_session_duration = 0;
+
+  ret = ms3_assume_role(ms3);
+
+  return ret;
 }
 
 static void list_free(ms3_st *ms3)
@@ -251,6 +285,16 @@ void ms3_deinit(ms3_st *ms3)
   ms3_cfree(ms3->s3key);
   ms3_cfree(ms3->region);
   ms3_cfree(ms3->base_domain);
+  if (ms3->iam_role)
+  {
+    ms3_cfree(ms3->iam_role);
+    ms3_cfree(ms3->iam_endpoint);
+    ms3_cfree(ms3->sts_endpoint);
+    ms3_cfree(ms3->iam_role_arn);
+    ms3_cfree(ms3->role_key);
+    ms3_cfree(ms3->role_secret);
+    ms3_cfree(ms3->role_session_token);
+  }
   curl_easy_cleanup(ms3->curl);
   ms3_cfree(ms3->last_error);
   ms3_cfree(ms3->path_buffer);
@@ -555,3 +599,33 @@ uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value)
 
   return 0;
 }
+
+uint8_t ms3_assume_role(ms3_st *ms3)
+{
+    uint8_t res = 0;
+    struct memory_buffer_st buf;
+
+    buf.data = NULL;
+    buf.length = 0;
+
+    if (!ms3 || !ms3->iam_role)
+    {
+      return MS3_ERR_PARAMETER;
+    }
+
+    if (!strstr(ms3->iam_role_arn, ms3->iam_role))
+    {
+        ms3debug("Lookup IAM role ARN");
+        res = execute_assume_role_request(ms3, MS3_CMD_LIST_ROLE, NULL, 0, NULL, &buf);
+        if(res)
+        {
+          return res;
+        }
+
+    }
+    ms3debug("Assume IAM role");
+    res = execute_assume_role_request(ms3, MS3_CMD_ASSUME_ROLE, NULL, 0, NULL, &buf);
+
+    return res;
+}
+

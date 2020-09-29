@@ -188,7 +188,7 @@ static char *generate_query(CURL *curl, const char *value,
 
   if (use_delimiter)
   {
-    snprintf(query_buffer, 1024, "delimiter=%%2F");
+    snprintf(query_buffer, 3072, "delimiter=%%2F");
   }
 
   if (list_version == 2)
@@ -199,12 +199,12 @@ static char *generate_query(CURL *curl, const char *value,
 
       if (strlen(query_buffer))
       {
-        snprintf(query_buffer + strlen(query_buffer), 1024 - strlen(query_buffer),
+        snprintf(query_buffer + strlen(query_buffer), 3072 - strlen(query_buffer),
                  "&continuation-token=%s&list-type=2", encoded);
       }
       else
       {
-        snprintf(query_buffer, 1024, "continuation-token=%s&list-type=2", encoded);
+        snprintf(query_buffer, 3072, "continuation-token=%s&list-type=2", encoded);
       }
 
       curl_free(encoded);
@@ -213,7 +213,7 @@ static char *generate_query(CURL *curl, const char *value,
     {
       if (strlen(query_buffer))
       {
-        snprintf(query_buffer + strlen(query_buffer), 1024 - strlen(query_buffer),
+        snprintf(query_buffer + strlen(query_buffer), 3072 - strlen(query_buffer),
                  "&list-type=2");
       }
       else
@@ -229,13 +229,13 @@ static char *generate_query(CURL *curl, const char *value,
 
     if (strlen(query_buffer))
     {
-      snprintf(query_buffer + strlen(query_buffer), 1024 - strlen(query_buffer),
+      snprintf(query_buffer + strlen(query_buffer), 3072 - strlen(query_buffer),
                "&marker=%s",
                encoded);
     }
     else
     {
-      snprintf(query_buffer, 1024, "marker=%s", encoded);
+      snprintf(query_buffer, 3072, "marker=%s", encoded);
     }
 
     curl_free(encoded);
@@ -247,13 +247,13 @@ static char *generate_query(CURL *curl, const char *value,
 
     if (strlen(query_buffer))
     {
-      snprintf(query_buffer + strlen(query_buffer), 1024 - strlen(query_buffer),
+      snprintf(query_buffer + strlen(query_buffer), 3072 - strlen(query_buffer),
                "&prefix=%s",
                encoded);
     }
     else
     {
-      snprintf(query_buffer, 1024, "prefix=%s",
+      snprintf(query_buffer, 3072, "prefix=%s",
                encoded);
     }
 
@@ -274,10 +274,10 @@ static char *generate_query(CURL *curl, const char *value,
 */
 static uint8_t generate_request_hash(uri_method_t method, const char *path,
                                      const char *bucket,
-                                     const char *query, char *post_hash, struct curl_slist *headers, bool has_source,
+                                     const char *query, char *post_hash, struct curl_slist *headers, bool has_source, bool has_token,
                                      char *return_hash)
 {
-  char signing_data[1024];
+  char signing_data[3072];
   size_t pos = 0;
   uint8_t sha256hash[32]; // SHA_256 binary length
   uint8_t hash_pos = 0;
@@ -357,11 +357,23 @@ static uint8_t generate_request_hash(uri_method_t method, const char *path,
 
   // List if header names
   // The newline between headers and this is important
-  if (has_source)
+  if (has_source && has_token)
+  {
+    snprintf(signing_data + pos, sizeof(signing_data) - pos,
+             "\nhost;x-amz-content-sha256;x-amz-copy-source;x-amz-date;x-amz-security-token\n");
+    pos += 77;
+  }
+  else if (has_source)
   {
     snprintf(signing_data + pos, sizeof(signing_data) - pos,
              "\nhost;x-amz-content-sha256;x-amz-copy-source;x-amz-date\n");
     pos += 56;
+  }
+  else if (has_token)
+  {
+    snprintf(signing_data + pos, sizeof(signing_data) - pos,
+             "\nhost;x-amz-content-sha256;x-amz-date;x-amz-security-token\n");
+    pos += 59;
   }
   else
   {
@@ -373,6 +385,7 @@ static uint8_t generate_request_hash(uri_method_t method, const char *path,
   // Hash of post data (can be hash of empty)
   snprintf(signing_data + pos, sizeof(signing_data) - pos, "%.*s", 64, post_hash);
   //pos+= 64;
+  ms3debug("Signature data1: %s", signing_data);
 
   // Hash all of the above
   sha256((uint8_t *)signing_data, strlen(signing_data), (uint8_t *)sha256hash);
@@ -394,12 +407,12 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
                                      const char *secret, const char *object, const char *query,
                                      uri_method_t method, const char *bucket, const char *source_bucket,
                                      const char *source_key, struct put_buffer_st *post_data,
-                                     uint8_t protocol_version)
+                                     uint8_t protocol_version, const char *session_token)
 {
   uint8_t ret = 0;
   time_t now;
   struct tm tmp_tm;
-  char headerbuf[1024];
+  char headerbuf[3072];
   char secrethead[45];
   char date[9];
   char sha256hash[65];
@@ -414,6 +427,7 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
   uint8_t offset;
   uint8_t i;
   bool has_source = false;
+  bool has_token = false;
   struct curl_slist *current_header;
 
   // Host header
@@ -466,6 +480,14 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
            &tmp_tm);
   headers = curl_slist_append(headers, headerbuf);
 
+  // Temp Credentials Security Token
+  if (session_token)
+  {
+    snprintf(headerbuf, sizeof(headerbuf), "x-amz-security-token:%s",session_token);
+    headers = curl_slist_append(headers, headerbuf);
+    has_token = true;
+  }
+
   if (source_bucket)
   {
     has_source = true;
@@ -475,13 +497,13 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
   if (protocol_version == 1)
   {
     ret = generate_request_hash(method, object, bucket, query, post_hash, headers,
-                                has_source,
+                                has_source, has_token,
                                 sha256hash);
   }
   else
   {
     ret = generate_request_hash(method, object, NULL, query, post_hash, headers,
-                                has_source,
+                                has_source, has_token,
                                 sha256hash);
   }
 
@@ -533,10 +555,22 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
   }
 
   // Make auth header
-  if (source_bucket)
+  if (source_bucket && session_token)
+  {
+    snprintf(headerbuf, sizeof(headerbuf),
+             "Authorization: AWS4-HMAC-SHA256 Credential=%s/%s/%s/s3/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-copy-source;x-amz-date;x-amz-security-token;x-amz-copy-source, Signature=%s",
+             key, date, region, sha256hash);
+  }
+  else if (source_bucket)
   {
     snprintf(headerbuf, sizeof(headerbuf),
              "Authorization: AWS4-HMAC-SHA256 Credential=%s/%s/%s/s3/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-copy-source;x-amz-date, Signature=%s",
+             key, date, region, sha256hash);
+  }
+  else if (session_token)
+  {
+    snprintf(headerbuf, sizeof(headerbuf),
+             "Authorization: AWS4-HMAC-SHA256 Credential=%s/%s/%s/s3/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-date;x-amz-security-token, Signature=%s",
              key, date, region, sha256hash);
   }
   else
@@ -746,6 +780,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     case MS3_CMD_LIST:
     case MS3_CMD_LIST_RECURSIVE:
     case MS3_CMD_GET:
+    case MS3_CMD_LIST_ROLE:
       method = MS3_GET;
       break;
 
@@ -756,10 +791,19 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
       return MS3_ERR_IMPOSSIBLE;
   }
 
-  res = build_request_headers(curl, &headers, ms3->base_domain, ms3->region,
-                              ms3->s3key, ms3->s3secret, path, query, method, bucket, source_bucket,
-                              source_object, &post_data, ms3->protocol_version);
-
+  if (ms3->iam_role)
+  {
+      ms3debug("Using assumed role: %s",ms3->iam_role);
+      res = build_request_headers(curl, &headers, ms3->base_domain, ms3->region,
+                                  ms3->role_key, ms3->role_secret, path, query, method, bucket, source_bucket,
+                                  source_object, &post_data, ms3->protocol_version, ms3->role_session_token);
+  }
+  else
+  {
+      res = build_request_headers(curl, &headers, ms3->base_domain, ms3->region,
+                                  ms3->s3key, ms3->s3secret, path, query, method, bucket, source_bucket,
+                                  source_object, &post_data, ms3->protocol_version, NULL);
+  }
   if (res)
   {
     ms3_cfree(mem.data);
@@ -819,7 +863,6 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     }
 
     set_error_nocopy(ms3, message);
-    res = MS3_ERR_AUTH;
   }
   else if (response_code >= 400)
   {
@@ -832,6 +875,10 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
     set_error_nocopy(ms3, message);
     res = MS3_ERR_SERVER;
+    if (ms3->iam_role)
+    {
+      res = MS3_ERR_AUTH_ROLE;
+    }
   }
 
   switch (cmd)

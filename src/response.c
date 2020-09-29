@@ -26,6 +26,7 @@ char *parse_error_message(const char *data, size_t length)
 {
   struct xml_document *doc = NULL;
   struct xml_node *node = NULL;
+  struct xml_node *child = NULL;
   struct xml_node *root = NULL;
 
   uint64_t node_it = 0;
@@ -44,14 +45,25 @@ char *parse_error_message(const char *data, size_t length)
 
   root = xml_document_root(doc);
 
+  // First node is Error
+  child = xml_node_child(root, node_it);
+  // IAM / STS This will be Error and we need next child
+  if (!xml_node_name_cmp(child, "Error"))
+  {
+    node = xml_node_child(child, node_it);
+  }
+  else
+  {
+    node = child;
+    child = root;
+  }
+
   if (!node)
   {
     xml_document_free(doc, false);
     return NULL;
   }
 
-  // First node is Error
-  node = xml_node_child(root, node_it);
   while(node)
   {
     if (!xml_node_name_cmp(node, "Message"))
@@ -64,7 +76,7 @@ char *parse_error_message(const char *data, size_t length)
     }
 
     node_it++;
-    node = xml_node_child(root, node_it);
+    node = xml_node_child(child, node_it);
   }
 
   xml_document_free(doc, false);
@@ -311,4 +323,211 @@ uint8_t parse_list_response(const char *data, size_t length, struct ms3_list_con
 
   xml_document_free(doc, false);
   return 0;
+}
+
+uint8_t parse_role_list_response(const char *data, size_t length, char *role_name, char *arn, char **continuation)
+{
+    struct xml_document *doc;
+    struct xml_node *root;
+    struct xml_node *list_role_result;
+    struct xml_node *child;
+    struct xml_node *roles;
+    struct xml_node *member;
+
+    char *response_role_name = NULL;
+    char *response_role_arn = NULL;
+    bool truncated = false;
+    uint64_t node_it = 0;
+
+    // Empty list
+    if (!data || !length)
+    {
+      return 0;
+    }
+
+    doc = xml_parse_document((uint8_t*)data, length);
+
+    if (!doc)
+    {
+      return MS3_ERR_RESPONSE_PARSE;
+    }
+
+    root = xml_document_root(doc);
+    // First node is listRoleResponse
+    list_role_result = xml_node_child(root, 0);
+    child = xml_node_child(list_role_result, 0);
+
+    do
+    {
+
+      if (!xml_node_name_cmp(child, "Marker"))
+      {
+        struct xml_string *content = xml_node_content(child);
+        *continuation = ms3_cmalloc(xml_string_length(content) + 1);
+        xml_string_copy(content, (uint8_t*)*continuation, xml_string_length(content));
+        continue;
+      }
+
+
+      if (!xml_node_name_cmp(child, "IsTruncated"))
+      {
+        struct xml_string *content = xml_node_content(child);
+        char *trunc_value = ms3_cmalloc(xml_string_length(content) + 1);
+        xml_string_copy(content, (uint8_t*)trunc_value, xml_string_length(content));
+
+        if (!strcmp(trunc_value, "true"))
+        {
+          truncated = true;
+        }
+
+        ms3_cfree(trunc_value);
+        continue;
+      }
+      if (!xml_node_name_cmp(child, "Roles"))
+      {
+        bool skip = false;
+        uint64_t child_it = 0;
+        // Found contents
+        roles = xml_node_child(child, 0);
+        do
+        {
+          // go down one more child to get members
+         uint64_t roles_it = 0;
+          member = xml_node_child(roles, 0);
+          do
+          {
+            if (!xml_node_name_cmp(member, "RoleName"))
+            {
+              struct xml_string *content = xml_node_content(member);
+              response_role_name = ms3_cmalloc(xml_string_length(content) + 1);
+              xml_string_copy(content, (uint8_t*)response_role_name, xml_string_length(content));
+              continue;
+            }
+            if (!xml_node_name_cmp(member, "Arn"))
+            {
+              struct xml_string *content = xml_node_content(member);
+              response_role_arn = ms3_cmalloc(xml_string_length(content) + 1);
+              xml_string_copy(content, (uint8_t*)response_role_arn, xml_string_length(content));
+              continue;
+            }
+          }
+          while ((member = xml_node_child(roles, ++roles_it)));
+          if (!strcmp(response_role_name, role_name))
+          {
+              ms3debug("Role Found ARN = %s",response_role_arn);
+              sprintf(arn, "%s", response_role_arn);
+              ms3_cfree(response_role_name);
+              ms3_cfree(response_role_arn);
+              xml_document_free(doc, false);
+              return MS3_ERR_NONE;
+          }
+          ms3_cfree(response_role_name);
+          ms3_cfree(response_role_arn);
+        }
+        while ((roles = xml_node_child(child, ++child_it)));
+      }
+    }
+    while ((child = xml_node_child(list_role_result, ++node_it)));
+
+    xml_document_free(doc, false);
+    return MS3_ERR_NOT_FOUND;
+}
+
+uint8_t parse_assume_role_response(const char *data, size_t length, char *assume_role_key, char *assume_role_secret, char *assume_role_token)
+{
+    struct xml_document *doc;
+    struct xml_node *root;
+    struct xml_node *assume_role_result;
+    struct xml_node *child;
+    struct xml_node *credentials;
+    char *key = NULL;
+    char *secret = NULL;
+    char *token = NULL;
+    size_t size = 0;
+    struct tm ttmp = {0};
+    time_t tout = 0;
+    uint64_t node_it = 0;
+
+    // Empty list
+    if (!data || !length)
+    {
+      return 0;
+    }
+
+    doc = xml_parse_document((uint8_t*)data, length);
+
+    if (!doc)
+    {
+      return MS3_ERR_RESPONSE_PARSE;
+    }
+
+    root = xml_document_root(doc);
+    // First node is AssumeRoleResponse
+    assume_role_result = xml_node_child(root, 0);
+    child = xml_node_child(assume_role_result, 0);
+
+    do
+    {
+      if (!xml_node_name_cmp(child, "Credentials"))
+      {
+        bool skip = false;
+        uint64_t child_it = 0;
+        // Found contents
+        credentials = xml_node_child(child, 0);
+        do
+        {
+          if (!xml_node_name_cmp(credentials, "AccessKeyId"))
+          {
+            struct xml_string *content = xml_node_content(credentials);
+            size_t content_length = xml_string_length(content);
+
+            if (content_length >= 128)
+            {
+              ms3debug("AccessKeyId error length = %u", content_length);
+              xml_document_free(doc, false);
+              return MS3_ERR_AUTH_ROLE;
+            }
+            xml_string_copy(content, (uint8_t*)assume_role_key, content_length);
+
+            continue;
+          }
+          if (!xml_node_name_cmp(credentials, "SecretAccessKey"))
+          {
+            struct xml_string *content = xml_node_content(credentials);
+            size_t content_length = xml_string_length(content);
+
+            if (content_length >= 1024)
+            {
+              ms3debug("SecretAccessKey error length = %u", content_length);
+              xml_document_free(doc, false);
+              return MS3_ERR_AUTH_ROLE;
+            }
+            xml_string_copy(content, (uint8_t*)assume_role_secret, content_length);
+
+            continue;
+          }
+          if (!xml_node_name_cmp(credentials, "SessionToken"))
+          {
+            struct xml_string *content = xml_node_content(credentials);
+            size_t content_length = xml_string_length(content);
+
+            if (content_length >= 2048)
+            {
+              ms3debug("SessionToken error length = %u", content_length);
+              xml_document_free(doc, false);
+              return MS3_ERR_AUTH_ROLE;
+            }
+            xml_string_copy(content, (uint8_t*)assume_role_token, content_length);
+
+            continue;
+          }
+        }
+        while ((credentials = xml_node_child(child, ++child_it)));
+      }
+    }
+    while ((child = xml_node_child(assume_role_result, ++node_it)));
+
+    xml_document_free(doc, false);
+
+    return MS3_ERR_NONE;
 }
