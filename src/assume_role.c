@@ -169,9 +169,9 @@ static char *generate_assume_role_query(CURL *curl, const char *action, size_t r
                             const char *version, const char *role_session_name, const char *role_arn,
                             const char *continuation, char *query_buffer)
 {
+  size_t query_buffer_length = 0;
   char *encoded;
   query_buffer[0] = '\0';
-  size_t query_buffer_length;
 
   if (action)
   {
@@ -194,11 +194,11 @@ static char *generate_assume_role_query(CURL *curl, const char *action, size_t r
     if (query_buffer_length)
     {
       snprintf(query_buffer + query_buffer_length, 3072 - query_buffer_length,
-               "&DurationSeconds=%u", role_duration);
+               "&DurationSeconds=%zu", role_duration);
     }
     else
     {
-      snprintf(query_buffer, 3072, "DurationSeconds=%u", role_duration);
+      snprintf(query_buffer, 3072, "DurationSeconds=%zu", role_duration);
     }
   }
   if (continuation)
@@ -382,8 +382,6 @@ static uint8_t build_assume_role_request_headers(CURL *curl, struct curl_slist *
   struct curl_slist *headers = NULL;
   uint8_t offset;
   uint8_t i;
-  bool has_source = false;
-  bool has_token = false;
   struct curl_slist *current_header;
 
   // Host header
@@ -512,11 +510,12 @@ uint8_t execute_assume_role_request(ms3_st *ms3, command_t cmd, const uint8_t *d
   uint8_t res = 0;
   struct memory_buffer_st mem;
   uri_method_t method;
-  char *path = NULL;
   char *query = NULL;
   struct put_buffer_st post_data;
   CURLcode curl_res;
   long response_code = 0;
+  char* endpoint = NULL;
+  char endpoint_type[8];
 
   mem.data = NULL;
   mem.length = 0;
@@ -538,8 +537,6 @@ uint8_t execute_assume_role_request(ms3_st *ms3, command_t cmd, const uint8_t *d
     ms3->first_run = false;
   }
 
-  char* endpoint = NULL;
-  char endpoint_type[8];
   if (cmd == MS3_CMD_ASSUME_ROLE)
   {
       query = generate_assume_role_query(curl, "AssumeRole", ms3->role_session_duration, "2011-06-15", "libmariaS3",
