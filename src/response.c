@@ -336,7 +336,6 @@ uint8_t parse_role_list_response(const char *data, size_t length, char *role_nam
 
     char *response_role_name = NULL;
     char *response_role_arn = NULL;
-    bool truncated = false;
     uint64_t node_it = 0;
 
     // Empty list
@@ -368,21 +367,6 @@ uint8_t parse_role_list_response(const char *data, size_t length, char *role_nam
         continue;
       }
 
-
-      if (!xml_node_name_cmp(child, "IsTruncated"))
-      {
-        struct xml_string *content = xml_node_content(child);
-        char *trunc_value = ms3_cmalloc(xml_string_length(content) + 1);
-        xml_string_copy(content, (uint8_t*)trunc_value, xml_string_length(content));
-
-        if (!strcmp(trunc_value, "true"))
-        {
-          truncated = true;
-        }
-
-        ms3_cfree(trunc_value);
-        continue;
-      }
       if (!xml_node_name_cmp(child, "Roles"))
       {
         uint64_t child_it = 0;
