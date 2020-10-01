@@ -25,6 +25,7 @@
 
 const char *default_iam_domain = "iam.amazonaws.com";
 const char *default_sts_domain = "sts.amazonaws.com";
+const char *iam_request_region = "us-east-1";
 
 static void set_error(ms3_st *ms3, const char *error)
 {
@@ -515,6 +516,7 @@ uint8_t execute_assume_role_request(ms3_st *ms3, command_t cmd, const uint8_t *d
   CURLcode curl_res;
   long response_code = 0;
   char* endpoint = NULL;
+  const char* region = iam_request_region;
   char endpoint_type[8];
 
   mem.data = NULL;
@@ -542,6 +544,7 @@ uint8_t execute_assume_role_request(ms3_st *ms3, command_t cmd, const uint8_t *d
       query = generate_assume_role_query(curl, "AssumeRole", ms3->role_session_duration, "2011-06-15", "libmariaS3",
                                          ms3->iam_role_arn, continuation, ms3->query_buffer);
       endpoint = ms3->sts_endpoint;
+      region = ms3->sts_region;
       sprintf(endpoint_type, "sts");
       method = MS3_GET;
   }
@@ -560,7 +563,7 @@ uint8_t execute_assume_role_request(ms3_st *ms3, command_t cmd, const uint8_t *d
     return res;
   }
 
-  res = build_assume_role_request_headers(curl, &headers, endpoint, endpoint_type, ms3->region,
+  res = build_assume_role_request_headers(curl, &headers, endpoint, endpoint_type, region,
                                       ms3->s3key, ms3->s3secret, query, method,
                                       &post_data, ms3->protocol_version);
 

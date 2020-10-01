@@ -45,6 +45,7 @@ struct ms3_st
   int port; // 0 means "Use default"
 
   char *sts_endpoint;
+  char *sts_region;
   char *iam_endpoint;
   char *iam_role;
   char *role_key;
