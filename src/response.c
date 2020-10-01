@@ -385,7 +385,6 @@ uint8_t parse_role_list_response(const char *data, size_t length, char *role_nam
       }
       if (!xml_node_name_cmp(child, "Roles"))
       {
-        bool skip = false;
         uint64_t child_it = 0;
         // Found contents
         roles = xml_node_child(child, 0);
@@ -440,12 +439,6 @@ uint8_t parse_assume_role_response(const char *data, size_t length, char *assume
     struct xml_node *assume_role_result;
     struct xml_node *child;
     struct xml_node *credentials;
-    char *key = NULL;
-    char *secret = NULL;
-    char *token = NULL;
-    size_t size = 0;
-    struct tm ttmp = {0};
-    time_t tout = 0;
     uint64_t node_it = 0;
 
     // Empty list
@@ -470,7 +463,6 @@ uint8_t parse_assume_role_response(const char *data, size_t length, char *assume
     {
       if (!xml_node_name_cmp(child, "Credentials"))
       {
-        bool skip = false;
         uint64_t child_it = 0;
         // Found contents
         credentials = xml_node_child(child, 0);
@@ -483,7 +475,7 @@ uint8_t parse_assume_role_response(const char *data, size_t length, char *assume
 
             if (content_length >= 128)
             {
-              ms3debug("AccessKeyId error length = %u", content_length);
+              ms3debug("AccessKeyId error length = %zu", content_length);
               xml_document_free(doc, false);
               return MS3_ERR_AUTH_ROLE;
             }
@@ -498,7 +490,7 @@ uint8_t parse_assume_role_response(const char *data, size_t length, char *assume
 
             if (content_length >= 1024)
             {
-              ms3debug("SecretAccessKey error length = %u", content_length);
+              ms3debug("SecretAccessKey error length = %zu", content_length);
               xml_document_free(doc, false);
               return MS3_ERR_AUTH_ROLE;
             }
@@ -513,7 +505,7 @@ uint8_t parse_assume_role_response(const char *data, size_t length, char *assume
 
             if (content_length >= 2048)
             {
-              ms3debug("SessionToken error length = %u", content_length);
+              ms3debug("SessionToken error length = %zu", content_length);
               xml_document_free(doc, false);
               return MS3_ERR_AUTH_ROLE;
             }
