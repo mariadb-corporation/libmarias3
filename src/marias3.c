@@ -217,7 +217,7 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
   return ms3;
 }
 
-uint8_t ms3_init_assume_role(ms3_st *ms3, const char *iam_role, const char *sts_endpoint)
+uint8_t ms3_init_assume_role(ms3_st *ms3, const char *iam_role, const char *sts_endpoint, const char *sts_region)
 {
   uint8_t ret=0;
 
@@ -234,6 +234,15 @@ uint8_t ms3_init_assume_role(ms3_st *ms3, const char *iam_role, const char *sts_
   else
   {
       ms3->sts_endpoint = ms3_cstrdup("sts.amazonaws.com");
+  }
+
+  if (sts_region && strlen(sts_region))
+  {
+      ms3->sts_region = ms3_cstrdup(sts_region);
+  }
+  else
+  {
+      ms3->sts_region = ms3_cstrdup("us-east-1");
   }
 
   ms3->iam_endpoint = ms3_cstrdup("iam.amazonaws.com");
@@ -292,6 +301,7 @@ void ms3_deinit(ms3_st *ms3)
     ms3_cfree(ms3->iam_role);
     ms3_cfree(ms3->iam_endpoint);
     ms3_cfree(ms3->sts_endpoint);
+    ms3_cfree(ms3->sts_region);
     ms3_cfree(ms3->iam_role_arn);
     ms3_cfree(ms3->role_key);
     ms3_cfree(ms3->role_secret);

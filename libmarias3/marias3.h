@@ -104,7 +104,7 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
                  const char *base_domain);
 
 MS3_API
-uint8_t ms3_init_assume_role(ms3_st *ms3, const char *iam_role, const char *sts_endpoint);
+uint8_t ms3_init_assume_role(ms3_st *ms3, const char *iam_role, const char *sts_endpoint, const char *sts_region);
 
 MS3_API
 uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value);
