@@ -454,6 +454,7 @@ uint8_t parse_assume_role_response(const char *data, size_t length, char *assume
         {
           if (!xml_node_name_cmp(credentials, "AccessKeyId"))
           {
+            assume_role_key[0] = '\0';
             struct xml_string *content = xml_node_content(credentials);
             size_t content_length = xml_string_length(content);
 
@@ -469,6 +470,7 @@ uint8_t parse_assume_role_response(const char *data, size_t length, char *assume
           }
           if (!xml_node_name_cmp(credentials, "SecretAccessKey"))
           {
+            assume_role_secret[0] = '\0';
             struct xml_string *content = xml_node_content(credentials);
             size_t content_length = xml_string_length(content);
 
@@ -484,6 +486,7 @@ uint8_t parse_assume_role_response(const char *data, size_t length, char *assume
           }
           if (!xml_node_name_cmp(credentials, "SessionToken"))
           {
+            assume_role_token[0] = '\0';
             struct xml_string *content = xml_node_content(credentials);
             size_t content_length = xml_string_length(content);
 

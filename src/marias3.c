@@ -248,10 +248,14 @@ uint8_t ms3_init_assume_role(ms3_st *ms3, const char *iam_role, const char *sts_
   ms3->iam_endpoint = ms3_cstrdup("iam.amazonaws.com");
 
   ms3->iam_role_arn = ms3_cmalloc(sizeof(char) * 2048);
+  ms3->iam_role_arn[0] = '\0';
   ms3->role_key = ms3_cmalloc(sizeof(char) * 128);
+  ms3->role_key[0] = '\0';
   ms3->role_secret = ms3_cmalloc(sizeof(char) * 1024);
+  ms3->role_secret[0] = '\0';
   // aws says theres no maximum length here.. 2048 might be overkill
   ms3->role_session_token = ms3_cmalloc(sizeof(char) * 2048);
+  ms3->role_session_token[0] = '\0';
   // 0 will uses the default and not set a value in the request
   ms3->role_session_duration = 0;
 
