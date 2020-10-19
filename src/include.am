@@ -9,6 +9,10 @@ noinst_HEADERS+= src/structs.h
 noinst_HEADERS+= src/request.h
 noinst_HEADERS+= src/response.h
 noinst_HEADERS+= src/xml.h
+noinst_HEADERS+= src/memory.h
+noinst_HEADERS+= src/sha256.h
+noinst_HEADERS+= src/sha256_i.h
+noinst_HEADERS+= src/assume_role.h
 
 lib_LTLIBRARIES+= src/libmarias3.la
 src_libmarias3_la_SOURCES=

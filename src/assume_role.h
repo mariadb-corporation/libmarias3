@@ -19,4 +19,4 @@
 
 #pragma once
 
-uint8_t execute_assume_role_request(ms3_st *ms3, command_t cmd, const uint8_t *data, size_t data_size, char *continuation, void *ret_ptr);
+uint8_t execute_assume_role_request(ms3_st *ms3, command_t cmd, const uint8_t *data, size_t data_size, char *continuation);
