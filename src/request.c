@@ -784,6 +784,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
       method = MS3_GET;
       break;
 
+    case MS3_CMD_ASSUME_ROLE:
     default:
       ms3debug("Bad cmd detected");
       ms3_cfree(mem.data);
@@ -944,6 +945,8 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
       break;
     }
 
+    case MS3_CMD_LIST_ROLE:
+    case MS3_CMD_ASSUME_ROLE:
     default:
     {
       ms3_cfree(mem.data);

@@ -619,10 +619,6 @@ uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value)
 uint8_t ms3_assume_role(ms3_st *ms3)
 {
     uint8_t res = 0;
-    struct memory_buffer_st buf;
-
-    buf.data = NULL;
-    buf.length = 0;
 
     if (!ms3 || !ms3->iam_role)
     {
@@ -632,7 +628,7 @@ uint8_t ms3_assume_role(ms3_st *ms3)
     if (!strstr(ms3->iam_role_arn, ms3->iam_role))
     {
         ms3debug("Lookup IAM role ARN");
-        res = execute_assume_role_request(ms3, MS3_CMD_LIST_ROLE, NULL, 0, NULL, &buf);
+        res = execute_assume_role_request(ms3, MS3_CMD_LIST_ROLE, NULL, 0, NULL);
         if(res)
         {
           return res;
@@ -640,7 +636,7 @@ uint8_t ms3_assume_role(ms3_st *ms3)
 
     }
     ms3debug("Assume IAM role");
-    res = execute_assume_role_request(ms3, MS3_CMD_ASSUME_ROLE, NULL, 0, NULL, &buf);
+    res = execute_assume_role_request(ms3, MS3_CMD_ASSUME_ROLE, NULL, 0, NULL);
 
     return res;
 }

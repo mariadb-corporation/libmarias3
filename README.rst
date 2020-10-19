@@ -43,6 +43,9 @@ You will need the following OS environment variables set to run the tests:
 
 The test suite is automatically built along with the library and can be executed with ``make check`` or ``make distcheck``.
 
+Before pushing, please ALWAYS ensure that ``make check`` and ``make distcheck`` works!
+
+
 Credits
 -------
 

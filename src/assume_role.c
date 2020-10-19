@@ -360,10 +360,14 @@ static uint8_t generate_assume_role_request_hash(uri_method_t method, const char
   return 0;
 }
 
-static uint8_t build_assume_role_request_headers(CURL *curl, struct curl_slist **head,
-                                     const char *base_domain, const char* endpoint_type, const char *region, const char *key,
-                                     const char *secret, const char *query, uri_method_t method,
-                                     struct put_buffer_st *post_data, uint8_t protocol_version)
+static uint8_t
+build_assume_role_request_headers(CURL *curl, struct curl_slist **head,
+                                  const char *base_domain,
+                                  const char* endpoint_type,
+                                  const char *region, const char *key,
+                                  const char *secret, const char *query,
+                                  uri_method_t method,
+                                  struct put_buffer_st *post_data)
 {
   uint8_t ret = 0;
   time_t now;
@@ -504,7 +508,9 @@ static uint8_t build_assume_role_request_headers(CURL *curl, struct curl_slist *
   return 0;
 }
 
-uint8_t execute_assume_role_request(ms3_st *ms3, command_t cmd, const uint8_t *data, size_t data_size, char *continuation, void *ret_ptr)
+uint8_t execute_assume_role_request(ms3_st *ms3, command_t cmd,
+                                    const uint8_t *data, size_t data_size,
+                                    char *continuation)
 {
   CURL *curl = NULL;
   struct curl_slist *headers = NULL;
@@ -563,9 +569,10 @@ uint8_t execute_assume_role_request(ms3_st *ms3, command_t cmd, const uint8_t *d
     return res;
   }
 
-  res = build_assume_role_request_headers(curl, &headers, endpoint, endpoint_type, region,
-                                      ms3->s3key, ms3->s3secret, query, method,
-                                      &post_data, ms3->protocol_version);
+  res = build_assume_role_request_headers(curl, &headers, endpoint,
+                                          endpoint_type, region,
+                                          ms3->s3key, ms3->s3secret, query,
+                                          method, &post_data);
 
   if (res)
   {
@@ -647,7 +654,7 @@ uint8_t execute_assume_role_request(ms3_st *ms3, command_t cmd, const uint8_t *d
 
        if (cont && res)
        {
-         res = execute_assume_role_request(ms3, cmd, data, data_size, cont, NULL);
+         res = execute_assume_role_request(ms3, cmd, data, data_size, cont);
          if (res)
          {
            ms3_cfree(cont);
@@ -675,6 +682,13 @@ uint8_t execute_assume_role_request(ms3_st *ms3, command_t cmd, const uint8_t *d
        break;
      }
 
+     case MS3_CMD_LIST:
+     case MS3_CMD_LIST_RECURSIVE:
+     case MS3_CMD_PUT:
+     case MS3_CMD_GET:
+     case MS3_CMD_DELETE:
+     case MS3_CMD_HEAD:
+     case MS3_CMD_COPY:
      default:
      {
        ms3_cfree(mem.data);
