@@ -36,6 +36,8 @@ int main(int argc, char *argv[])
   char *s3bucket = getenv("S3BUCKET");
   char *s3host = getenv("S3HOST");
   char *s3noverify = getenv("S3NOVERIFY");
+  char *s3usehttp = getenv("S3USEHTTP");
+  char *s3port = getenv("S3PORT");
 
   SKIP_IF_(!s3key, "Environemnt variable S3KEY missing");
   SKIP_IF_(!s3secret, "Environemnt variable S3SECRET missing");
@@ -51,6 +53,17 @@ int main(int argc, char *argv[])
   if (s3noverify && !strcmp(s3noverify, "1"))
   {
     ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, NULL);
+  }
+
+  if (s3usehttp && !strcmp(s3usehttp, "1"))
+  {
+    ms3_set_option(ms3, MS3_OPT_USE_HTTP, NULL);
+  }
+
+  if (s3port)
+  {
+    int port = atol(s3port);
+    ms3_set_option(ms3, MS3_OPT_PORT_NUMBER, &port);
   }
 
 //  ms3_debug();
