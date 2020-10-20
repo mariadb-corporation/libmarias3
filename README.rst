@@ -38,6 +38,10 @@ You will need the following OS environment variables set to run the tests:
 +------------+----------------------------------------------------------+
 | S3HOST     | OPTIONAL hostname for non-AWS S3 service                 |
 +------------+----------------------------------------------------------+
+| S3PORT     | OPTIONAL port for non-AWS S3 service                     |
++------------+----------------------------------------------------------+
+| S3USEHTTP  | Set to ``1`` if the host uses http instead of https      |
++------------+----------------------------------------------------------+
 | S3NOVERIFY | Set to ``1`` if the host should not use SSL verification |
 +------------+----------------------------------------------------------+
 
@@ -51,7 +55,8 @@ Credits
 
 The libMariaS3 authors are:
 
-* `Andrew (LinuxJedi) Hutchings <mailto:linuxjedi@mariadb.com>`_
+* `Andrew (LinuxJedi) Hutchings <mailto:andrew@linuxjedi.co.uk>`_
+  - Starting with this commit, all my contributions are under the 3-clause BSD license.
 * `Sergei Golubchik <mailto:sergei@mariadb.com>`_
 * `Markus Mäkelä <markus.makela@mariadb.com>`_
 

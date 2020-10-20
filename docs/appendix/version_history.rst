@@ -4,6 +4,11 @@ Version History
 Version 3.1
 -----------
 
+Version 3.1.3 GA
+^^^^^^^^^^^^^^^^
+
+* Fix :c:func:`ms3_copy` not working correctly with non-alphanumeric characters (also affected :c:func:`ms3_move`)
+
 Version 3.1.2 GA
 ^^^^^^^^^^^^^^^^
 

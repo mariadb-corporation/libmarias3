@@ -37,6 +37,8 @@ int main(int argc, char *argv[])
   char *s3bucket = getenv("S3BUCKET");
   char *s3host = getenv("S3HOST");
   char *s3noverify = getenv("S3NOVERIFY");
+  char *s3usehttp = getenv("S3USEHTTP");
+  char *s3port = getenv("S3PORT");
 
   SKIP_IF_(!s3key, "Environemnt variable S3KEY missing");
   SKIP_IF_(!s3secret, "Environemnt variable S3SECRET missing");
@@ -52,6 +54,17 @@ int main(int argc, char *argv[])
   if (s3noverify && !strcmp(s3noverify, "1"))
   {
     ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, NULL);
+  }
+
+  if (s3usehttp && !strcmp(s3usehttp, "1"))
+  {
+    ms3_set_option(ms3, MS3_OPT_USE_HTTP, NULL);
+  }
+
+  if (s3port)
+  {
+    int port = atol(s3port);
+    ms3_set_option(ms3, MS3_OPT_PORT_NUMBER, &port);
   }
 
 //  ms3_debug();
@@ -74,6 +87,35 @@ int main(int argc, char *argv[])
   while (list_it)
   {
     if (!strncmp(list_it->key, "test/copied.txt", 12))
+    {
+      found = true;
+      break;
+    }
+
+    list_it = list_it->next;
+  }
+
+  ASSERT_EQ_(found, 1, "Copied file not found");
+
+  // Test with hash chars in filename
+
+  res = ms3_put(ms3, s3bucket, "test/copy_###_test.txt",
+                (const uint8_t *)test_string,
+                strlen(test_string));
+  ASSERT_EQ_(res, 0, "Result: %u", res);
+
+  res = ms3_copy(ms3, s3bucket, "test/copy_###_test.txt", s3bucket,
+                 "test/copied###.txt");
+  ASSERT_EQ_(res, 0, "Result: %u", res);
+
+  res = ms3_list(ms3, s3bucket, NULL, &list);
+  ASSERT_EQ_(res, 0, "Result: %u", res);
+  found = false;
+  list_it = list;
+
+  while (list_it)
+  {
+    if (!strncmp(list_it->key, "test/copied###.txt", 12))
     {
       found = true;
       break;
@@ -128,7 +170,10 @@ int main(int argc, char *argv[])
 
   res = ms3_delete(ms3, s3bucket, "test/moved.txt");
   ASSERT_EQ_(res, 0, "Result: %u", res);
-  res = ms3_delete(ms3, s3bucket, "test/copeid.txt");
+  res = ms3_delete(ms3, s3bucket, "test/copied.txt");
+  res = ms3_delete(ms3, s3bucket, "test/copy_###_test.txt");
+  res = ms3_delete(ms3, s3bucket, "test/copied###.txt");
+
   ms3_free(data);
   ms3_deinit(ms3);
   ms3_library_deinit();

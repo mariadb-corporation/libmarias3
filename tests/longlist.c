@@ -37,6 +37,8 @@ struct thread_info
   char *s3secret;
   char *s3region;
   char *s3host;
+  char *s3port;
+  bool usehttp;
   bool noverify;
 };
 
@@ -52,6 +54,17 @@ static void *put_thread(void *arg)
   if (tinfo->noverify)
   {
     ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, NULL);
+  }
+
+  if (tinfo->usehttp)
+  {
+    ms3_set_option(ms3, MS3_OPT_USE_HTTP, NULL);
+  }
+
+  if (tinfo->s3port)
+  {
+    int port = atol(tinfo->s3port);
+    ms3_set_option(ms3, MS3_OPT_PORT_NUMBER, &port);
   }
 
   for (i = tinfo->start_count; i < tinfo->start_count + 150; i++)
@@ -81,6 +94,17 @@ static void *delete_thread(void *arg)
     ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, NULL);
   }
 
+  if (tinfo->usehttp)
+  {
+    ms3_set_option(ms3, MS3_OPT_USE_HTTP, NULL);
+  }
+
+  if (tinfo->s3port)
+  {
+    int port = atol(tinfo->s3port);
+    ms3_set_option(ms3, MS3_OPT_PORT_NUMBER, &port);
+  }
+
   for (i = tinfo->start_count; i < tinfo->start_count + 150; i++)
   {
     uint8_t res;
@@ -106,7 +130,11 @@ int main(int argc, char *argv[])
   char *s3bucket = getenv("S3BUCKET");
   char *s3host = getenv("S3HOST");
   char *s3noverify = getenv("S3NOVERIFY");
+  char *s3usehttp = getenv("S3USEHTTP");
+  char *s3port = getenv("S3PORT");
+
   bool noverify = false;
+  bool usehttp = false;
   struct thread_info *tinfo;
   int start_count;
   uint8_t res;
@@ -119,6 +147,11 @@ int main(int argc, char *argv[])
   if (s3noverify && !strcmp(s3noverify, "1"))
   {
     noverify = true;
+  }
+
+  if (s3usehttp && !strcmp(s3usehttp, "1"))
+  {
+    usehttp = true;
   }
 
   SKIP_IF_(!s3key, "Environemnt variable S3KEY missing");
@@ -150,7 +183,9 @@ int main(int argc, char *argv[])
     tinfo[tnum].s3region = s3region;
     tinfo[tnum].s3host = s3host;
     tinfo[tnum].s3bucket = s3bucket;
+    tinfo[tnum].s3port = s3port;
     tinfo[tnum].noverify = noverify;
+    tinfo[tnum].usehttp = usehttp;
     pthread_create(&tinfo[tnum].thread_id, &attr,
                    &put_thread, &tinfo[tnum]);
   }
@@ -167,6 +202,17 @@ int main(int argc, char *argv[])
   if (noverify)
   {
     ms3_set_option(ms3, MS3_OPT_DISABLE_SSL_VERIFY, NULL);
+  }
+
+  if (usehttp)
+  {
+    ms3_set_option(ms3, MS3_OPT_USE_HTTP, NULL);
+  }
+
+  if (s3port)
+  {
+    int port = atol(s3port);
+    ms3_set_option(ms3, MS3_OPT_PORT_NUMBER, &port);
   }
 
   res = ms3_list(ms3, s3bucket, "listtest/", &list);
@@ -220,6 +266,8 @@ int main(int argc, char *argv[])
     tinfo[tnum].s3host = s3host;
     tinfo[tnum].s3bucket = s3bucket;
     tinfo[tnum].noverify = noverify;
+    tinfo[tnum].usehttp = usehttp;
+    tinfo[tnum].s3port = s3port;
     pthread_create(&tinfo[tnum].thread_id, &attr,
                    &delete_thread, &tinfo[tnum]);
   }
