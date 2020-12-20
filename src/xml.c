@@ -782,7 +782,7 @@ static struct xml_node* xml_parse_node(struct xml_parser* parser) {
 	/* Close tag has to match open tag
 	 */
 	if (!xml_string_equals(tag_open, tag_close)) {
-		xml_parser_error(parser, NO_CHARACTER, "xml_parse_node::tag missmatch");
+		xml_parser_error(parser, NO_CHARACTER, "xml_parse_node::tag mismatch");
 		goto exit_failure;
 	}
 
