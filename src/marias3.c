@@ -213,6 +213,13 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
   ms3->list_container.pool_free = 0;
 
   ms3->iam_role = NULL;
+  ms3->role_key = NULL;
+  ms3->role_secret = NULL;
+  ms3->role_session_token = NULL;
+  ms3->iam_endpoint = NULL;
+  ms3->sts_endpoint = NULL;
+  ms3->sts_region = NULL;
+  ms3->iam_role_arn = NULL;
 
   return ms3;
 }
@@ -264,6 +271,24 @@ uint8_t ms3_init_assume_role(ms3_st *ms3, const char *iam_role, const char *sts_
   return ret;
 }
 
+uint8_t ms3_ec2_set_cred(ms3_st *ms3, const char *iam_role,
+                     const char *s3key, const char *s3secret,
+                     const char *token)
+{
+  uint8_t ret=0;
+
+  if (iam_role == NULL || token == NULL || s3key == NULL || s3secret == NULL)
+  {
+      return MS3_ERR_PARAMETER;
+  }
+  ms3->iam_role = ms3_cstrdup(iam_role);
+  ms3->role_key = ms3_cstrdup(s3key);
+  ms3->role_secret = ms3_cstrdup(s3secret);
+  ms3->role_session_token = ms3_cstrdup(token);
+
+  return ret;
+}
+
 static void list_free(ms3_st *ms3)
 {
   ms3_list_st *list = ms3->list_container.start;
@@ -300,17 +325,14 @@ void ms3_deinit(ms3_st *ms3)
   ms3_cfree(ms3->s3key);
   ms3_cfree(ms3->region);
   ms3_cfree(ms3->base_domain);
-  if (ms3->iam_role)
-  {
-    ms3_cfree(ms3->iam_role);
-    ms3_cfree(ms3->iam_endpoint);
-    ms3_cfree(ms3->sts_endpoint);
-    ms3_cfree(ms3->sts_region);
-    ms3_cfree(ms3->iam_role_arn);
-    ms3_cfree(ms3->role_key);
-    ms3_cfree(ms3->role_secret);
-    ms3_cfree(ms3->role_session_token);
-  }
+  ms3_cfree(ms3->iam_role);
+  ms3_cfree(ms3->role_key);
+  ms3_cfree(ms3->role_secret);
+  ms3_cfree(ms3->role_session_token);
+  ms3_cfree(ms3->iam_endpoint);
+  ms3_cfree(ms3->sts_endpoint);
+  ms3_cfree(ms3->sts_region);
+  ms3_cfree(ms3->iam_role_arn);
   curl_easy_cleanup(ms3->curl);
   ms3_cfree(ms3->last_error);
   ms3_cfree(ms3->path_buffer);
