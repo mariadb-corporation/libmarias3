@@ -27,6 +27,7 @@ test-suite.log
 tests/.deps/
 tests/.dirstamp
 version.h
+*.dgcov
 *.o
 *.lo
 *.la
