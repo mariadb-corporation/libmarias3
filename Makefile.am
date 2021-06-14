@@ -32,7 +32,7 @@ DISTCLEANFILES+= aminclude.am
 
 EXTRA_DIST+= README.rst
 EXTRA_DIST+= LICENSE
-EXTRA_DIST+= VERSION
+EXTRA_DIST+= VERSION.txt
 
 aclocaldir= $(datadir)/aclocal
 dist_aclocal_DATA=

@@ -55,7 +55,7 @@ copyright = u'2019 MariaDB Corporation Ab'
 # built documents.
 #
 # The short X.Y version.
-version_file = open("../VERSION", "r")
+version_file = open("../VERSION.txt", "r")
 version = version_file.read().strip()
 # The full version, including alpha/beta/rc tags.
 get_rev= Popen("git rev-parse --short HEAD", shell=True, stdout=PIPE).stdout.read().strip()

@@ -42,7 +42,7 @@ If any of the source code has changed please see ``LIBMARIAS3_LIBRARY_VERSION`` 
 API Version
 -----------
 
-API versioning is stored in the ``VERSION`` file which is used by the build system to version the API and docs.  The versioning scheme follows the `Semantic Versioning Rules <http://semver.org/>`_.
+API versioning is stored in the ``VERSION.txt`` file which is used by the build system to version the API and docs.  The versioning scheme follows the `Semantic Versioning Rules <http://semver.org/>`_.
 
 Function Visibility
 -------------------

@@ -18,7 +18,7 @@ m4_ifndef([AS_VAR_COPY], [m4_define([AS_VAR_COPY], [AS_LITERAL_IF([$1[]$2], [$1=
 
 # NOTE: Major version should be < 100 and minor/patch < 256 or bad things will
 # happen in src/asql/utility.cc
-AC_INIT([libmarias3],m4_esyscmd_s([tr -d '\n' < VERSION]),[linuxjedi@mariadb.com],[libmarias3],[https://mariadb.com])
+AC_INIT([libmarias3],m4_esyscmd_s([tr -d '\n' < VERSION.txt]),[linuxjedi@mariadb.com],[libmarias3],[https://mariadb.com])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # Must come before AM_INIT_AUTOMAKE.
