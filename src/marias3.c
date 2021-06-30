@@ -33,6 +33,9 @@ ms3_calloc_callback ms3_ccalloc = (ms3_calloc_callback)calloc;
 
 /* Thread locking code for OpenSSL < 1.1.0 */
 #include <dlfcn.h>
+#ifndef RTLD_DEFAULT
+#define RTLD_DEFAULT ((void *)0)
+#endif
 static pthread_mutex_t *mutex_buf = NULL;
 #define CRYPTO_LOCK 1
 static void (*openssl_set_id_callback)(unsigned long (*func)(void));
