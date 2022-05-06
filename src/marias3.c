@@ -617,7 +617,7 @@ uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value)
         return MS3_ERR_PARAMETER;
       }
 
-      ms3->list_version = protocol_version;
+      ms3->protocol_version = protocol_version;
       break;
     }
 
