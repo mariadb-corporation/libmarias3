@@ -848,6 +848,18 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
   ms3debug("Response code: %ld", response_code);
 
+  if (response_code == 301)
+  {
+    char *message = parse_error_message((char *)mem.data, mem.length);
+
+    if (message)
+    {
+      ms3debug("Response message: %s", message);
+    }
+
+    set_error_nocopy(ms3, message);
+    res = MS3_ERR_ENDPOINT;
+  }
   if (response_code == 404)
   {
     char *message = parse_error_message((char *)mem.data, mem.length);

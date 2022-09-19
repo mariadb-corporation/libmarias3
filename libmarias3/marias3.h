@@ -70,6 +70,7 @@ enum ms3_error_code_t
   MS3_ERR_SERVER,
   MS3_ERR_TOO_BIG,
   MS3_ERR_AUTH_ROLE,
+  MS3_ERR_ENDPOINT,
   MS3_ERR_MAX // Always the last error
 };
 
