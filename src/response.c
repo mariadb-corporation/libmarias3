@@ -395,7 +395,7 @@ uint8_t parse_role_list_response(const char *data, size_t length, char *role_nam
             }
           }
           while ((member = xml_node_child(roles, ++roles_it)));
-          if (!strcmp(response_role_name, role_name))
+          if (response_role_name && !strcmp(response_role_name, role_name))
           {
               ms3debug("Role Found ARN = %s",response_role_arn);
               sprintf(arn, "%s", response_role_arn);
