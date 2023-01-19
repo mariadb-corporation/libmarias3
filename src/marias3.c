@@ -52,7 +52,7 @@ static void locking_function(int mode, int n, const char *file, int line)
     pthread_mutex_unlock(&(mutex_buf[n]));
 }
 
-static int curl_needs_openssl_locking()
+static int curl_needs_openssl_locking(void)
 {
   curl_version_info_data *data = curl_version_info(CURLVERSION_NOW);
 

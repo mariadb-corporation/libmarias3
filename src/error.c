@@ -35,5 +35,7 @@ const char *errmsgs[] =
   "Authentication error",
   "File not found",
   "S3 server error",
-  "Data too big. Maximum data size is 4GB"
+  "Data too big. Maximum data size is 4GB",
+  "Error in role",
+  "Endpoint permanently moved"
 };
