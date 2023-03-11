@@ -147,7 +147,7 @@ Example
    res= ms3_list(ms3, s3bucket, NULL, &list);
    if (res)
    {
-       printf("Error occured: %d\n", res);
+       printf("Error occurred: %d\n", res);
        return;
    }
    list_it= list;
@@ -220,7 +220,7 @@ Example
    res= ms3_put(ms3, s3bucket, "test/ms3.txt", (const uint8_t*)test_string, strlen(test_string));
    if (res)
    {
-       printf("Error occured: %d\n", res);
+       printf("Error occurred: %d\n", res);
        return;
    }
    ms3_deinit(ms3);
@@ -290,7 +290,7 @@ Example
    res= ms3_get(ms3, s3bucket, "test/ms3.txt", &data, &length);
    if (res)
    {
-       printf("Error occured: %d\n", res);
+       printf("Error occurred: %d\n", res);
        return;
    }
    printf("File contents: %s\n", data);
@@ -348,7 +348,7 @@ Example
    res = ms3_delete(ms3, s3bucket, "test/ms3.txt");
    if (res)
    {
-       printf("Error occured: %d\n", res);
+       printf("Error occurred: %d\n", res);
        return;
    }
    ms3_deinit(ms3);
@@ -384,7 +384,7 @@ Example
    res= ms3_status(ms3, s3bucket, "test/ms3.txt", &status);
    if (res)
    {
-       printf("Error occured: %d\n", res);
+       printf("Error occurred: %d\n", res);
        return;
    }
    printf("File length: %ld\n", status.length);
