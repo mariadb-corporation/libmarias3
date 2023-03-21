@@ -800,7 +800,7 @@ node_creation:;
 	return node;
 
 
-	/* A failure occured, so free all allocalted resources
+	/* A failure occurred, so free all allocalted resources
 	 */
 exit_failure:
 	if (tag_open) {
