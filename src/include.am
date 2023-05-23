@@ -18,7 +18,7 @@ lib_LTLIBRARIES+= src/libmarias3.la
 src_libmarias3_la_SOURCES=
 src_libmarias3_la_LIBADD=
 src_libmarias3_la_LDFLAGS=
-src_libmarias3_la_CFLAGS= -DBUILDING_MS3
+src_libmarias3_la_CFLAGS= -DBUILDING_MS3 -fPIC
 
 src_libmarias3_la_SOURCES+= src/marias3.c
 src_libmarias3_la_SOURCES+= src/request.c
