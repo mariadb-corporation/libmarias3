@@ -449,15 +449,23 @@ uint8_t ms3_get(ms3_st *ms3, const char *bucket, const char *key,
   buf.data = NULL;
   buf.length = 0;
 
-  if (!ms3 || !bucket || !key || key[0] == '\0' || !data || !length)
+  if (!ms3 || !bucket || !key || key[0] == '\0')
+  {
+    return MS3_ERR_PARAMETER;
+  }
+  else if (!ms3->read_cb && (!data || !length))
   {
     return MS3_ERR_PARAMETER;
   }
 
   res = execute_request(ms3, MS3_CMD_GET, bucket, key, NULL, NULL, NULL, NULL, 0,
                         NULL, &buf);
-  *data = buf.data;
-  *length = buf.length;
+  if (!ms3->read_cb)
+  {
+    *data = buf.data;
+    *length = buf.length;
+  }
+
   return res;
 }
 
@@ -634,6 +642,24 @@ uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value)
       ms3->port = port_number;
       break;
     }
+
+    case MS3_OPT_READ_CB:
+    {
+      if (!value)
+      {
+        return MS3_ERR_PARAMETER;
+      }
+
+      ms3->read_cb = value;
+      break;
+    }
+
+    case MS3_OPT_USER_DATA:
+    {
+      ms3->user_data = value;
+      break;
+    }
+
     default:
       return MS3_ERR_PARAMETER;
   }

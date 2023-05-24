@@ -829,9 +829,18 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   if (ms3->port)
     curl_easy_setopt(curl, CURLOPT_PORT, (long)ms3->port);
 
+  if (ms3->read_cb && cmd == MS3_CMD_GET)
+  {
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ms3->read_cb);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, ms3->user_data);
+  }
+  else
+  {
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, body_callback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&mem);
+  }
+
   curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_callback);
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, body_callback);
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&mem);
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
   curl_res = curl_easy_perform(curl);
 

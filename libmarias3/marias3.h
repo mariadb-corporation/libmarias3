@@ -55,6 +55,12 @@ typedef void *(*ms3_realloc_callback)(void *ptr, size_t size);
 typedef char *(*ms3_strdup_callback)(const char *str);
 typedef void *(*ms3_calloc_callback)(size_t nmemb, size_t size);
 
+/** The callback function for MS3_OPT_READ_CB. The function and the user data
+ * set with MS3_OPT_USER_DATA are passed to Curl. For more information, refer
+ * to CURLOPT_WRITE_FUNCTION. */
+typedef size_t (*ms3_read_callback)(void *buffer, size_t size,
+                                    size_t nitems, void *userdata);
+
 enum ms3_error_code_t
 {
   MS3_ERR_NONE,
@@ -83,6 +89,8 @@ enum ms3_set_option_t
   MS3_OPT_BUFFER_CHUNK_SIZE,
   MS3_OPT_FORCE_LIST_VERSION,
   MS3_OPT_FORCE_PROTOCOL_VERSION,
+  MS3_OPT_READ_CB,
+  MS3_OPT_USER_DATA,
   MS3_OPT_PORT_NUMBER
 };
 
