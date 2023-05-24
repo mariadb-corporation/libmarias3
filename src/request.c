@@ -840,6 +840,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&mem);
   }
 
+  curl_easy_setopt(curl, CURLOPT_BUFFERSIZE, ms3->buffer_chunk_size);
   curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_callback);
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
   curl_res = curl_easy_perform(curl);

@@ -23,6 +23,7 @@
 #define NUM_BYTES 64 * 1024
 
 /* Tests basic GET with a custom read callback */
+int total_reads = 0;
 
 static size_t read_cb(void *buf, size_t size, size_t nitems, void *userdata)
 {
@@ -31,15 +32,18 @@ static size_t read_cb(void *buf, size_t size, size_t nitems, void *userdata)
     memcpy(ptr, buf, size * nitems);
     ptr += size * nitems;
     *dat = ptr;
+    total_reads++;
     return nitems * size;
 }
 
 int main(int argc, char *argv[])
 {
   int res;
+  int initial_reads;
   uint8_t *data;
   size_t length;
   ms3_st *ms3;
+  size_t buffer_size;
   char *test_string = malloc(NUM_BYTES);
   char *dest = malloc(NUM_BYTES);
   char* userdata = dest;
@@ -99,6 +103,21 @@ int main(int argc, char *argv[])
   ASSERT_EQ(data, 0);
   ASSERT_EQ(length, 0);
   ASSERT_EQ(memcmp(test_string, dest, NUM_BYTES), 0);
+
+  /** Test that the callbacks work with a smaller chunk size */
+  memset(dest, 'c', NUM_BYTES);
+  userdata = dest;
+  buffer_size = 1024;
+  res = ms3_set_option(ms3, MS3_OPT_BUFFER_CHUNK_SIZE, &buffer_size);
+  ASSERT_EQ_(res, 0, "Result: %u", res);
+  initial_reads = total_reads;
+  res = ms3_get(ms3, s3bucket, "test/read_cb.dat", &data, &length);
+  ASSERT_EQ_(res, 0, "Result: %u", res);
+  ASSERT_EQ(memcmp(test_string, dest, NUM_BYTES), 0);
+  ASSERT_TRUE_((total_reads - initial_reads) > initial_reads * 2,
+               "Expected more than %d reads but got only %d",
+               initial_reads * 2, total_reads - initial_reads);
+
   res = ms3_delete(ms3, s3bucket, "test/read_cb.dat");
   ASSERT_EQ_(res, 0, "Result: %u", res);
   free(test_string);
