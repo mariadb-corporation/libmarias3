@@ -373,7 +373,7 @@ build_assume_role_request_headers(CURL *curl, struct curl_slist **head,
   time_t now;
   struct tm tmp_tm;
   char headerbuf[3072];
-  char secrethead[45];
+  char secrethead[MAX_S3_SECRET_LENGTH + S3_SECRET_EXTRA_LENGTH];
   char date[9];
   char sha256hash[65];
   char post_hash[65];
@@ -445,7 +445,7 @@ build_assume_role_request_headers(CURL *curl, struct curl_slist **head,
 
   // User signing key hash
   // Date hashed using AWS4:secret_key
-  snprintf(secrethead, sizeof(secrethead), "AWS4%.*s", 40, secret);
+  snprintf(secrethead, sizeof(secrethead), "AWS4%.*s", MAX_S3_SECRET_LENGTH, secret);
   strftime(headerbuf, sizeof(headerbuf), "%Y%m%d", &tmp_tm);
   hmac_sha256((uint8_t *)secrethead, strlen(secrethead), (uint8_t *)headerbuf,
               strlen(headerbuf), hmac_hash);

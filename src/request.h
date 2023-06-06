@@ -26,6 +26,8 @@
 // Maxmum S3 file size is 1024 bytes so for protection we make the maximum
 // URI length this
 #define MAX_URI_LENGTH 1024
+#define MAX_S3_SECRET_LENGTH 128
+#define S3_SECRET_EXTRA_LENGTH 5
 
 #define READ_BUFFER_DEFAULT_SIZE 1024*1024
 
