@@ -1,5 +1,5 @@
 /* vim:expandtab:shiftwidth=2:tabstop=2:smarttab:
- * Copyright 2019 MariaDB Corporation Ab. All rights reserved.
+ * Copyright 2023 MariaDB Corporation Ab. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
