@@ -67,3 +67,7 @@ t_list_LDADD= src/libmarias3.la
 check_PROGRAMS+= t/list
 noinst_PROGRAMS+= t/list
 
+t_read_cb_SOURCES= tests/read_cb.c
+t_read_cb_LDADD= src/libmarias3.la
+check_PROGRAMS+= t/read_cb
+noinst_PROGRAMS+= t/read_cb

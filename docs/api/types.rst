@@ -49,6 +49,8 @@ Constants
    * ``MS3_OPT_BUFFER_CHUNK_SIZE`` - Set the chunk size in bytes for the receive buffer. Default is 1MB. If you are receiving a large file a realloc will have to happen every time the buffer is full. For performance reasons you may want to increase the size of this buffer to reduce the reallocs and associated memory copies. The ``value`` parameter of :c:func:`ms3_set_option` should be a pointer to a :c:type:`size_t` greater than 1.
    * ``MS3_OPT_FORCE_LIST_VERSION`` - An internal option for the regression suite only. The ``value`` parameter of :c:func:`ms3_set_option` should be a pointer to a :c:type:`uint8_t` of value ``1`` or ``2``
    * ``MS3_OPT_FORCE_PROTOCOL_VERSION`` - Set to 1 to force talking to the S3 server using version 1 of the List Bucket API, this is for S3 compatible servers. Set to 2 to force talking to the S3 server version 2 of the List Bucket API. This is for use when the autodetect bsaed on providing a base_domain does the wrong thing. The ``value`` parameter of :c:func:`ms3_set_option` should be a pointer to a :c:type:`uint8_t` of value ``1`` or ``2``
+   * ``MS3_OPT_READ_CB`` - Custom read callback for :c:func:`ms3_get`. The ``value`` parameter of :c:func:`ms3_set_option` should be a :c:type:`ms3_read_callback` function.
+   * ``MS3_OPT_USER_DATA`` - User data for the custom read callback. The ``value`` parameter of :c:func:`ms3_set_option` is the pointer that will be passed as the ``userdata`` argument of the callback.
 
 Built-In Types
 ==============

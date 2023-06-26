@@ -64,6 +64,8 @@ struct ms3_st
   bool first_run;
   char *path_buffer;
   char *query_buffer;
+  void *read_cb;
+  void *user_data;
   struct ms3_list_container_st list_container;
 };
 
