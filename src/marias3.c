@@ -214,6 +214,8 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
   ms3->list_container.start = NULL;
   ms3->list_container.pool_list = NULL;
   ms3->list_container.pool_free = 0;
+  ms3->read_cb= 0;
+  ms3->user_data= 0;
 
   ms3->iam_role = NULL;
   ms3->role_key = NULL;
