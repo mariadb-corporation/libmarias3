@@ -133,7 +133,7 @@ MS3_API
 const char *ms3_error(uint8_t errcode);
 
 MS3_API
-void ms3_debug(void);
+void ms3_debug(int debug_state);
 
 MS3_API
 uint8_t ms3_list(ms3_st *ms3, const char *bucket, const char *prefix,

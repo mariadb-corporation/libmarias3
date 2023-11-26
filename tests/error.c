@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
   (void) argv;
 
   // Enable here so cppcheck shows coverage
-  ms3_debug();
+  ms3_debug(1);
   ASSERT_NOT_NULL(ms3);
   errmsg = ms3_error(255);
   ASSERT_STREQ(errmsg, "No such error code");

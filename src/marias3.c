@@ -356,14 +356,16 @@ const char *ms3_server_error(ms3_st *ms3)
   return ms3->last_error;
 }
 
-void ms3_debug(void)
+void ms3_debug(int debug_state)
 {
   bool state = ms3debug_get();
-  ms3debug_set(!state);
-
-  if (state)
+  if (state != (bool) debug_state)
   {
-    ms3debug("enabling debug");
+    ms3debug_set((bool) debug_state);
+    if (debug_state)
+    {
+      ms3debug("enabling debug");
+    }
   }
 }
 
