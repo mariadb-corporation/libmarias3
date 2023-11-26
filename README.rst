@@ -45,6 +45,17 @@ You will need the following OS environment variables set to run the tests:
 | S3NOVERIFY | Set to ``1`` if the host should not use SSL verification |
 +------------+----------------------------------------------------------+
 
+If you have minion installed, you should be able to use same settings as used by
+MariaDB mtr s3 tests:
+
+export S3KEY=minio
+export S3SECRET=minioadmin
+export S3REGION=
+export S3BUCKET=storage-engine
+export S3HOST=127.0.0.1
+export S3PORT=9000
+export S3USEHTTP=1
+
 The test suite is automatically built along with the library and can be executed with ``make check`` or ``make distcheck``.
 
 Before pushing, please ALWAYS ensure that ``make check`` and ``make distcheck`` works!
