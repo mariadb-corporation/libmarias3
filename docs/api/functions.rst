@@ -105,9 +105,11 @@ ms3_error()
 ms3_debug()
 -----------
 
-.. c:function:: void ms3_debug()
+.. c:function:: void ms3_debug(int debug_state)
 
-   Enables and disables debugging output on stderr. Each call toggles enable / disable.
+   Enables and disables debugging output on stderr.
+
+   :param debug_state: Set to 1 to enable debugging, zero to disable.
 
    Note::
        This enables/disables globally for the library
