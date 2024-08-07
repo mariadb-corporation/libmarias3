@@ -21,6 +21,8 @@
 #include "common.h"
 #include "sha256.h"
 
+#include <curl/curl.h>
+#include <curl/easy.h>
 #include <math.h>
 
 const char *default_domain = "s3.amazonaws.com";
@@ -828,6 +830,16 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
   if (ms3->port)
     curl_easy_setopt(curl, CURLOPT_PORT, (long)ms3->port);
+
+  if (ms3->connect_timeout_ms != 0)
+  {
+    curl_easy_setopt(ms3->curl, CURLOPT_CONNECTTIMEOUT_MS, ms3->connect_timeout_ms);
+  }
+
+  if (ms3->timeout_ms != 0)
+  {
+    curl_easy_setopt(ms3->curl, CURLOPT_TIMEOUT_MS, ms3->timeout_ms);
+  }
 
   if (ms3->read_cb && cmd == MS3_CMD_GET)
   {
