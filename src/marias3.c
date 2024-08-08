@@ -23,6 +23,7 @@
 #include <pthread.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <stdint.h>
 
 ms3_malloc_callback ms3_cmalloc = (ms3_malloc_callback)malloc;
 ms3_free_callback ms3_cfree = (ms3_free_callback)free;
@@ -216,6 +217,8 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
   ms3->list_container.pool_free = 0;
   ms3->read_cb= 0;
   ms3->user_data= 0;
+  ms3->connect_timeout_ms = 0;
+  ms3->timeout_ms = 0;
 
   ms3->iam_role = NULL;
   ms3->role_key = NULL;
@@ -661,6 +664,38 @@ uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value)
     case MS3_OPT_USER_DATA:
     {
       ms3->user_data = value;
+      break;
+    }
+
+    case MS3_OPT_CONNECT_TIMEOUT:
+    {
+      float timeout;
+      if (!value)
+      {
+        return MS3_ERR_PARAMETER;
+      }
+      timeout = *(float *)value;
+      if (timeout < 0 || timeout >= UINT32_MAX / 1000)
+      {
+        return MS3_ERR_PARAMETER;
+      }
+      ms3->connect_timeout_ms = timeout * 1000;
+      break;
+    }
+
+    case MS3_OPT_TIMEOUT:
+    {
+      float timeout;
+      if (!value)
+      {
+        return MS3_ERR_PARAMETER;
+      }
+      timeout = *(float *)value;
+      if (timeout < 0 || timeout >= UINT32_MAX / 1000)
+      {
+        return MS3_ERR_PARAMETER;
+      }
+      ms3->timeout_ms = timeout * 1000;
       break;
     }
 

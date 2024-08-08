@@ -91,7 +91,9 @@ enum ms3_set_option_t
   MS3_OPT_FORCE_PROTOCOL_VERSION,
   MS3_OPT_READ_CB,
   MS3_OPT_USER_DATA,
-  MS3_OPT_PORT_NUMBER
+  MS3_OPT_PORT_NUMBER,
+  MS3_OPT_CONNECT_TIMEOUT,
+  MS3_OPT_TIMEOUT
 };
 
 typedef enum ms3_set_option_t ms3_set_option_t;
