@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "common.h"
+#include "debug.h"
 #include "sha256.h"
 
 #include <curl/curl.h>
@@ -430,7 +431,6 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
   uint8_t i;
   bool has_source = false;
   bool has_token = false;
-  struct curl_slist *current_header;
 
   // Host header
   if (base_domain)
@@ -600,15 +600,16 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
     headers = curl_slist_append(headers, headerbuf);
   }
 
-  current_header = headers;
-
-  do
+  if (ms3debug_get())
   {
-    ms3debug("Header: %s", current_header->data);
-  }
-  while ((current_header = current_header->next));
+    struct curl_slist *current_header = headers;
 
-  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+    do
+    {
+      ms3debug("Header: %s", current_header->data);
+    }
+    while ((current_header = current_header->next));
+  }
 
   switch (method)
   {
@@ -820,6 +821,15 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
     return res;
   }
+
+  // TODO: I'm 99% sure this will be fine as a default, but it is definitely
+  // needed for Huawei. Optional for now.
+  if (ms3->no_content_type)
+  {
+    headers = curl_slist_append(headers, "Content-Type:");
+  }
+
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
   if (ms3->disable_verification)
   {

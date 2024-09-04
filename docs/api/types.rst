@@ -51,11 +51,21 @@ Constants
    * ``MS3_OPT_FORCE_PROTOCOL_VERSION`` - Set to 1 to force talking to the S3 server using version 1 of the List Bucket API, this is for S3 compatible servers. Set to 2 to force talking to the S3 server version 2 of the List Bucket API. This is for use when the autodetect bsaed on providing a base_domain does the wrong thing. The ``value`` parameter of :c:func:`ms3_set_option` should be a pointer to a :c:type:`uint8_t` of value ``1`` or ``2``
    * ``MS3_OPT_READ_CB`` - Custom read callback for :c:func:`ms3_get`. The ``value`` parameter of :c:func:`ms3_set_option` should be a :c:type:`ms3_read_callback` function.
    * ``MS3_OPT_USER_DATA`` - User data for the custom read callback. The ``value`` parameter of :c:func:`ms3_set_option` is the pointer that will be passed as the ``userdata`` argument of the callback.
-   * ``MS3_OPT_CONNECT_TIMEOUT`` - Sets the maximum time in seconds for the connection phase to take. This timeout only limits the connection phase, it has no impact once the connection is established. The ``value`` parameter of :c:func:`ms3_set_option` should be a pointer to a :c:type:`float` of value between ``0`` and ``4294966``. ``0`` is the default value indicating that the default libcurl timeout will be used.
-   * ``MS3_OPT_TIMEOUT`` - Sets the maximum time in seconds for the entire transfer operation to take. The ``value`` parameter of :c:func:`ms3_set_option` should be a pointer to a :c:type:`float` of value between ``0`` and ``4294966``. ``0`` is the default value indicating that there is no timeout at all.
+   * ``MS3_OPT_CONNECT_TIMEOUT`` - Sets the maximum time in seconds for the connection phase to take. This timeout only limits the connection phase, it has no impact once the connection is established. The ``value`` parameter of :c:func:`ms3_set_option` should be a pointer to a ``float`` of value between ``0`` and ``4294966``. ``0`` is the default value indicating that the default libcurl timeout will be used.
+   * ``MS3_OPT_TIMEOUT`` - Sets the maximum time in seconds for the entire transfer operation to take. The ``value`` parameter of :c:func:`ms3_set_option` should be a pointer to a ``float`` of value between ``0`` and ``4294966``. ``0`` is the default value indicating that there is no timeout at all.
+   * ``MS3_OPT_NO_CONTENT_TYPE`` - Disables sending the ``Content-Type:`` header. Required for Huawei's S3 implementation. The ``value`` parameter of :c:func:`ms3_set_option` is unused and each call to this toggles the flag.
 
-Built-In Types
-==============
+Callbacks
+=========
+
+.. c:type:: ms3_read_callback
+
+   The callback function for ``MS3_OPT_READ_CB``. The function and the user data
+   set with ``MS3_OPT_USER_DATA`` are passed to Curl. For more information, refer
+   to `CURLOPT_WRITE_FUNCTION <https://curl.se/libcurl/c/CURLOPT_WRITEFUNCTION.html>`_.
+
+C Built-In Types
+================
 
 .. c:type:: NULL
 
@@ -65,7 +75,10 @@ Built-In Types
 
    An unsigned single byte character as defined in the standard header ``stdint.h``
 
-.. c:type:: bool
+.. c:type:: size_t
 
-   A boolean type as defined in the standard header ``stdbool.h``
+   The unsigned integer type of the result of ``sizeof``.
 
+.. c:type:: time_t
+
+   Real arithmetic type capable of representing times as deinfined in the standard header ``time.h``
