@@ -717,7 +717,9 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
                         void *ret_ptr)
 {
   CURL *curl = NULL;
+  CURLHcode curl_hret;
   struct curl_slist *headers = NULL;
+  struct curl_header *content_type_in;
   uint8_t res = 0;
   struct memory_buffer_st mem;
   uri_method_t method;
@@ -822,7 +824,14 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     return res;
   }
 
-  if (ms3->no_content_type)
+  if ((method == MS3_PUT) && ms3->content_type_out)
+  {
+    // Mime type maxmum is 128 bytes
+    char content_type[196];
+    snprintf(content_type, 195, "Content-Type: %s", ms3->content_type_out);
+    headers = curl_slist_append(headers, content_type);
+  }
+  else if (ms3->no_content_type)
   {
     headers = curl_slist_append(headers, "Content-Type:");
   }
@@ -874,7 +883,12 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
     return MS3_ERR_REQUEST_ERROR;
   }
-
+  curl_hret = curl_easy_header(curl, "content-type", 0, CURLH_HEADER, -1,
+                               &content_type_in);
+  if (!curl_hret && content_type_in)
+  {
+      ms3->content_type_in = content_type_in->value;
+  }
   curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
   ms3debug("Response code: %ld", response_code);
 
