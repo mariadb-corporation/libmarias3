@@ -391,3 +391,28 @@ Example
    printf("File timestamp: %ld\n", status.created);
    ms3_deinit(ms3);
 
+ms3_set_content_type()
+----------------------
+
+.. c:function:: void ms3_set_content_type(ms3_st *ms3, const char *content_type)
+
+   Sets the ``Content-Type:`` header for subsequent PUT requests. Note that this
+   is not copied, so it should remain in scope for each :c:func:`ms3_put()` call.
+   Setting this to ``NULL`` will clear the ``Content-Type`` header to the default.
+
+   :param ms3: The marias3 object
+   :param content_type: The mime type to set
+
+ms3_get_content_type()
+----------------------
+
+.. c:function:: const char *ms3_get_content_type(ms3_st *ms3)
+
+   Gets the ``Content-Type:`` header for the previous response from the S3 server.
+   This will automatically freed as part of the request handling, it will lose
+   scope on the next request and should not be freed by the application.
+
+   :param ms3: The marias3 object
+   :param content_type: The mime type for the previous request
+
+

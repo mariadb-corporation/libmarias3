@@ -69,6 +69,8 @@ struct ms3_st
   char *query_buffer;
   void *read_cb;
   void *user_data;
+  const char *content_type_out;
+  const char *content_type_in;
   struct ms3_list_container_st list_container;
 };
 

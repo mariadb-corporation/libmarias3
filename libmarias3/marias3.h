@@ -150,8 +150,14 @@ MS3_API
 void ms3_list_free(ms3_list_st *list);
 
 MS3_API
+void ms3_set_content_type(ms3_st *ms3, const char *content_type);
+
+MS3_API
 uint8_t ms3_put(ms3_st *ms3, const char *bucket, const char *key,
                 const uint8_t *data, size_t length);
+
+MS3_API
+const char *ms3_get_content_type(ms3_st *ms3);
 
 MS3_API
 uint8_t ms3_get(ms3_st *ms3, const char *bucket, const char *key,
