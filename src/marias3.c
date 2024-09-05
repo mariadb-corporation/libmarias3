@@ -230,6 +230,9 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
   ms3->sts_region = NULL;
   ms3->iam_role_arn = NULL;
 
+  ms3->content_type_in = NULL;
+  ms3->content_type_out = NULL;
+
   return ms3;
 }
 
@@ -738,3 +741,21 @@ uint8_t ms3_assume_role(ms3_st *ms3)
     return res;
 }
 
+void ms3_set_content_type(ms3_st *ms3, const char *content_type)
+{
+    if (!ms3)
+    {
+        return;
+    }
+
+    ms3->content_type_out = content_type;
+}
+
+const char *ms3_get_content_type(ms3_st *ms3)
+{
+    if (!ms3)
+    {
+        return NULL;
+    }
+    return ms3->content_type_in;
+}

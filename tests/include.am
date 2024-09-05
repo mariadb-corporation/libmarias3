@@ -76,3 +76,8 @@ t_read_cb_SOURCES= tests/read_cb.c
 t_read_cb_LDADD= src/libmarias3.la
 check_PROGRAMS+= t/read_cb
 noinst_PROGRAMS+= t/read_cb
+
+t_content_type_SOURCES= tests/content_type.c
+t_content_type_LDADD= src/libmarias3.la
+check_PROGRAMS+= t/content_type
+noinst_PROGRAMS+= t/content_type
