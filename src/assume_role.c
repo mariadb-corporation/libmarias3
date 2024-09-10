@@ -153,8 +153,13 @@ static uint8_t build_assume_role_request_uri(CURL *curl, const char *base_domain
       return MS3_ERR_URI_TOO_LONG;
     }
 
+// The check for this is above, but GCC 14.2 still says there could be a
+// truncation
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
     snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s/?%s", protocol,
              domain, query);
+#pragma GCC diagnostic pop
   }
   else
   {
