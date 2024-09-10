@@ -21,6 +21,11 @@ t_basic_LDADD= src/libmarias3.la
 check_PROGRAMS+= t/basic
 noinst_PROGRAMS+= t/basic
 
+t_basic_no_type_SOURCES= tests/basic_no_type.c
+t_basic_no_type_LDADD= src/libmarias3.la
+check_PROGRAMS+= t/basic_no_type
+noinst_PROGRAMS+= t/basic_no_type
+
 t_snowman_SOURCES= tests/snowman.c
 t_snowman_LDADD= src/libmarias3.la
 check_PROGRAMS+= t/snowman
