@@ -717,9 +717,11 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
                         void *ret_ptr)
 {
   CURL *curl = NULL;
+#ifdef HAVE_NEW_CURL_API
   CURLHcode curl_hret;
-  struct curl_slist *headers = NULL;
   struct curl_header *content_type_in;
+#endif
+  struct curl_slist *headers = NULL;
   uint8_t res = 0;
   struct memory_buffer_st mem;
   uri_method_t method;
@@ -883,12 +885,14 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
     return MS3_ERR_REQUEST_ERROR;
   }
+#ifdef HAVE_NEW_CURL_API
   curl_hret = curl_easy_header(curl, "content-type", 0, CURLH_HEADER, -1,
                                &content_type_in);
   if (!curl_hret && content_type_in)
   {
       ms3->content_type_in = content_type_in->value;
   }
+#endif
   curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
   ms3debug("Response code: %ld", response_code);
 

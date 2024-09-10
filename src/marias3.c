@@ -230,7 +230,9 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
   ms3->sts_region = NULL;
   ms3->iam_role_arn = NULL;
 
+#ifdef HAVE_NEW_CURL_API
   ms3->content_type_in = NULL;
+#endif
   ms3->content_type_out = NULL;
 
   return ms3;
@@ -750,7 +752,7 @@ void ms3_set_content_type(ms3_st *ms3, const char *content_type)
 
     ms3->content_type_out = content_type;
 }
-
+#ifdef HAVE_NEW_CURL_API
 const char *ms3_get_content_type(ms3_st *ms3)
 {
     if (!ms3)
@@ -759,3 +761,4 @@ const char *ms3_get_content_type(ms3_st *ms3)
     }
     return ms3->content_type_in;
 }
+#endif
