@@ -206,6 +206,7 @@ ms3_st *ms3_init(const char *s3key, const char *s3secret,
   ms3->curl = curl_easy_init();
   ms3->last_error = NULL;
   ms3->use_http = false;
+  ms3->no_content_type = false;
   ms3->disable_verification = false;
   ms3->first_run = true;
   ms3->path_buffer = ms3_cmalloc(sizeof(char) * 1024);
@@ -573,6 +574,12 @@ uint8_t ms3_set_option(ms3_st *ms3, ms3_set_option_t option, void *value)
     case MS3_OPT_DISABLE_SSL_VERIFY:
     {
       ms3->disable_verification = ms3->disable_verification ? 0 : 1;
+      break;
+    }
+
+    case MS3_OPT_NO_CONTENT_TYPE:
+    {
+      ms3->no_content_type = ms3->no_content_type ? 0 : 1;
       break;
     }
 

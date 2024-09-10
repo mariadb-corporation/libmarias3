@@ -60,6 +60,7 @@ struct ms3_st
   CURL *curl;
   char *last_error;
   bool use_http;
+  bool no_content_type;
   bool disable_verification;
   uint8_t list_version;
   uint8_t protocol_version;
