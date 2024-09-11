@@ -752,7 +752,7 @@ void ms3_set_content_type(ms3_st *ms3, const char *content_type)
 
     ms3->content_type_out = content_type;
 }
-#ifdef HAVE_NEW_CURL_API
+
 const char *ms3_get_content_type(ms3_st *ms3)
 {
     if (!ms3)
@@ -761,4 +761,3 @@ const char *ms3_get_content_type(ms3_st *ms3)
     }
     return ms3->content_type_in;
 }
-#endif

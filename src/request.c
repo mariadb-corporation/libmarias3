@@ -25,6 +25,7 @@
 #include <curl/curl.h>
 #include <curl/easy.h>
 #include <math.h>
+#include <ctype.h>
 
 const char *default_domain = "s3.amazonaws.com";
 
@@ -644,8 +645,8 @@ static uint8_t build_request_headers(CURL *curl, struct curl_slist **head,
 
   return 0;
 }
-static size_t header_callback(char *buffer, size_t size,
-                              size_t nitems, void *userdata)
+static size_t head_header_callback(char *buffer, size_t size,
+                                   size_t nitems, void *userdata)
 {
   ms3debug("%.*s\n", (int)(nitems * size), buffer);
 
@@ -665,6 +666,30 @@ static size_t header_callback(char *buffer, size_t size,
       ms3_status_st *status = (ms3_status_st *) userdata;
       // Length
       status->length = strtoull(buffer + 16, NULL, 10);
+    }
+  }
+
+  return nitems * size;
+}
+
+static size_t get_header_callback(char *buffer, size_t size,
+                                  size_t nitems, void *userdata)
+{
+  ms3debug("%.*s\n", (int)(nitems * size), buffer);
+
+  if (userdata)
+  {
+    if (!strncasecmp(buffer, "Content-Type", 12))
+    {
+      size_t i;
+      ms3_st *ms3 = (ms3_st *) userdata;
+      snprintf(ms3->content_type_in, 127, "%s", (char*)buffer + 14);
+      for (i = 0; i < strlen(ms3->content_type_in); i++)
+      {
+        if (isspace( (unsigned char) ms3->content_type_in[i] ))
+          break;
+      }
+      ms3->content_type_in[i] = '\0';
     }
   }
 
@@ -717,10 +742,6 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
                         void *ret_ptr)
 {
   CURL *curl = NULL;
-#ifdef HAVE_NEW_CURL_API
-  CURLHcode curl_hret;
-  struct curl_header *content_type_in;
-#endif
   struct curl_slist *headers = NULL;
   uint8_t res = 0;
   struct memory_buffer_st mem;
@@ -788,11 +809,18 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
     case MS3_CMD_HEAD:
       method = MS3_HEAD;
       curl_easy_setopt(curl, CURLOPT_HEADERDATA, ret_ptr);
+      curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, head_header_callback);
+      break;
+
+    case MS3_CMD_GET:
+      ms3->content_type_in[0] = '\0';
+      curl_easy_setopt(curl, CURLOPT_HEADERDATA, ms3);
+      curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, get_header_callback);
+      method = MS3_GET;
       break;
 
     case MS3_CMD_LIST:
     case MS3_CMD_LIST_RECURSIVE:
-    case MS3_CMD_GET:
     case MS3_CMD_LIST_ROLE:
       method = MS3_GET;
       break;
@@ -872,7 +900,6 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   }
 
   curl_easy_setopt(curl, CURLOPT_BUFFERSIZE, ms3->buffer_chunk_size);
-  curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_callback);
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
   curl_res = curl_easy_perform(curl);
 
@@ -885,14 +912,6 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
     return MS3_ERR_REQUEST_ERROR;
   }
-#ifdef HAVE_NEW_CURL_API
-  curl_hret = curl_easy_header(curl, "content-type", 0, CURLH_HEADER, -1,
-                               &content_type_in);
-  if (!curl_hret && content_type_in)
-  {
-      ms3->content_type_in = content_type_in->value;
-  }
-#endif
   curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
   ms3debug("Response code: %ld", response_code);
 

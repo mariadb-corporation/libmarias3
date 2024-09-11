@@ -22,15 +22,6 @@
 
 /* Tests basic put, list, get, status, delete using the thread calls */
 
-#ifndef HAVE_NEW_CURL_API
-int main(int argc, char *argv[])
-{
-  (void) argc;
-  (void) argv;
-  SKIP_IF_(1, "Requires HAVE_NEW_CURL_API to be defined");
-  return 0;
-}
-#else
 int main(int argc, char *argv[])
 {
   int res;
@@ -75,7 +66,7 @@ int main(int argc, char *argv[])
 
   if (s3port)
   {
-    int port = atol(s3port);
+    int port = atoi(s3port);
     ms3_set_option(ms3, MS3_OPT_PORT_NUMBER, &port);
   }
 
@@ -155,4 +146,3 @@ int main(int argc, char *argv[])
   ms3_library_deinit();
   return 0;
 }
-#endif
