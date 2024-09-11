@@ -155,11 +155,15 @@ static uint8_t build_assume_role_request_uri(CURL *curl, const char *base_domain
 
 // The check for this is above, but GCC 14.2 still says there could be a
 // truncation
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-truncation"
+#ifdef __GNUC__
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wpragmas"
+# pragma GCC diagnostic ignored "-Wunknown-warning-option"
+# pragma GCC diagnostic ignored "-Wformat-truncation"
     snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s/?%s", protocol,
              domain, query);
-#pragma GCC diagnostic pop
+# pragma GCC diagnostic pop
+#endif
   }
   else
   {
