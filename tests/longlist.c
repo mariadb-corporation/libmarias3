@@ -63,7 +63,7 @@ static void *put_thread(void *arg)
 
   if (tinfo->s3port)
   {
-    int port = atol(tinfo->s3port);
+    int port = atoi(tinfo->s3port);
     ms3_set_option(ms3, MS3_OPT_PORT_NUMBER, &port);
   }
 
@@ -101,7 +101,7 @@ static void *delete_thread(void *arg)
 
   if (tinfo->s3port)
   {
-    int port = atol(tinfo->s3port);
+    int port = atoi(tinfo->s3port);
     ms3_set_option(ms3, MS3_OPT_PORT_NUMBER, &port);
   }
 
@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
 
   if (s3port)
   {
-    int port = atol(s3port);
+    int port = atoi(s3port);
     ms3_set_option(ms3, MS3_OPT_PORT_NUMBER, &port);
   }
 
