@@ -160,8 +160,10 @@ static uint8_t build_assume_role_request_uri(CURL *curl, const char *base_domain
 # pragma GCC diagnostic ignored "-Wpragmas"
 # pragma GCC diagnostic ignored "-Wunknown-warning-option"
 # pragma GCC diagnostic ignored "-Wformat-truncation"
+#endif
     snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s/?%s", protocol,
              domain, query);
+#ifdef __GNUC__
 # pragma GCC diagnostic pop
 #endif
   }
