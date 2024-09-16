@@ -123,7 +123,6 @@ static uint8_t build_assume_role_request_uri(CURL *curl, const char *base_domain
 {
   char uri_buffer[MAX_URI_LENGTH];
   const char *domain;
-  const uint8_t path_parts = 10; // "https://" + "." + "/"
   const char *http_protocol = "http";
   const char *https_protocol = "https";
   const char *protocol;
@@ -148,22 +147,9 @@ static uint8_t build_assume_role_request_uri(CURL *curl, const char *base_domain
 
   if (query)
   {
-    if (path_parts + strlen(domain) + strlen(query) >= MAX_URI_LENGTH - 1)
-    {
+    if (snprintf(uri_buffer, MAX_URI_LENGTH, "%s://%s/?%s", protocol,
+             domain, query) >= MAX_URI_LENGTH)
       return MS3_ERR_URI_TOO_LONG;
-    }
-
-// The check for this is above, but GCC 14.2 still says there could be a
-// truncation
-#ifdef __GNUC__
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wpragmas"
-# pragma GCC diagnostic ignored "-Wunknown-warning-option"
-# pragma GCC diagnostic ignored "-Wformat-truncation"
-    snprintf(uri_buffer, MAX_URI_LENGTH - 1, "%s://%s/?%s", protocol,
-             domain, query);
-# pragma GCC diagnostic pop
-#endif
   }
   else
   {
