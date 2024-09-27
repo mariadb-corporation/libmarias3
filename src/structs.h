@@ -70,9 +70,7 @@ struct ms3_st
   void *read_cb;
   void *user_data;
   const char *content_type_out;
-#ifdef HAVE_NEW_CURL_API
-  const char *content_type_in;
-#endif
+  char content_type_in[128]; // max length allowed for mime types
   struct ms3_list_container_st list_container;
 };
 

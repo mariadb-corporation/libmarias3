@@ -410,9 +410,10 @@ ms3_get_content_type()
 
 .. c:function:: const char *ms3_get_content_type(ms3_st *ms3)
 
-   Gets the ``Content-Type:`` header for the previous response from the S3 server.
-   This will automatically freed as part of the request handling, it will lose
-   scope on the next request and should not be freed by the application.
+   Gets the ``Content-Type:`` header for the previous GET request  response
+   from the S3 server.
+   The memory for this is part of the :c:type:`ms3_st` object and should not be
+   freed by the application. The contents will be reset on each GET request.
 
    :param ms3: The marias3 object
    :param content_type: The mime type for the previous request
