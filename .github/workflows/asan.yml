@@ -35,4 +35,4 @@ jobs:
     - run: chmod +x ./mc
     - run: ./mc alias set minio http://127.0.0.1:9000 accesskey password
     - run: ./mc mb --ignore-existing minio/s3-test
-    - run: ./scripts/asan.sh
+    - run: ./ci-scripts/asan.sh
