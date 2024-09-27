@@ -1,0 +1,38 @@
+name: ASAN test
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      minio:
+        # fixme: let's not depend on external unofficial image
+        image: lazybit/minio
+        ports:
+          - 9000:9000
+        env:
+          MINIO_ROOT_USER: accesskey
+          MINIO_ROOT_PASSWORD: password
+        options: --name=minio --health-cmd "curl http://localhost:9000/minio/health/live"
+
+    env:
+      S3KEY: accesskey
+      S3SECRET: password
+      S3REGION: ""
+      S3BUCKET: MY_BUCKET
+      S3HOST: 127.0.0.1
+      S3PORT: 9000
+      S3USEHTTP: 1
+
+    steps:
+    - uses: actions/checkout@v4
+    - run: wget https://dl.min.io/client/mc/release/linux-amd64/mc
+    - run: chmod +x ./mc
+    - run: ./mc alias set minio http://127.0.0.1:9000 accesskey password
+    - run: ./mc mb --ignore-existing minio/MY_BUCKET
+    - run: scripts/asan.sh
