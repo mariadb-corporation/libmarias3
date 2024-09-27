@@ -38,13 +38,13 @@ int sha256_vector(size_t num_elem, const uint8_t *addr[], const size_t *len,
 
 static inline void WPA_PUT_BE64(uint8_t *a, uint64_t val)
 {
-  a[0] = val >> 56;
-  a[1] = val >> 48;
-  a[2] = val >> 40;
-  a[3] = val >> 32;
-  a[4] = val >> 24;
-  a[5] = val >> 16;
-  a[6] = val >> 8;
+  a[0] = (val >> 56) & 0xff;
+  a[1] = (val >> 48) & 0xff;
+  a[2] = (val >> 40) & 0xff;
+  a[3] = (val >> 32) & 0xff;
+  a[4] = (val >> 24) & 0xff;
+  a[5] = (val >> 16) & 0xff;
+  a[6] = (val >> 8) & 0xff;
   a[7] = val & 0xff;
 }
 

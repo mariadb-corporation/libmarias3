@@ -1,0 +1,25 @@
+name: Distcheck
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install deps
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libcurl4-openssl-dev
+    - name: Build libmarias3
+      run: |
+        autoreconf -fi
+        ./configure --enable-debug=yes
+    - name: Test
+      run:
+        make distcheck
