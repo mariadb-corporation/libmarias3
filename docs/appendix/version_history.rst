@@ -1,6 +1,28 @@
 Version History
 ===============
 
+Version 3.2
+-----------
+
+Version 3.2.0 GA
+^^^^^^^^^^^^^^^^
+
+* Spelling errors in code fixed
+* IAM role credential functionality added
+* Fix macOS building
+* Define RTLD_DEFAULT for FreeBSD
+* Now pushes 301 response to bucket / endpoint mismatch to application
+* Fix ``MS3_OPT_FORCE_PROTOCOL_VERSION``
+* Many fixes to build
+* Many fixes to things found with static analyzers and sanitizers
+* Allow for longer S3 secret keys
+* Add custom read callback mechanism
+* Add option to enable/disable debug
+* Allow setting of curl timeouts
+* Documentation updates
+* GitHub actions testing added
+* :c:func:`ms3_set_content_type` and :c:func:`ms3_get_content_type` added
+
 Version 3.1
 -----------
 
