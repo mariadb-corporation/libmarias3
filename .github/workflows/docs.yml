@@ -1,0 +1,25 @@
+name: Docs
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install deps
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libcurl4-openssl-dev python3-sphinx
+    - name: Build libmarias3
+      run: |
+        autoreconf -fi
+        ./configure
+    - name: Build Docs
+      run:
+        make html

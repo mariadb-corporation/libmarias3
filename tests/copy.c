@@ -170,9 +170,9 @@ int main(int argc, char *argv[])
 
   res = ms3_delete(ms3, s3bucket, "test/moved.txt");
   ASSERT_EQ_(res, 0, "Result: %u", res);
-  res = ms3_delete(ms3, s3bucket, "test/copied.txt");
-  res = ms3_delete(ms3, s3bucket, "test/copy_###_test.txt");
-  res = ms3_delete(ms3, s3bucket, "test/copied###.txt");
+  ms3_delete(ms3, s3bucket, "test/copied.txt");
+  ms3_delete(ms3, s3bucket, "test/copy_###_test.txt");
+  ms3_delete(ms3, s3bucket, "test/copied###.txt");
 
   ms3_free(data);
   ms3_deinit(ms3);
