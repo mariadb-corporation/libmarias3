@@ -1,0 +1,53 @@
+name: ASAN test
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      minio:
+        # fixme: let's not depend on external unofficial image
+        image: lazybit/minio
+        ports:
+          - 9000:9000
+        env:
+          MINIO_ROOT_USER: accesskey
+          MINIO_ROOT_PASSWORD: password
+        options: --name=minio --health-cmd "curl http://localhost:9000/minio/health/live"
+
+    env:
+      S3KEY: accesskey
+      S3SECRET: password
+      S3REGION: ""
+      S3BUCKET: s3-test
+      S3HOST: 127.0.0.1
+      S3PORT: 9000
+      S3USEHTTP: 1
+      CC: clang
+      CFLAGS: "-fsanitize=address"
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Create bucket
+      run: |
+        wget https://dl.min.io/client/mc/release/linux-amd64/mc
+        chmod +x ./mc
+        ./mc alias set minio http://127.0.0.1:9000 accesskey password
+        ./mc mb --ignore-existing minio/s3-test
+    - name: Install deps
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libcurl4-openssl-dev
+    - name: Build libmarias3
+      run: |
+        autoreconf -fi
+        ./configure --enable-debug=yes
+        make
+    - name: Test
+      run:
+        make check
