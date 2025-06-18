@@ -901,6 +901,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
 
   curl_easy_setopt(curl, CURLOPT_BUFFERSIZE, ms3->buffer_chunk_size);
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+  curl_easy_setopt(curl, CURLOPT_VERBOSE, ms3debug_get());
   curl_res = curl_easy_perform(curl);
 
   if (curl_res != CURLE_OK)
