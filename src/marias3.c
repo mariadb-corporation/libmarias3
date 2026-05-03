@@ -367,8 +367,8 @@ const char *ms3_server_error(ms3_st *ms3)
 
 void ms3_debug(int debug_state)
 {
-  bool state = ms3debug_get();
-  if (state != (bool) debug_state)
+  long state = ms3debug_get();
+  if (state != (long) debug_state)
   {
     ms3debug_set((bool) debug_state);
     if (debug_state)

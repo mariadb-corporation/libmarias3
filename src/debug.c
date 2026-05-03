@@ -28,7 +28,7 @@ void ms3debug_set(bool enabled)
   debugging_enabled = enabled;
 }
 
-bool ms3debug_get(void)
+long ms3debug_get(void)
 {
   return debugging_enabled;
 }

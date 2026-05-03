@@ -23,7 +23,7 @@
 #include <stdbool.h>
 
 void ms3debug_set(bool enabled);
-bool ms3debug_get(void);
+long ms3debug_get(void);
 
 #define ms3debug(MSG, ...) do { \
   if (ms3debug_get()) \

@@ -580,14 +580,14 @@ uint8_t execute_assume_role_request(ms3_st *ms3, command_t cmd,
   if (ms3->disable_verification)
   {
     ms3debug("Disabling SSL verification");
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
   }
 
   curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_callback);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, body_callback);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&mem);
-  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
   curl_res = curl_easy_perform(curl);
 
   if (curl_res != CURLE_OK)

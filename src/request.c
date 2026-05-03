@@ -871,8 +871,8 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   if (ms3->disable_verification)
   {
     ms3debug("Disabling SSL verification");
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
   }
 
   if (ms3->port)
@@ -900,7 +900,7 @@ uint8_t execute_request(ms3_st *ms3, command_t cmd, const char *bucket,
   }
 
   curl_easy_setopt(curl, CURLOPT_BUFFERSIZE, ms3->buffer_chunk_size);
-  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
   curl_easy_setopt(curl, CURLOPT_VERBOSE, ms3debug_get());
   curl_res = curl_easy_perform(curl);
 
