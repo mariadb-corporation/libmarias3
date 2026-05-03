@@ -511,12 +511,12 @@ uint8_t execute_assume_role_request(ms3_st *ms3, command_t cmd,
   struct curl_slist *headers = NULL;
   uint8_t res = 0;
   struct memory_buffer_st mem;
-  uri_method_t method;
-  char *query = NULL;
+  uri_method_t method = MS3_GET;
+  const char *query = NULL;
   struct put_buffer_st post_data;
   CURLcode curl_res;
   long response_code = 0;
-  char* endpoint = NULL;
+  const char* endpoint = NULL;
   const char* region = iam_request_region;
   char endpoint_type[8];
 
